@@ -23,7 +23,7 @@ class Bandwagon():
         self.markets = self.__prepare__(markets_code) # 准备好大盘数据
         
     @staticmethod
-    def market_of(self, ticker:str) -> str:
+    def market_of(ticker:str) -> str:
         '''根据股票代码，返回其所在的大盘指数代码
         http://baostock.com/baostock/index.php/指数数据
         综合指数，例如：sh.000001 上证指数，sz.399106 深证综指 等；
@@ -122,12 +122,7 @@ class Bandwagon():
         s = self.stocks.apply(self.strength, axis = 1)
         return np.dot(s, self.stocks.weight)
 
-    def minute5(self, ticker:str, days:int)-> pd.DataFrame:
-        '''输入股票代码和交易日数量，以最新日期为end，返回end-days个交易日的5分钟线'''
-        df = self.bao.get(ticker, days)
-        return df
-
-if __name__ == 'main':
+if __name__ == "__main__":
     df = pd.read_excel("000016closeweight.xls", header = 0)
     bw = Bandwagon(df)
     bw.vote()
