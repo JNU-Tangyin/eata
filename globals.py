@@ -24,7 +24,9 @@ BASE_COLUMNS = ['tic', 'date']
 OCLHVA = ['open',  'high', 'low', 'close', 'volume', 'amount']
 Normed_OCLHVA = [x+"_" for x in OCLHVA]     # normalized ohlcva
 # indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24",'cr',"boll","boll_ub","boll_lb","wr_10","wr_6","cci","dma"] # 14
-indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr"]
+# indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr"] # https://github.com/jealous/stockstats
+# "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
+indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr","MFI","EMV","VR","PSY","OBV"] # https://github.com/jealous/stockstats
 mkt_indicators = [MARKET_PREFIX+x for x in indicators]
 MKT_OCLHVA = OCLHVA 
 mkt_oclhva_normed = [MARKET_PREFIX+x for x in Normed_OCLHVA]

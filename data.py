@@ -1,4 +1,3 @@
-from tracemalloc import start
 import baostock as bs
 import os
 import sqlite3
@@ -134,7 +133,7 @@ class BaostockDataWorker(DataWorker):
         rs = bs.query_history_k_data_plus(ticker, "date,time,code,open,high,low,close,volume,amount,adjustflag",
             start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
         self.stock = rs.get_data() # if rs.error_code == '0' else None
-        self.stock[OLHCVA] = self.stock[OLHCVA].astype('float')  # Baostock给出的是object，不是float的要转成float
+        self.stock[OCLHVA] = self.stock[OCLHVA].astype('float')  # Baostock给出的是object，不是float的要转成float
         self.stock.rename(columns = BAOSTOCK_MAPPING,inplace = True) 
         return self.stock
 
