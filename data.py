@@ -77,10 +77,16 @@ class DataWorker(object):
     def all_tickers(self) -> pd.DataFrame :
         pass
     
-    def minute(self,ticker,ktype='5') -> pd.DataFrame :
+    def minute(self,ticker,start_date = None, end_date = None, ktype='5') -> pd.DataFrame :
         pass
-
+    
+    def latest(self,ticker, ktype = '5', days = 20):
+        pass
+    
     def save(self, rs:pd.DataFrame) -> bool:
+        pass
+    
+    def market_calendar(self):
         pass
 
     def market(self,ticker) -> str:
@@ -141,7 +147,7 @@ class BaostockDataWorker(DataWorker):
         if rs.error_code == '0':
             self.stock = rs.get_data() 
         else:
-            raise "something wrong with get_data():" + rs.error_msg 
+            raise Exception("something wrong with get_data():" + rs.error_msg)
 
         self.stock[OCLHVA] = self.stock[OCLHVA].astype('float64')  # Baostock给出的是object，不是float的要转成float
         self.stock.rename(columns = BAOSTOCK_MAPPING, inplace = True) 

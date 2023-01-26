@@ -6,7 +6,8 @@
 
 import numpy as np
 import pandas as pd
-from data import BaostockDataWorker
+from datetime import datetime
+from data import BaostockDataWorker, DataStorage
 from preprocess import Preprocessor
 from globals import indicators
 
@@ -27,9 +28,8 @@ class Bandwagon():
         # 准备好stocks, sectors, markets的数据
         self.stocks_datum = __prepare__(self.stock_list.code)
         self.sectors_datum = __prepare__(self.stock_list.sector, ktype='d')
-        market_codes = self.stock_list.code.apply(self.get_market) # 对每个股票获得其大盘指数代码
-        self.market_codes = market_codes.drop_duplicates() # 去重，对sz50来说，就剩1个"sh.000001"     
-        # self.market_codes = pd.DataFrame(self.market_codes)
+        self.stock_list['market'] = self.stock_list.code.apply(self.get_market)
+        self.market_codes = self.stock_list.market.drop_duplicates() # 去重，对sz50来说，就剩1个"sh.000001"     
         self.market_datum = __prepare__(self.market_codes, ktype='d') # 准备好大盘数据
         
     @staticmethod
@@ -61,46 +61,15 @@ class Bandwagon():
         '''都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
         return "sh.000001"
 
-    def stock_strength(self): # v1.1
-        '''股票量能的计算，参考上述链接以及Readme.md，入场规则："MA5>MA10 and RSI>50"
+    def criteria(self, d):
         '''
-        def criteria(d):
-            '''
-            凡是满足criteria条件的为1，不符合该条件的为0。当然也可以用True/False
-            注：传进来的d有4种情况：（1）一行日线；（2）多行日线；（3）一日多行分钟线；（4）多日多行分钟线。可能用resample()处理会比较便捷
-            '''
-            #   d['date'] = d.date.apply(pd.to_datetime)    # df.resample()要求date字段必须是datetime类型
-            #   d = d.resample("D", on= "date").mean()      # 基于date字段按日做聚合，求平均，也可以有复杂的计算
-            d = d.iloc[-1]    # 只取了最后一行，并不合理，可以用resample("D")先聚合，打开上面两行即可
-            return 1 if d.close_5_ema>d.close_10_ema and d.rsi >50 else -1
-        
-        self.stock_list['stock_strength'] = [criteria(d) for d in self.stocks_datum]
-        return self.stock_list.stock_strength
-
-                 
-    def sector_strength(self): # v1.2
-        '''板块量能，注：Baostock目前只能获取板块和指数日线，但不要紧，宏观一点日线也够用
+        凡是满足criteria条件的为1，不符合该条件的为0。当然也可以用True/False
+        注：传进来的d有4种情况：（1）一行日线；（2）多行日线；（3）一日多行分钟线；（4）多日多行分钟线。可能用resample()处理会比较便捷
         '''
-        def criteria(s):
-            r = s.iloc[-1]
-            return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
-        
-        self.stock_list['sector_strength'] =[criteria(s) for s in self.sectors_datum]  # df增加一列
-        return self.stock_list.sector_strength
-
-    def market_strength(self): # v1.2
-        '''大盘量能，注：Baostock目前只能获取板块和指数日线'''
-        criteria = lambda r:1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
-          
-        # 为stocks增加market字段，填入指数代码
-        self.stock_list['market'] = self.stock_list.code.apply(self.get_market)
-        # 计算每个market的strength 
-        # self.stock_list['market_strength'] 
-        x = [criteria(m.iloc[-1]) for m in self.market_datum] # 与self.market_codes 一一对应
-        y = pd.DataFrame({'market':self.market_codes, 'market_strength':x}) # 拼成一个df
-        # 根据指数代码market对应大盘的指数代码code，进行连接
-        self.stock_list = self.stock_list.merge(y, left_on="market", right_on="market", how="left")  # df增加一列
-        return self.stock_list.market_strength
+        d['date'] = d.date.apply(pd.to_datetime)    # df.resample()要求date字段必须是datetime类型
+        d = d.resample("D", on= "date").mean()      # 基于date字段按日做聚合，求平均，也可以有复杂的计算
+        r = d.iloc[-1]
+        return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
 
     def stock_momentum(self): # v1.2
         '''股票涨跌惯性，根据昨天的涨跌定义今天的惯性，涨：1，跌：-1
@@ -112,7 +81,7 @@ class Bandwagon():
         
         def criteria(d):
           d['date'] = d.date.apply(pd.to_datetime)    # df.resample()要求date字段必须是datetime类型
-          d = d.resample("D", on= "date").mean()      # 基于date字段按日做聚合，求平均，也可以有复杂的计算
+          d = d.resample("D", on= "date").mean()      # 基于date字段按5日做聚合，求平均，也可以有复杂的计算
           d = d.close.diff(1)                         # 对日线close做差分，>0 则强势，<0则弱势
           return d.iloc[-1]                           # 返回最后一行即可
 
@@ -120,7 +89,7 @@ class Bandwagon():
         self.stock_list['stock_momentum'] = [sig21(criteria(s)) for s in self.stocks_datum] 
         return self.stock_list.stock_momentum
         
-    def strength(self, record:pd.DataFrame)->int: # v1.2
+    def strength(self): # v1.2
         ''' 输入股票列表的一行（code 及其对应的sector和market），计算其强弱分数
         record : DataFrame的一行
         具体做法是：
@@ -129,10 +98,22 @@ class Bandwagon():
         - 大盘量能：根据大盘的强弱打分，权重20%；
         - 股票惯性：根据股票昨天的涨跌打分，权重20%.
         '''
-        score = self.stock_strength()*0.4 + self.sector_strength()*0.3 \
-            + self.market_strength()*0.2 + self.stock_momentum()*0.1
-        self.stock_list['strength'] = score
-        return score 
+        self.stock_list['stock_strength'] = [self.criteria(d) for d in self.stocks_datum]   # 股票量能
+        self.stock_list['sector_strength'] =[self.criteria(s) for s in self.sectors_datum]  # 板块量能
+        # 计算大盘量能并拼接
+        x = [self.criteria(m) for m in self.market_datum] # 与self.market_codes 一一对应
+        y = pd.DataFrame({'market':self.market_codes, 'market_strength':x}) # 拼成一个df
+        # 根据指数代码market对应大盘的指数代码code，进行连接
+        self.stock_list = self.stock_list.merge(y, left_on="market", right_on="market", how="left")  # 大盘量能
+        self.stock_momentum() # 股票惯性
+        # 计算总的strength，权重可能要微调
+        self.stock_list['strength'] = \
+                self.stock_list['stock_strength']* 0.4 \
+                + self.stock_list['sector_strength']*0.3 \
+                + self.stock_list['market_strength']*0.2 \
+                + self.stock_list['stock_momentum']*0.1 
+
+        return self.stock_list['strength'] 
 
     # 以上5个函数，可以替换成对个股的预测，然后再进行投票。
     # 预测时可以采用各种手段(的组合)，例如"MA5>MA10 and RSI>50" etc. (2)
@@ -144,12 +125,20 @@ class Bandwagon():
     def vote(self)->int:
         '''输入多个股票代码以及各自的权重，计算etf总的强弱势'''
         # s = self.stock_list.apply(self.strength, axis = 1) # 就不再需要逐行计算了
-        s = self.strength(self.stock_list)
+        s = self.strength()
         print(self.stock_list)
         return np.dot(s, self.stock_list.weight)
     
+    def action(self, score):
+        a = 0
+        if score > 80:
+            a = 1
+        elif score < 50:
+            a = -1
+        return a
+
     def save(self):
-        self.stock_list.to_csv("calculated.csv")
+        self.stock_list.to_csv(datetime.now().strftime("%Y-%m-%d-%h-") +"calculated.csv")
     
 
 if __name__ == "__main__":
@@ -158,7 +147,6 @@ if __name__ == "__main__":
     df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)
     print(df)
     bw = Bandwagon(df)
-    print("Buy or Sell?",bw.vote())
+    score = bw.vote()
+    print("Buy or Sell?", bw.action(score))
     bw.save()
-
-

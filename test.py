@@ -48,7 +48,11 @@ class Predictor:
         pass
 
 '''
-buy or sell sz50etf by predicting its constituent
+1. `collect` all 50 stocks in the market, bs.query_stock_basics()
+2. `predict` each respectively bandwagon.action()
+3. `save` the predicted result as .csv, columns =  ['ticker', 'date', 'close', 'score',  'action', 'pct_chg']
+4. `evaluate` the result in evaluate.py, calculating the asset_change, reward
+5. `visualize` the evaluated result
 '''
 
 if __name__ == "__main__":
