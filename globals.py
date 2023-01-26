@@ -26,7 +26,9 @@ Normed_OCLHVA = [x+"_" for x in OCLHVA]     # normalized ohlcva
 # indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24",'cr',"boll","boll_ub","boll_lb","wr_10","wr_6","cci","dma"] # 14
 # indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr"] # https://github.com/jealous/stockstats
 # "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
-indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr","MFI","EMV","VR","PSY","OBV"] # https://github.com/jealous/stockstats
+indicators = ['close_5_ema', 'close_10_ema','kdj', "rsi","macd","atr","vr"] # https://github.com/jealous/stockstats
+# indicators_after = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macds","macdh","atr","vr"] # https://github.com/jealous/stockstats
+indicators_after = ['close_5_ema', 'close_10_ema','rsi'] # https://github.com/jealous/stockstats
 mkt_indicators = [MARKET_PREFIX+x for x in indicators]
 MKT_OCLHVA = OCLHVA 
 mkt_oclhva_normed = [MARKET_PREFIX+x for x in Normed_OCLHVA]
@@ -40,8 +42,8 @@ TS_TOKEN = "72d1e47c3b0728a26bfc4a9f54132b195890fa843815f896708515f1"
 ts.set_token(TS_TOKEN)
 
 # data source mapping dictionary, used by pd.rename()
-TUSHARE_MAPPING = {"ts_code":"tic","trade_date":"date","vol":"volume"}
-BAOSTOCK_MAPPING = {"code":"tic"}
+TUSHARE_MAPPING = {"ts_code":"ticker","trade_date":"date","vol":"volume"}
+BAOSTOCK_MAPPING = {"code":"ticker"}
 
 #%%
 # # 上证50ETF成分股

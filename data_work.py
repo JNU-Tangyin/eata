@@ -1,4 +1,3 @@
-from subprocess import call
 import tushare as ts
 import datetime
 import os
@@ -6,10 +5,8 @@ import sqlite3
 import pandas as pd
 from functools import partial
 from globals import MAIN_PATH   # 
-import pysnooper
 from retrying import retry
 import baostock
-import time
 
 DATABASE = "stock.db"
 DATABASE_PATH = MAIN_PATH  # 这句话在其他import的时候就已经执行，所以未必能达到想要的效果 # 直接调用上面globals.MAIN_PATH 导致不能正确建立conn，main不能及时修改globals.MAIN_PATH
@@ -67,27 +64,6 @@ class DataStorage():
     def save(self, df:pd.DataFrame, to_table:str, if_exists='replace'):
         return df.to_sql(name=to_table,con = self.conn, if_exists = if_exists)
     
-    # def save_raw(self,df:pd.DataFrame):
-    #     return self.save(df, RAW_DATA)
-    # self.save_raw = lambda df: self.save(df,RAW_DATA)
-    # def load_raw(self):
-    #     return self.load(RAW_DATA)
-    # def save_processed(self,df:pd.DataFrame):
-    #     return self.save(df, PROCESSED_DATA)
-    # def load_processed(self):
-    #     return self.load(PROCESSED_DATA)
-    # def save_trained(self,df:pd.DataFrame):
-    #     return self.save(df, TRAINED_DATA)
-    # def load_trained(self):
-    #     return self.load(TRAINED_DATA)
-    # def save_evaluated(self,df:pd.DataFrame):
-    #     return self.save(df, EVALUATED_DATA)
-    # def load_evaluated(self):
-    #     return self.load(EVALUATED_DATA)
-    # def save_predicted(self,df:pd.DataFrame,if_exists='append'):
-    #     return self.save(df, PREDICTED_DATA)
-    # def load_predicted(self):
-    #     return self.load(PREDICTED_DATA)
 
 class DataWorker(object):
     def __init__(self) -> None:
@@ -144,6 +120,7 @@ class DataWorker(object):
         for i in ["open","high","low","close","pre_close","pct_chg","volume","amount"]:
             market.loc[:, i] = pd.to_numeric(market.loc[:, i])
         return stock[:-1], market, code
+
     def tp(self, str):
         # 把日期处理为baostock的格式，输入输出都是str
         assert str.__len__() == 8

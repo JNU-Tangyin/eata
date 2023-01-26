@@ -68,7 +68,7 @@ class DataStorage():
 class DataWorker(object):
     def __init__(self) -> None:
         self.ds = DataStorage()
-        self.begin = "2000-01-01"
+        self.begin = "2017-01-01"
 
     def __del__(self) -> None:
         pass
@@ -77,7 +77,7 @@ class DataWorker(object):
     def all_tickers(self) -> pd.DataFrame :
         pass
     
-    def minute(self,ticker,ktype='1') -> pd.DataFrame :
+    def minute(self,ticker,ktype='5') -> pd.DataFrame :
         pass
 
     def save(self, rs:pd.DataFrame) -> bool:
@@ -117,6 +117,7 @@ class BaostockDataWorker(DataWorker):
         self.login = bs.login(user_id="anonymous", password="123456")
         self.ds = DataStorage()
         self.begin = "2000-01-01"
+        self.calendar = self.market_calendar()
 
     @property
     def all_tickers(self) -> pd.DataFrame :
@@ -124,18 +125,39 @@ class BaostockDataWorker(DataWorker):
         self.ds.save_tickers(tickers)
         return tickers
 
-    def minute(self,ticker,start_date, end_date, ktype='5') -> pd.DataFrame :
+    def minute(self,ticker,start_date = None, end_date = None, ktype='5') -> pd.DataFrame :
         ''' download 5-minutely data if ticker available
         http://baostock.com/baostock/index.php/Python_API文档
         '''
         start_date = self.begin if start_date is None else start_date
-        end_date = datetime.today if end_date is None else end_date
-        rs = bs.query_history_k_data_plus(ticker, "date,time,code,open,high,low,close,volume,amount,adjustflag",
-            start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
-        self.stock = rs.get_data() # if rs.error_code == '0' else None
-        self.stock[OCLHVA] = self.stock[OCLHVA].astype('float')  # Baostock给出的是object，不是float的要转成float
-        self.stock.rename(columns = BAOSTOCK_MAPPING,inplace = True) 
+        end_date = datetime.today().strftime("%Y-%m-%d") if end_date is None else end_date
+        if ktype in ['5','10','15','30','60']:
+            rs = bs.query_history_k_data_plus(ticker, "date,time,code,open,high,low,close,volume,amount,adjustflag",
+                start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
+        else:  # ktype in ['d','w','m']
+            rs = bs.query_history_k_data_plus(ticker, "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,pctChg",
+                start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
+
+        if rs.error_code == '0':
+            self.stock = rs.get_data() 
+        else:
+            raise "something wrong with get_data():" + rs.error_msg 
+
+        self.stock[OCLHVA] = self.stock[OCLHVA].astype('float64')  # Baostock给出的是object，不是float的要转成float
+        self.stock.rename(columns = BAOSTOCK_MAPPING, inplace = True) 
         return self.stock
+    
+    def market_calendar(self):
+        '''return market trading days'''
+        rs = bs.query_trade_dates(start_date="2017-01-01", end_date = datetime.today().strftime("%Y-%m-%d"))
+        return  rs.get_data()
+    
+    def latest(self,ticker, ktype = '5', days = 20):
+        trade_days = self.calendar[self.calendar.is_trading_day=="1"]
+        trade_days = trade_days.tail(days)
+        # In lastest 20 days case
+        start_date, end_date = trade_days.calendar_date.min(), trade_days.calendar_date.max()
+        return self.minute(ticker, start_date, end_date, ktype)
 
     def minute_mkt(self,ticker,ktype='5') -> pd.DataFrame:
         ''' downloads 5-min with market data if ticker available
@@ -146,7 +168,7 @@ class BaostockDataWorker(DataWorker):
         begin = rs1.date.min
         end = rs1.date.max
         rs2 = self.minute(mkt, begin, end, ktype = 'd') # only ktype = 'd' is available for indices in Baostock
-        rs2.rename(columns=dict(zip(OLHCVA, MKT_OCLHVA)),inplace = True) 
+        rs2.rename(columns=dict(zip(OCLHVA, MKT_OCLHVA)),inplace = True) 
         rs2.rename(columns={'code':"mkt_code"},inplace = True) 
         return rs1, rs2 # returns rs1, rs2 seperately
         # return rs1.merge(rs2,how='left', left_on=["date","time"],right_on=["date","time"])  # 按列合并
