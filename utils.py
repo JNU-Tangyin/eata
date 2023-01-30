@@ -9,8 +9,13 @@ import pysnooper
 from retrying import retry
 import numpy as np
 import matplotlib.ticker as ticker
+## 关于时间序列拐点检测方法, check the following links:
+# 魔法数字（二）——通过python 中的kneed包找到拐点的方法 - 恒沙数的文章 - 知乎 https://zhuanlan.zhihu.com/p/444403256
+# ruptures https://centre-borelli.github.io/ruptures-docs/
+# Bry-Boschan算法 https://bbs.pinggu.org/thread-2926689-1-1.html
+# https://www.conference-board.org/topics/recession/what-are-business-cycles-how-are-they-measured
 
-## MDPPplus有bug，逐步废弃
+## v1.0 MDPPplus，有bug，deprecated
 def MDPPplus(df:pd.DataFrame, D = 10,P = 0.05)->pd.DataFrame:
     '''
         finding the peak ^,bottom v of a series with D days and P percentage of fluctuation
@@ -25,13 +30,15 @@ def MDPPplus(df:pd.DataFrame, D = 10,P = 0.05)->pd.DataFrame:
         if within_mdpp(d.index[i],d.loc[d.index[i],'close'],d.index[i+1],d.loc[d.index[i+1],'close']):
             df.loc[d.index[i]: d.index[i+1],'landmark'] = '-'
     return df
-###################
+
 def within_mdpp(x1,y1,x2,y2,D,P) -> bool:
     ''' whether or not (x1,y1) and (x2,y2) meets the MDPP criteria, can also be defined as:
         within_mdpp  = lambda x1,y1,x2,y2,D,P:(abs(x2-x1)<D) and (abs(y2-y1)*2/abs(y1+y2)<P) 
     '''
     return (abs(x2-x1)<D) and (abs(y2-y1)*2/abs(y1+y2)<P)
 
+###################
+# v2.0 勉强能用吧
 def base_landmarks(df:pd.DataFrame):
     '''把所有拐点全拿出来,并在df上做标记增加字段landmark'''
     d = df.copy()
@@ -79,12 +86,17 @@ def landmarks(df:pd.DataFrame, D = 10, P=0.05):
         else:
             p1 = p2            
             lm.append(index_list[p1])
-    #############################
+
     d = bl.loc[lm] #经过mdpp过滤后的坐标集合
     d = base_landmarks(d) # 注意加上这行的重要不同，将重新洗牌，实现peak和bottom交替
     return d[d.landmark == '^'].index, d[d.landmark == 'v'].index
-
+###################
+# v3.0
 def landmarks_BB(df:pd.DataFrame):
+    ''' Bry-Boschan算法
+    df: a time-dependant df
+    requirement: df has a column `close`
+    '''
     d=df[['close']]
     dataShifted = pd.DataFrame(index = d.index)
     for i in range(-5, 5):
@@ -113,6 +125,8 @@ def landmarks_BB(df:pd.DataFrame):
     return extremums[extremums==1].index,extremums[extremums==-1].index
 
 def attach_to(df:pd.DataFrame,peaks:pd.Index,bottoms:pd.Index)->pd.DataFrame:
+    ''' df: a time-dependent dataframe with index
+    '''
     df['landmark'] = '-'
     df.loc[peaks,'landmark'] = '^'
     df.loc[bottoms,'landmark'] = 'v'

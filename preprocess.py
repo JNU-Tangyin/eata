@@ -47,9 +47,9 @@ class Preprocessor():
         data_df = data_df.dropna()
         # 按照date从小到大进行排序
         data_df = data_df.sort_values(by=['ticker', 'date']).reset_index(drop=True)
-        # 添加 day 列，依次递增，这个day是按顺序递增的咯：$day \in [0,len(data_df))$
-        # 这个字段后面有用到吗？
-        data_df['day'] = range(len(data_df))
+        # https://blog.csdn.net/cainiao_python/article/details/123516004
+        # .weekday(),.isoweekday(), .strftime("%w"), .dt.dayofweek(), .dt.weekday(), dt.day_name()
+        data_df['day'] = data_df.date.apply(pd.to_datetime).dt.day_of_week
         self.df = data_df # 最終還是複製給了self.df啊，前面的工作都白做了
         self.df = data_df.dropna()
         return self  # return 'self' for currying
@@ -75,9 +75,11 @@ class Preprocessor():
         data_df = data_df.dropna()
         # 按照date从小到大进行排序
         data_df = data_df.sort_values(by=['ticker', 'date']).reset_index(drop=True)
-        # 添加 day 列，依次递增，这个day是按顺序递增的咯：$day \in [0,len(data_df))$
-        # 这个字段后面有用到吗？
-        data_df['day'] = range(len(data_df))
+        # 添加 day 列，一周的第几天
+        # https://blog.csdn.net/cainiao_python/article/details/123516004
+        # .weekday(),.isoweekday(), .strftime("%w"), 
+        # .dt.day_of_week(), .dt.weekday(), dt.day_name()
+        data_df['day'] = data_df.date.apply(pd.to_datetime).dt.day_of_week
         self.df = data_df.dropna()
         return self  # return 'self' for currying
 
@@ -126,8 +128,8 @@ class Preprocessor():
         return self
 
     def landmark(self,df:pd.DataFrame = None):
-        df = self.df if df is None else df
-        self.df = attach_to(df,*landmarks_BB(df))# 10天范围内，10%上下的波动，不算特别大了吧，这条注释当作老landmark的墓志铭
+        df = df if df else self.df
+        self.df = attach_to(df,*landmarks_BB(df))
         return self
     
     def embedding(self,df = None):
@@ -152,13 +154,14 @@ class Preprocessor():
         df[self.windowsize-1:,['embedding']] = [encode(r) for r in matrices]
         self.df = df.dropna()
         return self
-    
+
     def bundle_process(self, if_market=None):
         if if_market: 
             self.normalize()
         else:
             # self.clean().normalize().landmark().add_indicators() #.embedding()
-            self.clean().add_indicators() 
+            self.clean().landmark().add_indicators() 
+            # self.clean().add_indicators() 
         
         return self.df
     

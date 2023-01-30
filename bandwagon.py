@@ -9,7 +9,6 @@ import pandas as pd
 from datetime import datetime
 from data import BaostockDataWorker, DataStorage
 from preprocess import Preprocessor
-from globals import indicators
 
 class Bandwagon():
     def __init__(self, df: pd.DataFrame):
@@ -18,10 +17,11 @@ class Bandwagon():
         # 对于“所属板块的指数代码”，如果该股票实在找不到对应的板块或者无法获取其代码，可以用大盘的指数来代替。
         self.stock_list = df
         self.dataworker = BaostockDataWorker()
+        self.window_size = 20
 
         def __prepare__(s:pd.Series, ktype='5')-> pd.DataFrame:
-            # 获取所有股票当天的数据，这样其他函数只需要做计算即可
-            d1 = [self.dataworker.latest(c, ktype=ktype, days = 20) for c in s] # a list of df
+            # 获取所有股票当天的数据，这样其他函数只需要做计算即可。days取win_size的3倍，应该足够做一些ma,diff,dropna等操作了
+            d1 = [self.dataworker.latest(c, ktype=ktype, days = self.window_size * 3) for c in s] # a list of df
             d2 = [Preprocessor(s).bundle_process() for s in d1] # 对每个df做预处理
             return d2
         
@@ -60,8 +60,9 @@ class Bandwagon():
     def get_market(self, ticker:str)->str:
         '''都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
         return "sh.000001"
-
-    def criteria(self, d):
+    
+    @staticmethod
+    def criteria(d):
         '''
         凡是满足criteria条件的为1，不符合该条件的为0。当然也可以用True/False
         注：传进来的d有4种情况：（1）一行日线；（2）多行日线；（3）一日多行分钟线；（4）多日多行分钟线。可能用resample()处理会比较便捷
@@ -124,12 +125,10 @@ class Bandwagon():
 
     def vote(self)->int:
         '''输入多个股票代码以及各自的权重，计算etf总的强弱势'''
-        # s = self.stock_list.apply(self.strength, axis = 1) # 就不再需要逐行计算了
         s = self.strength()
-        print(self.stock_list)
         return np.dot(s, self.stock_list.weight)
-    
-    def action(self, score):
+
+    def etf_action(self,score):
         a = 0
         if score > 80:
             a = 1
@@ -137,16 +136,22 @@ class Bandwagon():
             a = -1
         return a
 
+    @classmethod
+    def choose_action(cls, s):
+        ''' action for a single stock, RL compatible'''
+        return cls.criteria(s)     # a class method of this Bandwagon
+        
     def save(self):
-        self.stock_list.to_csv(datetime.now().strftime("%Y-%m-%d-%h-") +"calculated.csv")
-    
+        self.stock_list.to_csv(datetime.now().strftime("%Y-%m-%d.%H.")+"calculated.csv")
 
 if __name__ == "__main__":
-    # df = pd.read_excel("000016closeweight.xls", dtype={'code':'str'}, header = 0)
-    # df['code'] = 'sh.'+df.code
-    df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)
-    print(df)
+    df = pd.read_excel("000016closeweight.xls", dtype={'code':'str'}, header = 0)
+    df['code'] = 'sh.'+df.code
+    # df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)
     bw = Bandwagon(df)
     score = bw.vote()
-    print("Buy or Sell?", bw.action(score))
+    print(f"score = {score}, Buy(1) or Sell(-1)?", bw.etf_action(score))
+    print(bw.stock_list)
+    print(bw.stocks_datum)
+
     bw.save()
