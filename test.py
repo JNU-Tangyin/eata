@@ -3,9 +3,9 @@
   and `label` each stock's sector(index code). note: bs.query_stock_basics() doesn't have the sector index code.
   we have to do it by hand.
 2. `construct` a RL environment, especially .step(), .reward() methods
-3. `predict` each respectively bandwagon.choose_action()
+3. `predict` iteratively with bandwagon.choose_action()
 3. `save` the predicted result as .csv, columns =  ['ticker', 'date', 'close', 'score',  'action', 'pct_chg']
-4. `evaluate` the result in evaluate.py, calculating the asset_change, reward (in evaluate.py)
+4. `evaluate` the predicted result, calculating the asset_change, reward (in evaluate.py)
 5. `visualize` the evaluated result (in visualize.py)
 '''
 import datetime
@@ -15,6 +15,7 @@ from data import DataStorage, BaostockDataWorker
 from preprocess import Preprocessor
 from datetime import datetime
 import gym
+from globals import BASE_COLUMNS_Minute, BASE_COLUMNS, OCLHVA, indicators, mkt_indicators, sct_indicators
 
 from bandwagon import Bandwagon
 
@@ -27,63 +28,29 @@ class BandwagonEnv(gym.Env):
         super(BandwagonEnv, self).__init__()
         self.dataworker = BaostockDataWorker()
         self.window_size = 20
+        self.trade_days = self.dataworker.calendar[self.dataworker.calendar.is_trading_day == "1"] # 所有交易日
 
         def prepare(r, days = 2000, window_size=20):
-            stock = self.dataworker.latest(r.code, ktype="5", days = days) # 一年交易日约244天
-            stock = Preprocessor(stock).bundle_process() 
-            sector = self.dataworker.latest(r.sector, ktype="d", days = days)
-            sector = Preprocessor(sector).bundle_process() 
+            '''一年交易日约为244日
+            分钟线只需要oclhva，日线以上有indicators应该够用了
+            '''
+            stock5m = self.dataworker.latest(r.code, ktype="5", days = days) # 5分钟线 [OCLHVA]
+            self.stock5m = Preprocessor(stock5m).clean()[BASE_COLUMNS_Minute+OCLHVA]
+            stock = self.dataworker.latest(r.code, ktype="d", days = days) # 股票日线[reward, landmark, indicators]
+            self.stock = Preprocessor(stock).bundle_process()[BASE_COLUMNS+indicators]
+            sector = self.dataworker.latest(r.sector, ktype="d", days = days) # 板块日线 [indicators]
+            self.sector = Preprocessor(sector).clean().add_indicators()[BASE_COLUMNS + indicators]
             market_code = self.bw.get_market(r.ticker)
             market = self.dataworker.latest(market_code, ktype="d", days = days)
-            market = Preprocessor(market).bundle_process() 
-            self.stock_matrices = [x.values for x in stock.resample("20D").rolling(window_size)][window_size-1:] # 获得rolling的矩阵
-            self.sector_matrices = [x.values for x in sector.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
-            self.market_matrices = [x.values for x in market.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
-            # any alignment for three dataframes or matrices here?
+            self.market = Preprocessor(market).clean().add_indicators[BASE_COLUMNS + indicators] # 大盘日线 [indicators]
+            # self.stock_matrices = [x.values for x in stock.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
+            # self.sector_matrices = [x.values for x in sector.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
+            # self.market_matrices = [x.values for x in market.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
+            # alignment for three dataframes or matrices (a)here or (b) in .step() method.
 
-        prepare(row)
-        self.df = self.add_reward_(self.df)
 
-    def add_reward_(self, df:pd.DataFrame = None)->pd.DataFrame:
-        '''attach reward to the df once for all, no more calculation on the fly
-        requirement: df has a `landmark` column
-        '''
-        d = df if df else self.df.copy()
+        prepare(row)    # prepare the data we need
 
-        dd = d[(d.landmark.isin(["v","^"]))] 
-        d1, d2 = dd.iloc[:-1].index, dd.iloc[1:].index  # 获取索引并配对拼接
-
-        def reward_by_length(length, direction):
-            '''
-            @direction 1:# from bottom to top ; -1: # from top to bottom
-            @return: tuple of np.array
-            '''
-            assert direction in [1,-1], "direction must be either 1 or -1"
-            hold_reward = np.sin(np.linspace(-0.5*np.pi,1.5*np.pi,length))                       # 底部和顶部hold，均为-1分，中间为1分
-            buy_reward = np.sin(np.linspace(direction*0.5*np.pi,-direction*0.5*np.pi,length))    # 底部买入 1分，顶部买入 -1分
-            sell_reward = np.sin(np.linspace(-direction*0.5*np.pi,direction*0.5*np.pi,length))   # 底部卖出 -1分，顶部卖出1分
-
-            return buy_reward, hold_reward, sell_reward
-
-        def attach_rewards(a,b):
-            piece = d.loc[a:b]     # df.loc 闭区间；df.iloc开区间
-            buy_reward, hold_reward, sell_reward =  reward_by_length(len(piece), 1 if piece.iloc[0].landmark == "v" else -1 )
-            # df.loc[a:b,['buy_reward','hold_reward','sell_reward']] = buy_reward, hold_reward, sell_reward 
-            d.loc[a:b,'buy_reward'] = buy_reward
-            d.loc[a:b,'hold_reward'] = hold_reward
-            d.loc[a:b,'sell_reward'] = sell_reward 
-
-        d[['buy_reward','hold_reward','sell_reward']] = 0
-        [attach_rewards(x1,x2) for x1,x2 in zip(d1,d2)]
-
-        self.df = d if df is None else self.df
-
-        return d
-
-    def _reward(self, a:int):
-        assert a in [-1, 0, 1], "invalid action " + a
-        column = {1:"buy_reward",0:"hold_reward", -1:"sell_reward"}[a]
-        return self.df.iloc[self.iter][column]
 
     def render(self, mode='human', close=False):
         # Render the environment to the screen
@@ -95,20 +62,42 @@ class BandwagonEnv(gym.Env):
     def reset(self):
         ''' re-start from the first day
         '''
-        self.iter = self.window_size -1
+        self.iter = self.window_size - 1
         return self.step()
+
+    def _reward(self, a:int, df_slice:pd.DataFrame):
+        assert a in [-1, 0, 1], "invalid action " + a
+        column = {1:"buy_reward",0:"hold_reward", -1:"sell_reward"}[a]
+        return df_slice.iloc[row][column]
+    
+    def _info(self, df_slice:pd.DataFrame):
+        return df_slice.iloc[-1][['ticker','date','close']].to_dict()
 
     def step(self, a:int):
         self.iter = self.iter if a else self.window_size - 1    # if no action, go back to the first row
-        s_ = self.df.iloc[self.iter +1 - self.window_size:self.iter+1] # 从当前行倒推window_size
-        r = self._reward(a)
-        done = False if self.iter < len(self.df) else True
-        info = {'price':s_[-1].close, 'date':s_[-1].date, 'ticker':s_[-1].ticker} # 将ticker,价格和交易日期通过info传递
+        days = self.trade_days.iloc[self.iter +1 - self.window_size : self.iter+1].calendar_date # 警惕:df.loc[] 左闭右闭，df.iloc[]左闭右开
+        # 使用trade_days作为指针，获取stock, sector, market的指定范围的数据，并将他们on = 'date'对齐。
+        s_0 = self.stock5m[days]  # 分钟线 oclhva
+        s_1 = self.stock[days]    # 股票日线， landmark, reward, indicators
+        info = self._info(s_1) # 将ticker,价格和交易日期通过info传递
+        r = self._reward(a, s_1)    # indicators和reward的计算基于日线，即s_1的最后一行
+        s_2 = self.sector[days]   # 板块日线，仅indicators
+        s_3 = self.market[days]   # 股市日线，仅indicators
+        # 尽量保持原有信息，工作可以交给bandwagon.choose_action(), 由agent自行决定如何使用。
+        s_ = (s_0, s_1, s_2, s_3)  # 拼接后再返回，不拼接也是可以的
+        # s_ = encode(s_)   # 未来还是将state进行编码后返回吧
+        done = False if self.iter < len(self.df) -1  else True
+        self.iter += 1
         return s_, r, done, info
     
     # a generator version of step()
-    # def _step(self, a:int):
-    #     yield 
+    # def next_oclh(self):
+    #     self.next_ticker() # for j, t in self.next_ticker(): # make next_ticker() and next_oclh() as a whole
+    #     for i, row in self.stock.iterrows():
+    #         end_of_stock = True if i == len(self.stock)-1 else False # last row of data
+    #         lm = self._rest_oclh(row) # future several oclh from this time
+    #         done = yield row, lm, end_of_stock  # after yield, hang here for further invoke, then goes to next line
+    #         if done and not end_of_stock : break # to received message from invoker as gen.send(msg)
     
 
 def run(row, days) -> pd.DataFrame:

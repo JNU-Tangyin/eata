@@ -26,7 +26,7 @@ class Bandwagon():
             return d2
         
         # 准备好stocks, sectors, markets的数据
-        self.stocks_datum = __prepare__(self.stock_list.code)
+        self.stocks_datum = __prepare__(self.stock_list.code, ktype='d')
         self.sectors_datum = __prepare__(self.stock_list.sector, ktype='d')
         self.stock_list['market'] = self.stock_list.code.apply(self.get_market)
         self.market_codes = self.stock_list.market.drop_duplicates() # 去重，对sz50来说，就剩1个"sh.000001"     
@@ -63,13 +63,9 @@ class Bandwagon():
     
     @staticmethod
     def criteria(d):
-        '''
-        凡是满足criteria条件的为1，不符合该条件的为0。当然也可以用True/False
-        注：传进来的d有4种情况：（1）一行日线；（2）多行日线；（3）一日多行分钟线；（4）多日多行分钟线。可能用resample()处理会比较便捷
-        '''
-        d['date'] = d.date.apply(pd.to_datetime)    # df.resample()要求date字段必须是datetime类型
-        d = d.resample("D", on= "date").mean()      # 基于date字段按日做聚合，求平均，也可以有复杂的计算
-        r = d.iloc[-1]
+        ''' '''
+        s_0, s_1, s_2, s_3 = d  # 将d解析为5分钟线、股票日线、板块日线、大盘日线
+        r = s_1.iloc[-1]        # 目前仅使用股票日线
         return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
 
     def stock_momentum(self): # v1.2

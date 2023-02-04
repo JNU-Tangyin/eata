@@ -154,14 +154,50 @@ class Preprocessor():
         df[self.windowsize-1:,['embedding']] = [encode(r) for r in matrices]
         self.df = df.dropna()
         return self
+    
+    def add_reward_(self, df:pd.DataFrame = None)->pd.DataFrame:
+        '''attach reward to the df once for all, no more calculation on the fly
+        requirement: df has a `landmark` column
+        '''
+        d = df if df else self.df.copy()
+
+        dd = d[(d.landmark.isin(["v","^"]))] 
+        d1, d2 = dd.iloc[:-1].index, dd.iloc[1:].index  # 获取索引并配对拼接
+
+        def reward_by_length(length, direction):
+            '''
+            @direction 1:# from bottom to top ; -1: # from top to bottom
+            @return: tuple of np.array
+            '''
+            assert direction in [1,-1], "direction must be either 1 or -1"
+            hold_reward = np.sin(np.linspace(-0.5*np.pi,1.5*np.pi,length))                       # 底部和顶部hold，均为-1分，中间为1分
+            buy_reward = np.sin(np.linspace(direction*0.5*np.pi,-direction*0.5*np.pi,length))    # 底部买入 1分，顶部买入 -1分
+            sell_reward = np.sin(np.linspace(-direction*0.5*np.pi,direction*0.5*np.pi,length))   # 底部卖出 -1分，顶部卖出1分
+
+            return buy_reward, hold_reward, sell_reward
+
+        def attach_rewards(a,b):
+            piece = d.loc[a:b]     # df.loc 闭区间；df.iloc开区间
+            buy_reward, hold_reward, sell_reward =  reward_by_length(len(piece), 1 if piece.iloc[0].landmark == "v" else -1 )
+            # df.loc[a:b,['buy_reward','hold_reward','sell_reward']] = buy_reward, hold_reward, sell_reward 
+            d.loc[a:b,'buy_reward'] = buy_reward
+            d.loc[a:b,'hold_reward'] = hold_reward
+            d.loc[a:b,'sell_reward'] = sell_reward 
+
+        d[['buy_reward','hold_reward','sell_reward']] = 0
+        [attach_rewards(x1,x2) for x1,x2 in zip(d1,d2)]
+
+        self.df = d if df is None else self.df
+
+        return d
+
 
     def bundle_process(self, if_market=None):
         if if_market: 
             self.normalize()
         else:
             # self.clean().normalize().landmark().add_indicators() #.embedding()
-            self.clean().landmark().add_indicators() 
-            # self.clean().add_indicators() 
+            self.clean().landmark().add_reward_().add_indicators() 
         
         return self.df
     
