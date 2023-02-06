@@ -124,6 +124,7 @@ class BaostockDataWorker(DataWorker):
         self.ds = DataStorage()
         self.begin = "2000-01-01"
         self.calendar = self.market_calendar()
+        bs.login()
 
     @property
     def all_tickers(self) -> pd.DataFrame :
@@ -148,7 +149,9 @@ class BaostockDataWorker(DataWorker):
             self.stock = rs.get_data() 
         else:
             raise Exception("something wrong with get_data():" + rs.error_msg)
-
+        
+        # 发现时间太长的，volume和amount有空子串，导致转换出错，替换成"0"
+        self.stock.replace(to_replace=r"^\s*$", value ="0", regex=True, inplace=True)
         self.stock[OCLHVA] = self.stock[OCLHVA].astype('float64')  # Baostock给出的是object，不是float的要转成float
         self.stock.rename(columns = BAOSTOCK_MAPPING, inplace = True) 
         return self.stock
@@ -159,9 +162,7 @@ class BaostockDataWorker(DataWorker):
         return  rs.get_data()
     
     def latest(self,ticker, ktype = '5', days = 20):
-        trade_days = self.calendar[self.calendar.is_trading_day=="1"]
-        trade_days = trade_days.tail(days)
-        # In lastest 20 days case
+        trade_days = self.calendar[self.calendar.is_trading_day=="1"].tail(days)
         start_date, end_date = trade_days.calendar_date.min(), trade_days.calendar_date.max()
         return self.minute(ticker, start_date, end_date, ktype)
 

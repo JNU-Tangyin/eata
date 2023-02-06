@@ -11,16 +11,19 @@
 import datetime
 import pandas as pd
 import numpy as np
-from data import DataStorage, BaostockDataWorker
+from data import BaostockDataWorker
 from preprocess import Preprocessor
 from datetime import datetime
 import gym
-from globals import BASE_COLUMNS_Minute, BASE_COLUMNS, OCLHVA, indicators, mkt_indicators, sct_indicators
+from globals import BASE_COLUMNS_Minute, BASE_COLUMNS, OCLHVA, indicators
+import pysnooper
 
 from bandwagon import Bandwagon
 
+#%%
 class BandwagonEnv(gym.Env):
 
+#%%
     def __init__(self, row, days = 2000, window_size=20):
         ''' set of the stocks, algo, and days to trace back
             the file_name must be a xls file and has fields like .code, .sector, .weight
@@ -29,20 +32,21 @@ class BandwagonEnv(gym.Env):
         self.dataworker = BaostockDataWorker()
         self.window_size = 20
         self.trade_days = self.dataworker.calendar[self.dataworker.calendar.is_trading_day == "1"] # 所有交易日
-
+        
+        # @pysnooper.snoop()
         def prepare(r, days = 2000, window_size=20):
             '''一年交易日约为244日
             分钟线只需要oclhva，日线以上有indicators应该够用了
             '''
             stock5m = self.dataworker.latest(r.code, ktype="5", days = days) # 5分钟线 [OCLHVA]
-            self.stock5m = Preprocessor(stock5m).clean()[BASE_COLUMNS_Minute+OCLHVA]
+            self.stock5m = Preprocessor(stock5m).clean().df[BASE_COLUMNS_Minute+OCLHVA]
             stock = self.dataworker.latest(r.code, ktype="d", days = days) # 股票日线[reward, landmark, indicators]
-            self.stock = Preprocessor(stock).bundle_process()[BASE_COLUMNS+indicators]
+            self.stock = Preprocessor(stock).bundle_process()[BASE_COLUMNS+OCLHVA+indicators]
             sector = self.dataworker.latest(r.sector, ktype="d", days = days) # 板块日线 [indicators]
-            self.sector = Preprocessor(sector).clean().add_indicators()[BASE_COLUMNS + indicators]
-            market_code = self.bw.get_market(r.ticker)
+            self.sector = Preprocessor(sector).clean().add_indicators().df[BASE_COLUMNS + indicators]
+            market_code = self.get_market(r.code)
             market = self.dataworker.latest(market_code, ktype="d", days = days)
-            self.market = Preprocessor(market).clean().add_indicators[BASE_COLUMNS + indicators] # 大盘日线 [indicators]
+            self.market = Preprocessor(market).clean().add_indicators().df[BASE_COLUMNS + indicators] # 大盘日线 [indicators]
             # self.stock_matrices = [x.values for x in stock.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
             # self.sector_matrices = [x.values for x in sector.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
             # self.market_matrices = [x.values for x in market.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
@@ -51,7 +55,7 @@ class BandwagonEnv(gym.Env):
 
         prepare(row)    # prepare the data we need
 
-
+#%%
     def render(self, mode='human', close=False):
         # Render the environment to the screen
         pass
@@ -66,30 +70,34 @@ class BandwagonEnv(gym.Env):
         return self.step()
 
     def _reward(self, a:int, df_slice:pd.DataFrame):
-        assert a in [-1, 0, 1], "invalid action " + a
+        if a is None: return 0
+        assert a in [-1, 0, 1], "invalid action " + str(a)
         column = {1:"buy_reward",0:"hold_reward", -1:"sell_reward"}[a]
-        return df_slice.iloc[row][column]
+        return df_slice.iloc[-1][column]
     
     def _info(self, df_slice:pd.DataFrame):
         return df_slice.iloc[-1][['ticker','date','close']].to_dict()
-
-    def step(self, a:int):
+#%%
+    def step(self, a:int = None):
         self.iter = self.iter if a else self.window_size - 1    # if no action, go back to the first row
         days = self.trade_days.iloc[self.iter +1 - self.window_size : self.iter+1].calendar_date # 警惕:df.loc[] 左闭右闭，df.iloc[]左闭右开
-        # 使用trade_days作为指针，获取stock, sector, market的指定范围的数据，并将他们on = 'date'对齐。
-        s_0 = self.stock5m[days]  # 分钟线 oclhva
-        s_1 = self.stock[days]    # 股票日线， landmark, reward, indicators
-        info = self._info(s_1) # 将ticker,价格和交易日期通过info传递
-        r = self._reward(a, s_1)    # indicators和reward的计算基于日线，即s_1的最后一行
-        s_2 = self.sector[days]   # 板块日线，仅indicators
-        s_3 = self.market[days]   # 股市日线，仅indicators
+        # 使用days作为指针，获取stock, sector, market的指定范围的数据
+        s0 = self.stock5m[self.stock5m.date.isin(days)]  # 分钟线 oclhva
+        s1 = self.stock[self.stock.date.isin(days)]    # 股票日线， landmark, reward, indicators
+        s2 = self.sector[self.sector.date.isin(days)]   # 板块日线，仅indicators
+        s3 = self.market[self.market.date.isin(days)]   # 股市日线，仅indicators
         # 尽量保持原有信息，工作可以交给bandwagon.choose_action(), 由agent自行决定如何使用。
-        s_ = (s_0, s_1, s_2, s_3)  # 拼接后再返回，不拼接也是可以的
+        s_ = (s0, s1, s2, s3)  # 拼接后再返回
+        info = self._info(s1)    # 将ticker,价格和交易日期通过info传递
+        r = self._reward(a, s1)  # indicators和reward的计算基于日线，即s1的最后一行
         # s_ = encode(s_)   # 未来还是将state进行编码后返回吧
-        done = False if self.iter < len(self.df) -1  else True
+        done = False if self.iter < len(self.trade_days) -1  else True
         self.iter += 1
         return s_, r, done, info
-    
+#%%    
+    def get_market(self, ticker:str)->str:
+        '''都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
+        return "sh.000001"
     # a generator version of step()
     # def next_oclh(self):
     #     self.next_ticker() # for j, t in self.next_ticker(): # make next_ticker() and next_oclh() as a whole
@@ -99,22 +107,23 @@ class BandwagonEnv(gym.Env):
     #         done = yield row, lm, end_of_stock  # after yield, hang here for further invoke, then goes to next line
     #         if done and not end_of_stock : break # to received message from invoker as gen.send(msg)
     
+#%%
 
 def run(row, days) -> pd.DataFrame:
     env = BandwagonEnv(row, days)
     s = env.reset()
     result = pd.DataFrame(columns=['ticker','date','close','action','reward'])
-    for _ in days: # for each row of a stock data, days copied from data days
+    for _ in range(days): # for each row of a stock data, days copied from data days
         a = Bandwagon.choose_action(s)  # a class method of class Bandwagon
         s_, r, done, info = env.step(a)
-        result.append(**info, s_.close.iloc[-1], a, r) # close price at the last row of s.
+        result.loc[len(result)] = [*info.values(), a, r] # append new row for df `result`.
         s = s_
         if done:
             break
 
     return result
     
-
+#%%
 if __name__ == "__main__":
     today = datetime.today().strftime("%Y-%m-%d")   # make sure it does not go beyond to the next day
     df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)

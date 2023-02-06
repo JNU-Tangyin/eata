@@ -21,16 +21,16 @@ MARKET_PREFIX = "mkt_"
 ETF_PREFIX = "etf_"
 SECTOR_PREFIX = "sct_"
 #%%
-BASE_COLUMNS = ['tic', 'date']
-BASE_COLUMNS_Minute = ['tic', 'date','time']
+BASE_COLUMNS = ['ticker', 'date']
+BASE_COLUMNS_Minute = ['ticker', 'date','time']
 OCLHVA = ['open',  'high', 'low', 'close', 'volume', 'amount']
 Normed_OCLHVA = [x+"_" for x in OCLHVA]     # normalized ohlcva
 # indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24",'cr',"boll","boll_ub","boll_lb","wr_10","wr_6","cci","dma"] # 14
 # indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr"] # https://github.com/jealous/stockstats
 # "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
-indicators = ['close_5_ema', 'close_10_ema','kdj', "rsi","macd","atr","vr"] # https://github.com/jealous/stockstats
+# indicators = ['close_5_ema', 'close_10_ema','kdj', "rsi_6","rsi_12","rsi_24","macds","macdh","atr","vr"] # https://github.com/jealous/stockstats
 # indicators_after = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macds","macdh","atr","vr"] # https://github.com/jealous/stockstats
-indicators_after = ['close_5_ema', 'close_10_ema','rsi'] # https://github.com/jealous/stockstats
+indicators = ['close_5_ema', 'close_10_ema','rsi','atr'] # https://github.com/jealous/stockstats
 mkt_indicators = [MARKET_PREFIX+x for x in indicators]
 sct_indicators = [SECTOR_PREFIX+x for x in indicators]
 MKT_OCLHVA = OCLHVA 

@@ -1,6 +1,4 @@
 import sys
-sys.path.append('./VAE')
-sys.path.append('./DQN')
 import pandas as pd
 import numpy as np
 from datetime import datetime
@@ -10,7 +8,7 @@ import torch
 import warnings
 warnings.filterwarnings('ignore')
 from data_work import DataStorage, DataWorker 
-from globals import indicators, indicators_after, OCLHVA, Normed_OCLHVA, MAIN_PATH
+from globals import indicators, OCLHVA, Normed_OCLHVA
 
 class Preprocessor():
 
@@ -19,12 +17,11 @@ class Preprocessor():
         self.dw = DataWorker()
         self.df = self.ds.load_raw() if df is None else df
 
-        # self.df = self.dw.get() if df is None else df
         self.normalization = 'div_pre_close' # 'div_pre_close' | 'div_self' |'standardization' | 'z-score' 
         # 注：最后进行embedding的是[*tech_indicator_list，*Normed_OCLHVA] 这几个字段
         self.windowsize = 20
 
-    def clean(self,df=None):
+    def clean(self,df:pd.DataFrame = None):
         return self.__clean_baostock__(df)
         # return self.__clean_tushare__(df)
 
@@ -36,7 +33,7 @@ class Preprocessor():
         # data_df = data_df.set_index("trade_date", drop=True)  # 将 trade_date 列设为索引
         # data_df = data_df.reset_index()
         # 更改列名
-        # data_df.columns = [["date", "tic", *oclhva]] 
+        # data_df.columns = [["date", "ticker", *oclhva]] 
         # StockDataFrame requires https://github.com/jealous/stockstats/README.md
         # 但实验过用原来的字段StockDataFrame也可以识别，也不是非改不可
         # 注意这里改成了 'tic', 'date', 'volume'，以后均按这个列名
@@ -64,10 +61,10 @@ class Preprocessor():
         # data_df = data_df.set_index("trade_date", drop=True)  # 将 trade_date 列设为索引
         # data_df = data_df.reset_index()
         # 更改列名
-        # data_df.columns = [["date", "tic", *oclhva]] 
+        # data_df.columns = [["date", "ticker", *oclhva]] 
         # StockDataFrame requires https://github.com/jealous/stockstats/README.md
         # 但实验过用原来的字段StockDataFrame也可以识别，也不是非改不可
-        # 注意这里改成了 'tic', 'date', 'volume'，以后的处理统一按这个列名
+        # 注意这里改成了 'ticker', 'date', 'volume'，以后的处理统一按这个列名
         # baostock专用
         data_df.rename(columns={"code": "ticker"},inplace=True) 
         # data_df["date"] = data_df.date.apply(lambda x: datetime.strptime(x, "%Y%m%d").strftime("%Y-%m-%d")) 
@@ -87,9 +84,8 @@ class Preprocessor():
         '''add indicators inplace to the dataframe'''
         df = self.df if df is None else df
         sdf = StockDataFrame(df.copy())  # sdf adds some unneccessary fields inplace, fork a copy for whatever it wants to doodle
-        # kdj,rsi这类指标一般在[0,100)之间，将他们变换到[-10,10)之间，尽量与oclhva_一致
         # x = sdf[indicators] # [['close_5_ema', 'close_10_ema','rsi']]
-        self.df[indicators_after] = sdf[indicators_after] #/100 # d/5 - 10的效果反而不好, 不知道为什么
+        self.df[indicators] = sdf[indicators] #/100 # d/5 - 10的效果反而不好, 不知道为什么
         self.df = self.df.dropna()    # 一旦dropna()，单行数据的indicators基本上是nan
         return self
 
@@ -189,7 +185,7 @@ class Preprocessor():
 
         self.df = d if df is None else self.df
 
-        return d
+        return self
 
 
     def bundle_process(self, if_market=None):

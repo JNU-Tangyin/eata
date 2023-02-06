@@ -7,8 +7,9 @@
 import numpy as np
 import pandas as pd
 from datetime import datetime
-from data import BaostockDataWorker, DataStorage
+from data import BaostockDataWorker
 from preprocess import Preprocessor
+import pysnooper
 
 class Bandwagon():
     def __init__(self, df: pd.DataFrame):
@@ -28,7 +29,7 @@ class Bandwagon():
         # 准备好stocks, sectors, markets的数据
         self.stocks_datum = __prepare__(self.stock_list.code, ktype='d')
         self.sectors_datum = __prepare__(self.stock_list.sector, ktype='d')
-        self.stock_list['market'] = self.stock_list.code.apply(self.get_market)
+        self.stock_list['market'] = self.stock_list.code.apply(self.get_market) # 多加一个字段为了后面merge
         self.market_codes = self.stock_list.market.drop_duplicates() # 去重，对sz50来说，就剩1个"sh.000001"     
         self.market_datum = __prepare__(self.market_codes, ktype='d') # 准备好大盘数据
         
@@ -60,13 +61,7 @@ class Bandwagon():
     def get_market(self, ticker:str)->str:
         '''都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
         return "sh.000001"
-    
-    @staticmethod
-    def criteria(d):
-        ''' '''
-        s_0, s_1, s_2, s_3 = d  # 将d解析为5分钟线、股票日线、板块日线、大盘日线
-        r = s_1.iloc[-1]        # 目前仅使用股票日线
-        return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
+
 
     def stock_momentum(self): # v1.2
         '''股票涨跌惯性，根据昨天的涨跌定义今天的惯性，涨：1，跌：-1
@@ -97,13 +92,14 @@ class Bandwagon():
         '''
         self.stock_list['stock_strength'] = [self.criteria(d) for d in self.stocks_datum]   # 股票量能
         self.stock_list['sector_strength'] =[self.criteria(s) for s in self.sectors_datum]  # 板块量能
-        # 计算大盘量能并拼接
         x = [self.criteria(m) for m in self.market_datum] # 与self.market_codes 一一对应
-        y = pd.DataFrame({'market':self.market_codes, 'market_strength':x}) # 拼成一个df
+        # 计算大盘量能并拼接，这里可以考虑用transform()?
         # 根据指数代码market对应大盘的指数代码code，进行连接
-        self.stock_list = self.stock_list.merge(y, left_on="market", right_on="market", how="left")  # 大盘量能
+        # y = pd.DataFrame({'market':self.market_codes, 'market_strength':x}) # 拼成一个df
+        # self.stock_list = self.stock_list.merge(y, left_on="market", right_on="market", how="left")  # 大盘量能
+        self.stock_list['market_strength'] = self.stock_list.market.map({a:b for a,b in zip(self.market_codes, x)})
         self.stock_momentum() # 股票惯性
-        # 计算总的strength，权重可能要微调
+        # 计算总的strength，权重可以随时调整
         self.stock_list['strength'] = \
                 self.stock_list['stock_strength']* 0.4 \
                 + self.stock_list['sector_strength']*0.3 \
@@ -119,6 +115,7 @@ class Bandwagon():
     # (2) 携带大盘和板块信息
     # (3) 可增加策略，不同策略之间也可以有投票机制
 
+
     def vote(self)->int:
         '''输入多个股票代码以及各自的权重，计算etf总的强弱势'''
         s = self.strength()
@@ -131,18 +128,30 @@ class Bandwagon():
         elif score < 50:
             a = -1
         return a
+    
+    @staticmethod
+    def criteria(d:pd.DataFrame)->int:
+        '''
+        @input d: window_size的df
+        @output : 根据其最后一行的计算返回1/0, simple enough
+        '''
+        r = d.iloc[-1]
+        return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
 
     @classmethod
-    def choose_action(cls, s):
+    @pysnooper.snoop()
+    def choose_action(cls, d: pd.DataFrame) -> int:
         ''' action for a single stock, RL compatible'''
-        return cls.criteria(s)     # a class method of this Bandwagon
+        s0, s1, s2, s3 = d  # 将d解析为5分钟线、股票日线、板块日线、大盘日线
+        # cls.criteria(s0)  # 分钟线用于判断stock_momentum?
+        return cls.criteria(s1) * 0.4 + cls.criteria(s2) * 0.3 + cls.criteria(s3) * 0.3
         
     def save(self):
         self.stock_list.to_csv(datetime.now().strftime("%Y-%m-%d.%H.")+"calculated.csv")
 
 if __name__ == "__main__":
     df = pd.read_excel("000016closeweight.xls", dtype={'code':'str'}, header = 0)
-    df['code'] = 'sh.'+df.code
+    # df['code'] = 'sh.'+df.code
     # df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)
     bw = Bandwagon(df)
     score = bw.vote()
