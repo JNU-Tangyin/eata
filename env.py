@@ -4,7 +4,7 @@ from data import BaostockDataWorker
 from preprocess import Preprocessor
 from datetime import datetime
 import gym
-from globals import TDT, TD , OCLHVA, indicators, REWARD, WEEKDAY
+from globals import TDT, TD , OCLHVA, indicators, REWARD, WEEKDAY, WINDOW_SIZE
 import pysnooper
 
 from retrying import retry
@@ -21,29 +21,38 @@ class StockmarketEnv(gym.Env):
         self.dataworker = BaostockDataWorker()
         self.window_size = 20
         
-        def prepare(r, days = 2000, window_size=20):
-            '''一年交易日约为244日
-            分钟线只需要oclhva，日线以上有indicators应该够用了
+        def data_valid():
+            '''check days in stock5m, stock, sector, and market are totally matched '''
+            return True \
+                if set(self.stock5m.date) == set(self.stock.date) == set(self.sector.date) == set(self.market.date) \
+                else False
+
+
+        # @retry(stop_max_attempt_number=5, wait_fixed=1000)
+        def prepare(r, days = 2000, window_size = WINDOW_SIZE):
+            '''一年交易日约为244日 分钟线只需要oclhva，日线以上有indicators应该够用了
             '''
             stock5m = self.dataworker.latest(r.code, ktype="5", days = days) # 5分钟线 [OCLHVA]
-            self.stock5m = Preprocessor(stock5m).clean().df[TDT+OCLHVA] # `day`字段跑哪儿去了？
             stock = self.dataworker.latest(r.code, ktype="d", days = days) # 股票日线[reward, landmark, indicators]
-            self.stock = Preprocessor(stock).bundle_process()[TD+OCLHVA+REWARD+indicators+WEEKDAY]
             sector = self.dataworker.latest(r.sector, ktype="d", days = days) # 板块日线 [indicators]
-            self.sector = Preprocessor(sector).clean().add_indicators().df[TD + indicators]
             market_code = self.get_market(r.code)
             market = self.dataworker.latest(market_code, ktype="d", days = days)
-            self.market = Preprocessor(market).clean().add_indicators().df[TD + indicators] # 大盘日线 [indicators]
+            # min_day and max_day from stock
+            self.trade_days = self.dataworker.actual_days(stock)   
+            # Preprocessing
+            self.stock5m = Preprocessor(stock5m).clean().fill_empty_days(trade_days= self.trade_days).df[TDT+OCLHVA] 
+            self.stock = Preprocessor(stock).bundle_process()[TD+OCLHVA+REWARD+indicators+WEEKDAY]
+            self.sector = Preprocessor(sector).clean().fill_empty_days(trade_days= self.trade_days).add_indicators().df[TD + indicators]
+            self.market = Preprocessor(market).clean().fill_empty_days(trade_days= self.trade_days).add_indicators().df[TD + indicators] # 大盘日线 [indicators]
+
             # self.stock_matrices = [x.values for x in stock.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
             # self.sector_matrices = [x.values for x in sector.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
             # self.market_matrices = [x.values for x in market.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
-            # alignment for three dataframes or matrices (a)here or (b) in .step() method.
-            date_min = self.stock.date.min()
-            date_max = self.stock.date.max()
-            print(f"Data ready: {r.code} {r['name']}, from {date_min} to {date_max}, {len(self.stock)} days.")
-            trade_days = self.dataworker.calendar# 所有交易日基礎上對該股票作過濾
-            date_filter = (date_min <= trade_days.calendar_date) & (trade_days.calendar_date <= date_max)
-            self.trade_days = trade_days[date_filter]# 所有交易日基礎上對該股票作過濾
+
+            print("days comparison:",len(set(self.stock5m.date)), len(set(self.stock.date)), len(set(self.sector.date)), len(set(self.market.date)))
+            # assert data_valid(), "days mismatched" # validing data: the days must be matched.
+
+            print(f"Data ready: {r.code} {r['name']}, from {self.stock.date.min()} to {self.stock.date.max()}, {len(self.stock)} days.")
 
         prepare(row, days)    # prepare the data we need
 
@@ -85,6 +94,7 @@ class StockmarketEnv(gym.Env):
     def step(self, a:int = None):
         self.iter = self.iter if a else self.window_size - 1    # if no action, go back to the first row
         s_ = self._state()
+        assert len(s_[1])>0 , "empty s1"
         r = self._reward(a, s_[1])  # reward的计算基于日线，即s1的最后一行
         info = self._info(s_[1])    # 将ticker,价格和交易日期通过info传递
         done = False if self.iter < len(self.trade_days) -1  else True

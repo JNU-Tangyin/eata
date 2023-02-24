@@ -13,15 +13,18 @@ from datetime import datetime
 import pandas as pd
 from tqdm import trange
 import os
+from globals import WINDOW_SIZE
 
 def run(row, days) -> pd.DataFrame:
     env = StockmarketEnv(row, days)
     s = env.reset()
     result = pd.DataFrame(columns=['ticker','date','close','action','reward'])
-    for _ in trange(len(env.trade_days)): # for each row of a stock data, days copied from data days
+    for _ in trange(len(env.trade_days) - WINDOW_SIZE ): # for each row of a stock data, days copied from data days
         a = agent.choose_action(s)  # a class method of class Bandwagon
         s_, r, done, info = env.step(a)
         result.loc[len(result)] = [*info.values(), a, r] # append new row for df `result`.
+        # agent.memory.add(s,a,r)
+        # agent.learn() # 
         s = s_
         if done:
             break
@@ -34,20 +37,21 @@ def check_and_make_directories(directories: list[str]):
         if not os.path.exists("./" + directory):
             os.makedirs("./" + directory)
 #%%
-import importlib
-import sys
-from bandwagon import Bandwagon as agent     # 换其他模型，只需要修改这句。例如 from chandelier import ChandelierExit as agent
 from globals import test_result
+from bandwagon import Bandwagon as agent     # 换其他模型，只需要修改这句。例如 from chandelier import ChandelierExit as agent
+from pathlib import Path
 
 if __name__ == "__main__":
     obj = agent.__name__    # 测试对象名称
-    print(f"Testing {obj}")
+    data_folder = Path(f"{test_result}/{obj}")
     today = datetime.today().strftime("%Y%m%d.%H%M")   # make sure it does not go beyond to the next day
+    print(f"Testing {obj}")
     df = pd.read_excel("000016(full).xls", dtype={'code':'str'}, header = 0)
     df = df.sample(2) # 开发时用，测试agent的时候将此行注释即可
     for i, row in df.iterrows(): # for each SZ50 constituent
-        # print(f"#{i} processing {row.code} {row['name']}")
+        print(f"#{i} Processing {row.code} {row['name']}")
         result = run(row, days= 2000)   
-        check_and_make_directories([obj])
-        result.to_csv(f"{test_result}/{obj}/{today}{row.code}.csv")
+        check_and_make_directories([str(data_folder)])
+        file_to_open = data_folder / f"{today}{row.code}.csv"
+        result.to_csv(file_to_open)
     print(f"Test done. check the folder {obj}")

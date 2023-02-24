@@ -14,9 +14,11 @@ Flex = namedtuple('Flex', ['peak', 'waist', 'bottom'])
 flex = Flex(-1,0,1)
 #%% 
 WINDOW_SIZE = 20
+DATE_FORMAT = "%Y-%m-%d"
+REWARD = ['landmark','buy_reward', 'hold_reward', 'sell_reward']
+WEEKDAY = ['dayofweek']   # 注意这个是字符串，在和其他list相连的时候需要list + [WEEKDAY]，主要是用在对df[WEEKDAY]直接赋值
 
 #%% prefix
-DATE_FORMAT = "%Y-%m-%d"
 MARKET_PREFIX = "mkt_"
 ETF_PREFIX = "etf_"
 SECTOR_PREFIX = "sct_"
@@ -28,16 +30,12 @@ Normed_OCLHVA = [x+"_" for x in OCLHVA]     # normalized ohlcva
 MKT_OCLHVA = OCLHVA 
 mkt_oclhva_normed = [MARKET_PREFIX+x for x in Normed_OCLHVA]
 
-REWARD = ['buy_reward', 'hold_reward', 'sell_reward']
-WEEKDAY = ['dayofweek']
-
-# indicators collection
-# indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24",'cr',"boll","boll_ub","boll_lb","wr_10","wr_6","cci","dma"] # 14
-# indicators = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macd","atr"] # https://github.com/jealous/stockstats
-# "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
-# indicators = ['close_5_ema', 'close_10_ema','kdj', "rsi_6","rsi_12","rsi_24","macds","macdh","atr","vr"] # https://github.com/jealous/stockstats
-# indicators_after = ['kdjk', 'kdjd', 'kdjj', "rsi_6", "rsi_12", "rsi_24","macds","macdh","atr","vr"] # https://github.com/jealous/stockstats
-indicators = ['close_5_ema', 'close_10_ema','rsi','atr'] # https://github.com/jealous/stockstats
+# indicators collection # "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
+# https://github.com/jealous/stockstats
+indicators = ['kdjk', 'kdjd', 'kdjj']
+indicators += ["rsi_6", "rsi_12", "rsi_24"]
+indicators += ["macds","macdh","atr","vr","adx"] 
+indicators += ['close_5_ema', 'close_10_ema'] 
 mkt_indicators = [MARKET_PREFIX+x for x in indicators]
 sct_indicators = [SECTOR_PREFIX+x for x in indicators]
 

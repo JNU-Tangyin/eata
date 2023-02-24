@@ -8,18 +8,18 @@ import torch
 import warnings
 warnings.filterwarnings('ignore')
 from data import DataStorage, BaostockDataWorker 
-from globals import indicators, OCLHVA, Normed_OCLHVA, REWARD
+from globals import indicators, OCLHVA, Normed_OCLHVA, REWARD, WEEKDAY, WINDOW_SIZE
 
 class Preprocessor():
 
     def __init__(self,df:pd.DataFrame=None) -> None:
         # self.ds = DataStorage()
-        # self.dw = BaostockDataWorker()
+        self.dw = BaostockDataWorker()  # 导致每次初始化都要login一次
         self.df = self.ds.load_raw() if df is None else df
 
         self.normalization = 'div_pre_close' # 'div_pre_close' | 'div_self' |'standardization' | 'z-score' 
         # 注：最后进行embedding的是[*tech_indicator_list，*Normed_OCLHVA] 这几个字段
-        self.windowsize = 20
+        self.windowsize = WINDOW_SIZE
 
     def clean(self,df:pd.DataFrame = None):
         return self.__clean_baostock__(df)
@@ -33,7 +33,6 @@ class Preprocessor():
         # data_df = data_df.set_index("trade_date", drop=True)  # 将 trade_date 列设为索引
         # data_df = data_df.reset_index()
         # 更改列名
-        # data_df.columns = [["date", "ticker", *oclhva]] 
         # StockDataFrame requires https://github.com/jealous/stockstats/README.md
         # 但实验过用原来的字段StockDataFrame也可以识别，也不是非改不可
         # 注意这里改成了 'tic', 'date', 'volume'，以后均按这个列名
@@ -46,9 +45,8 @@ class Preprocessor():
         data_df = data_df.sort_values(by=['ticker', 'date']).reset_index(drop=True)
         # https://blog.csdn.net/cainiao_python/article/details/123516004
         # .weekday(),.isoweekday(), .strftime("%w"), .dt.dayofweek(), .dt.weekday(), dt.day_name()
-        data_df['day'] = data_df.date.apply(pd.to_datetime).dt.day_of_week
+        data_df.loc[:, WEEKDAY] = data_df.date.apply(pd.to_datetime).dt.day_of_week
         self.df = data_df # 最終還是複製給了self.df啊，前面的工作都白做了
-        self.df = data_df.dropna()
         return self  # return 'self' for currying
     
     def __clean_baostock__(self,df = None):
@@ -69,16 +67,32 @@ class Preprocessor():
         data_df.rename(columns={"code": "ticker"},inplace=True) 
         # data_df["date"] = data_df.date.apply(lambda x: datetime.strptime(x, "%Y%m%d").strftime("%Y-%m-%d")) 
         # 删除为空的数据行
-        data_df = data_df.dropna()
         # 按照date从小到大进行排序
         data_df = data_df.sort_values(by=['ticker', 'date']).reset_index(drop=True)
         # 添加 day 列，一周的第几天
         # https://blog.csdn.net/cainiao_python/article/details/123516004
         # .weekday(),.isoweekday(), .strftime("%w"), 
         # .dt.day_of_week(), .dt.weekday(), dt.day_name()
-        data_df['day'] = data_df.date.apply(pd.to_datetime).dt.day_of_week
-        self.df = data_df.dropna()
+        data_df.loc[:, WEEKDAY] = data_df.date.apply(pd.to_datetime).dt.day_of_week
+        self.df = data_df
         return self  # return 'self' for currying
+    
+    def fill_empty_days(self,trade_days:pd.DataFrame = None, df:pd.DataFrame = None):
+        '''下载的数据往往有缺失，需要按trade_days补齐，interpolate()'''
+        df = self.df if df is None else df
+        actual_trade_days = trade_days if trade_days is not None else self.dw.actual_days(df)    #  注意对dataframe，不能用if dataframe判断是否空
+
+        days = list(set(actual_trade_days.calendar_date) - set(df.date))
+        if days:   # list `days` is not empty
+            print(f"empty days found, filling with interpolation")
+            df = df.append(pd.DataFrame({'date':days,'ticker':df.ticker[0]}))
+            df.sort_values(by="date", inplace=True)
+            df.reset_index(inplace=True, drop=True)
+
+        df.interpolate(inplace=True)
+        self.df = df
+        return self
+
 
     def add_indicators(self,df:pd.DataFrame = None):
         '''add indicators inplace to the dataframe'''
@@ -93,6 +107,8 @@ class Preprocessor():
         ''' to normalize the designated fields to [0,1)
             however, remember indicators mostly are around [0,100]?
             in that case, we better unify the scales
+            `oclh` can be easily normed to pct_chg(oclh)*100. However, with 0 values, `va` have difficulty in normalization.
+            sigmoid(pct_chg(·) or log(pct_chg(·) might favor))
         '''
         df = self.df if df is None else df
         if self.normalization == 'div_self':# 将ochlva处理为涨跌幅
@@ -124,7 +140,7 @@ class Preprocessor():
         return self
 
     def landmark(self,df:pd.DataFrame = None):
-        df = df if df else self.df
+        df = df if df is not None else self.df
         self.df = attach_to(df,*landmarks_BB(df))
         return self
     
@@ -155,7 +171,7 @@ class Preprocessor():
         '''attach reward to the df once for all, no more calculation on the fly
         requirement: df has a `landmark` column
         '''
-        d = df if df else self.df.copy()
+        d = df if df is not None else self.df.copy()
 
         dd = d[(d.landmark.isin(["v","^"]))] 
         d1, d2 = dd.iloc[:-1].index, dd.iloc[1:].index  # 获取索引并配对拼接
@@ -194,7 +210,7 @@ class Preprocessor():
         if if_market: 
             self.normalize()
         else:
-            self.clean().landmark().add_reward_().add_indicators() 
+            self.clean().fill_empty_days().landmark().add_reward_().add_indicators() 
         
         return self.df
     

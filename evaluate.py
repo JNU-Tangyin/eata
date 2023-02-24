@@ -1,6 +1,5 @@
 import pandas as pd
 import os
-import sys
 
 
 class Evaluator():
@@ -45,12 +44,12 @@ class Evaluator():
 
         def func(x,y):  
             '''add columns `without_short` and `with_short`'''
-            # 没有做空的话，卖出后股票的变化率是1
+            # 没有做空的话，卖出后股票的变化率是1， .iloc[x].real_action == 1 先买后卖，== -1 是先卖后买
             self.df.loc[x:y, 'change_wo_short'] = \
-                self.df.close/self.df.close.shift(1) if self.df.iloc[x].action == 1 else 1
+                self.df.close/self.df.close.shift(1) if self.df.iloc[x].real_action == 1 else 1    
             # 有做空的话，卖出后股票变化率跟原来相反
             self.df.loc[x:y, 'change_w_short'] = \
-                self.df.close/self.df.close.shift(1) if self.df.iloc[x].action == 1 else self.df.close.shift(1)/self.df.close
+                self.df.close/self.df.close.shift(1) if self.df.iloc[x].real_action == 1 else self.df.close.shift(1)/self.df.close
 
         d1, d2 = actioned.iloc[:-1].index, actioned.iloc[1:].index  # 获取索引并配对拼接
         self.df["change_wo_short"] = 1  
@@ -68,11 +67,12 @@ class Evaluator():
     def class_perf(self):
         '''performance as classification'''
         # action为根据策略的动作反应，暗含predict的意思，相当于预测值；reward事后诸葛亮，根据波峰波谷得出原本应该的动作，相当于真实值
-        # 设action中，买入为正类预测p，卖出为负类预测n
-        tp = self.df[(self.df.action==1)&(self.df.reward>0)].shape[0]   # 动作为买入，而判断正确
-        fp = self.df[(self.df.action==1)&(self.df.reward<0)].shape[0]   # 动作为买入，但判断错误
-        tn = self.df[(self.df.action==-1)&(self.df.reward>0)].shape[0]  # 动作为卖出，而判断正确
-        fn = self.df[(self.df.action==-1)&(self.df.reward<0)].shape[0]  # 动作为卖出，但判断错误
+        # 设action中，买入为正类预测p，卖出为负类预测n -- 这个tp,fp,tn,fn的定义是有问题的，
+        # 例如fn的本质应该是漏报，即real_action not in [-1,1]的时候，landmark in [-1,1]
+        tp = self.df[(self.df.real_action==1)&(self.df.reward>0)].shape[0]   # 动作为买入，而判断正确
+        fp = self.df[(self.df.real_action==1)&(self.df.reward<0)].shape[0]   # 动作为买入，但判断错误
+        tn = self.df[(self.df.real_action==-1)&(self.df.reward>0)].shape[0]  # 动作为卖出，而判断正确
+        fn = self.df[(self.df.real_action==-1)&(self.df.reward<0)].shape[0]  # 动作为卖出，但判断错误
         accuracy = (tp+tn)/(tp+tn+fp+fn)
         precision = tp/(tp+fp)
         recall = tp/(tp+fn)
@@ -83,20 +83,23 @@ class Evaluator():
         return self.evaluated
 
 from globals import test_result, summary
+from pathlib import Path
 if __name__ == "__main__":
     dirs = os.listdir(f"{test_result}")  # Test目录下的子目录
     dirs = [d for d in dirs if not os.path.isfile(d)]
-    obj = dirs[0]   # 从这里改成循环
+    obj = dirs[2]   # 从这里改成循环
     files = os.listdir(f"{test_result}/{obj}")  # 目录下所有文件,
     files = [f for f in files if os.path.splitext(f)[1] == '.csv']  # 只选择 .csv 文件,
     files.remove(summary) if summary in files else files
     print(f"Evaluating strategy {obj} with {files}")
     df_list = pd.DataFrame()
     for f in files: 
-        df = pd.read_csv(f"{test_result}/{obj}/{f}", index_col=0)
+        data_folder = Path(f"{test_result}/{obj}")
+        file_to_open = data_folder / f"{f}" 
+        df = pd.read_csv(file_to_open, index_col=0)
         ev = Evaluator(df)
-        ev.asset_change().df.to_csv(f"{test_result}/{obj}/{f}")  # 保存asset_change()的结果到原f 
+        ev.asset_change().df.to_csv(file_to_open)  # 保存asset_change()的结果到原f 
         performance = ev.class_perf()   # 返回class_perf()的结果给performance
         df_list = df_list.append(performance)   # 
 
-    df_list.to_csv(f'{test_result}/{obj}/{summary}')
+    df_list.to_csv(data_folder/f'{summary}')

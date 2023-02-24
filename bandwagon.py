@@ -135,13 +135,14 @@ class Bandwagon():
         @input d: window_size的df
         @output : 根据其最后一行的计算返回1/0, simple enough
         '''
-        r = d.iloc[-1]
-        return 1 if r.close_5_ema>r.close_10_ema and r.rsi >50 else -1
+        r = d.mean()    # 取20天的平均值试试
+        # r = d.close.ewm(span=len(df)).mean().iloc[-1]   # 20天内的指数平均值的最后一行
+        return 1 if r.close_5_ema>r.close_10_ema and r.rsi_24 >50 else -1
 
     @classmethod
-    def choose_action(cls, d: pd.DataFrame) -> int:
+    def choose_action(cls, s: (pd.DataFrame)) -> int:
         ''' action for a single stock, RL compatible'''
-        s0, s1, s2, s3 = d  # 将d解析为5分钟线、股票日线、板块日线、大盘日线
+        s0, s1, s2, s3 = s  # 将s解析为5分钟线、股票日线、板块日线、大盘日线
         # cls.criteria(s0)  # 分钟线用于判断stock_momentum?
         score = cls.criteria(s1) * 0.4 + cls.criteria(s2) * 0.3 + cls.criteria(s3) * 0.3
         if score > 0.15: 
@@ -154,7 +155,7 @@ class Bandwagon():
         return a
         
     def save(self):
-        self.stock_list.to_csv(datetime.now().strftime("%Y-%m-%d.%H.")+"calculated.csv")
+        self.stock_list.to_csv(datetime.now().strftime("%Y%m%d.%H.")+"calculated.csv")
 
 if __name__ == "__main__":
     df = pd.read_excel("000016closeweight.xls", dtype={'code':'str'}, header = 0)

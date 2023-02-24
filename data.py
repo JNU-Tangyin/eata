@@ -3,7 +3,7 @@ import os
 import sqlite3
 import pandas as pd
 from functools import partial
-from globals import MAIN_PATH, OCLHVA, MKT_OCLHVA, BAOSTOCK_MAPPING
+from globals import MAIN_PATH, OCLHVA, MKT_OCLHVA, BAOSTOCK_MAPPING, WINDOW_SIZE
 import pysnooper
 from datetime import datetime, timedelta
 from itertools import count
@@ -67,7 +67,7 @@ class DataStorage():
 
 class DataWorker(object):
     def __init__(self) -> None:
-        self.ds = DataStorage()
+        # self.ds = DataStorage()
         self.begin = "2000-01-01"
 
     def __del__(self) -> None:
@@ -121,7 +121,7 @@ class BaostockDataWorker(DataWorker):
     def __init__(self) -> None:
         super().__init__()
         self.login = bs.login(user_id="anonymous", password="123456")
-        self.ds = DataStorage()
+        # self.ds = DataStorage()
         self.calendar = self.market_calendar()
         self.calendar = self.calendar[self.calendar.is_trading_day == "1"]  # 只留下交易日
 
@@ -155,13 +155,15 @@ class BaostockDataWorker(DataWorker):
         self.stock.rename(columns = BAOSTOCK_MAPPING, inplace = True) 
         return self.stock
     
-    def market_calendar(self):
+    def market_calendar(self, begin = None):
         '''return market trading days'''
-        rs = bs.query_trade_dates(start_date=self.begin, end_date = datetime.today().strftime("%Y-%m-%d"))
+        begin = begin if begin else self.begin
+        assert pd.to_datetime(begin), "wrong format of `begin`, must be `%Y-%m-%d`"
+        rs = bs.query_trade_dates(start_date = begin, end_date = datetime.today().strftime("%Y-%m-%d"))
         return  rs.get_data()
     
-    def latest(self,ticker, ktype = '5', days = 20):
-        trade_days = self.calendar[self.calendar.is_trading_day=="1"].tail(days)
+    def latest(self,ticker, ktype = '5', days = WINDOW_SIZE):
+        trade_days = self.calendar.tail(days)
         start_date, end_date = trade_days.calendar_date.min(), trade_days.calendar_date.max()
         return self.minute(ticker, start_date, end_date, ktype)
 
@@ -179,6 +181,17 @@ class BaostockDataWorker(DataWorker):
         return rs1, rs2 # returns rs1, rs2 seperately
         # return rs1.merge(rs2,how='left', left_on=["date","time"],right_on=["date","time"])  # 按列合并
     
+    def actual_days(self, df:pd.DataFrame):
+        ''' filter actual trade days for `df`.
+        df : the dataframe to retrieve min,max date
+        requires `df` has a string or datetime column `date`
+        '''
+        assert 'date' in df.columns, "`df` has a string or datetime column `date`"
+        n, x = df.date.min(), df.date.max()
+        trade_days = self.calendar       
+        date_filter = (n <= trade_days.calendar_date) & (trade_days.calendar_date <= x)
+        return trade_days[date_filter]   # 1. 只剩交易日 2. 范围只剩与本股票相关的
+
     def save(self, rs:pd.DataFrame) -> bool:
         return self.ds.save_raw(rs)
 
@@ -213,6 +226,7 @@ class TushareDataWorker(DataWorker):
             end = datetime.strptime(y,"%Y-%m-%d %H:%M:%S")
             if start < datetime(2009,1,1): 
                 break
+    
 
 if __name__ == "__main__":
     DATABASE_PATH = os.getcwd()     # 解决方法
