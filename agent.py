@@ -8,6 +8,7 @@ import pandas as pd
 from datetime import datetime
 from data import BaostockDataWorker
 from preprocess import Preprocessor
+from globals import WINDOW_SIZE
 
 class Agent():
     def __init__(self, df: pd.DataFrame):
@@ -17,11 +18,10 @@ class Agent():
         self.stock_list = df
         self.dataworker = BaostockDataWorker()
         self.preprcessor = Preprocessor()
-        self.window_size = 20
 
         def __prepare__(s:pd.Series, ktype='5')-> pd.DataFrame:
             # 获取所有股票当天的数据，这样其他函数只需要做计算即可。days取win_size的3倍，应该足够做一些ma,diff,dropna等操作了
-            d1 = [self.dataworker.latest(c, ktype=ktype, days = self.window_size * 5) for c in s] # a list of df
+            d1 = [self.dataworker.latest(c, ktype=ktype, days = WINDOW_SIZE * 5) for c in s] # a list of df
             d2 = [self.preprcessor.load(s).bundle_process() for s in d1] # 对每个df做预处理
             return d2
         
@@ -58,7 +58,7 @@ class Agent():
         return mkt 
 
     def get_market(self, ticker:str)->str:
-        '''都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
+        '''目前都是上证的股票，都是同一个大盘。因此直接返回sh.000001即可'''
         return "sh.000001"
 
     def stock_momentum(self): # v1.2

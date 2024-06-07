@@ -8,13 +8,21 @@
 4. `evaluate` the predicted result, calculating the asset_change, reward (in evaluate.py)
 5. `visualize` the evaluated result (in visualize.py)
 '''
-from env import StockmarketEnv
 from datetime import datetime
 import pandas as pd
 from tqdm import trange
 import os
-from globals import WINDOW_SIZE
-from globals import test_result
+from pathlib import Path
+from env import StockmarketEnv
+from globals import WINDOW_SIZE , test_result
+
+
+# "./" will be added in front of each directory
+def check_and_make_directories(directories: list[str]):
+    for directory in directories:
+        if not os.path.exists("./" + directory):
+            os.makedirs("./" + directory)
+#%%
 
 def run(agent, row, days) -> pd.DataFrame:
     env = StockmarketEnv(row, days)
@@ -31,16 +39,6 @@ def run(agent, row, days) -> pd.DataFrame:
             break
 
     return result
-
-# "./" will be added in front of each directory
-def check_and_make_directories(directories: list[str]):
-    for directory in directories:
-        if not os.path.exists("./" + directory):
-            os.makedirs("./" + directory)
-#%%
-from globals import test_result
-from pathlib import Path
-
 def test(Obj:object, stock_list:pd.DataFrame):
     """
     Test function for stock objects.

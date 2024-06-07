@@ -28,6 +28,7 @@ SECTOR_PREFIX = "sct_"
 TD = ['ticker', 'date']
 TDT = ['ticker', 'date','time']
 OCLHVA = ['open',  'high', 'low', 'close', 'volume', 'amount']
+OCLHVA_HELPER = ['preclose','turn','pctChg']
 Normed_OCLHVA = [x+"_" for x in OCLHVA]     # normalized ohlcva
 MKT_OCLHVA = OCLHVA 
 mkt_oclhva_normed = [MARKET_PREFIX+x for x in Normed_OCLHVA]
@@ -35,7 +36,7 @@ mkt_oclhva_normed = [MARKET_PREFIX+x for x in Normed_OCLHVA]
 # indicators collection # "MFI","EMV","VR","PSY","OBV" are volume-concerned indicators
 # https://github.com/jealous/stockstats
 indicators = ['kdjk', 'kdjd', 'kdjj']
-indicators = ['boll','boll_lb','boll_ub']
+indicators += ['boll','boll_lb','boll_ub']
 indicators += ["rsi_6", "rsi_12", "rsi_24"]
 indicators += ["macds","macdh","atr","vr","adx"] 
 indicators += ['close_5_ema', 'close_10_ema','close_20_ema','close_50_ema','close_100_ema']     # 有很多策略要用到很长周期的均线，若基于20日窗口就没法计算

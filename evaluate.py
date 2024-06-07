@@ -65,6 +65,11 @@ class Evaluator():
         # [func(x,y) for (x,y) in zip(d1,d2)]
 
         # self.df[['change_wo_short','change_w_short']] = self.df[['change_wo_short','change_w_short']].fillna(1)
+        
+        # a more elegant way:
+        required = ['close','action']
+        if not all(f in self.df.columns for f in required): # 如果不是所有required都在
+            raise f"The dataframe must contain column {required}."
 
         d = self.df.copy()
         # 去掉一开头的0
@@ -80,6 +85,7 @@ class Evaluator():
         d['change_wo_short'] = d['change_w_short'] = d.close/d.close.shift(1) # 只做多情况下与上一天的变化比例，会在第一行留下nan
         d.loc[d.action == -1,'change_wo_short'] = 1     # 不做空的日子，与上一天相比没变化
         d.loc[d.action == -1,'change_w_short'] **= -1   # 有做空的日子，与上一天的比率取倒数
+        # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
         d[['change_wo_short','change_w_short']].fillna(1, inplace=True)# 补齐第一行的Nan
         self.df = d
         return self

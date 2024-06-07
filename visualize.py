@@ -60,6 +60,12 @@ class WebServer:
     def run(self):
         self.obj = st.sidebar.radio('Choose one',self.agents)
         self.get_folder()
+        st.markdown(f'''<style> .appview-container .main .block-container{{
+            padding-top: {1}rem; 
+            padding-right: {0}rem; 
+            padding-left: {0}rem; 
+            padding-bottom: {1}rem;
+            }}</style>''', unsafe_allow_html=True)
 
         st.title(f"Performance of {self.obj}")
 
@@ -70,7 +76,8 @@ class WebServer:
             my_list = ['accuracy','precision','recall', 'f1_score', 'fpr','reward']
             p = self.perf[my_list]
             f = plt.figure(figsize=(10,5))
-            p.plot(ax = f, subplots = True, kind = 'hist', bins=20, layout = (2, 3),legend = False, title = p.columns.to_list())
+            p.plot(ax = f, subplots = True, kind = 'hist', bins=50, layout = (2, 3), \
+                legend = False, title = p.columns.to_list(), colormap='viridis', alpha = 1, sharex=True)
 
             # f,axes = plt.subplots(nrows=2,ncols=3,figsize=(15,8))
             # from itertools import count
