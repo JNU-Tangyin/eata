@@ -10,6 +10,7 @@ from data import BaostockDataWorker
 from preprocess import Preprocessor
 from globals import WINDOW_SIZE
 
+
 class Agent():
     def __init__(self, df: pd.DataFrame):
         # df.columns = ['code', 'name','weight', 'sector']
@@ -129,6 +130,7 @@ class Agent():
         '''输入多个股票代码以及各自的权重，计算etf总的强弱势'''
         s = self.strength(1,0,0,0)
         return np.dot(s, self.stock_list.weight)
+
     def etf_action(self,score)->int:
         a = 0
         if score > 80:

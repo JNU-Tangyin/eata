@@ -108,7 +108,7 @@ class WebServer:
             # 画图 close+asset+action
             fig = plt.figure(figsize=(15,8))
             ax1 = fig.add_subplot(111)
-            ax1.plot(self.df.date, self.asset_wo_short, 'm-.', label="without short")
+            ax1.plot(self.df.date, self.asset_wo_short, 'm-.', label="without short", rotation = 45)
             ax1.plot(self.df.date, self.asset_w_short, 'g-', label="with short")
             ax1.legend(loc=1)
             ax1.set_ylabel('Assets change/Close')
