@@ -3,7 +3,7 @@ import os
 import sqlite3
 import pandas as pd
 from functools import partial
-from globals import MAIN_PATH, OCLHVA, MKT_OCLHVA, BAOSTOCK_MAPPING, WINDOW_SIZE, TS_TOKEN
+from globals import MAIN_PATH, OCLHVA, OCLHVA_HELPER, MKT_OCLHVA, BAOSTOCK_MAPPING, WINDOW_SIZE, TS_TOKEN
 from datetime import datetime, timedelta
 from itertools import count
 import tushare as ts
@@ -139,7 +139,7 @@ class BaostockDataWorker(DataWorker):
         if ktype in ['5','10','15','30','60']:
             rs = bs.query_history_k_data_plus(ticker, "date,time,code,open,high,low,close,volume,amount,adjustflag",
                 start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
-        else:  # ktype in ['d','w','m']
+        else:  # ktype in ['d','w','m'] # 多了preclose, turn, pctChg字段，少了time字段
             rs = bs.query_history_k_data_plus(ticker, "date,code,open,high,low,close,preclose,volume,amount,adjustflag,turn,pctChg",
                 start_date = start_date, end_date = end_date, frequency = ktype, adjustflag="2")
 
@@ -151,6 +151,9 @@ class BaostockDataWorker(DataWorker):
         # 发现时间太长的，volume和amount有空子串，导致转换出错，替换成"0"
         self.stock.replace(to_replace=r"^\s*$", value ="0", regex=True, inplace=True)
         self.stock[OCLHVA] = self.stock[OCLHVA].astype('float64')  # Baostock给出的是object，不是float的要转成float
+        if ktype in ['d','w','m']:
+            self.stock[OCLHVA_HELPER] = self.stock[OCLHVA_HELPER].astype('float64')  # Baostock给出的是object，不是float的要转成float
+
         self.stock.rename(columns = BAOSTOCK_MAPPING, inplace = True) 
         return self.stock
     

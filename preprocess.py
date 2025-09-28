@@ -258,6 +258,7 @@ class Preprocessor():
 
     def bundle_process(self):
         self.clean().fill_empty_days().fill_empty_minutes().landmark().add_reward_().add_indicators()
+        # print(self.df.head())
         return self.df
     
     def load(self, df:pd.DataFrame = None):

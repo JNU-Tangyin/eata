@@ -4,13 +4,13 @@ from data import BaostockDataWorker
 from preprocess import Preprocessor
 from datetime import datetime
 import gym
-from globals import TDT, TD , OCLHVA, indicators, REWARD, WEEKDAY, WINDOW_SIZE
+from globals import TDT, TD , OCLHVA, indicators, REWARD, WEEKDAY, WINDOW_SIZE, OCLHVA_HELPER
 
 
 #%%
 class StockmarketEnv(gym.Env):
 
-    def __init__(self, row, days = 2000, window_size=20):
+    def __init__(self, row, days = 2000, window_size=WINDOW_SIZE, day_only = True):
         ''' set of the stocks, algo, and days to trace back
             the file_name must be a xls file and has fields like .code, .sector, .weight
         '''
@@ -18,6 +18,7 @@ class StockmarketEnv(gym.Env):
         self.dataworker = BaostockDataWorker()
         self.preprocessor = Preprocessor()
         self.window_size = window_size * 5  # 额外给5倍的window_size，方便某些计算，例如20日平均线
+        self.day_only = day_only
         
         def data_valid():
             '''check days in stock5m, stock, sector, and market are totally matched '''
@@ -30,7 +31,8 @@ class StockmarketEnv(gym.Env):
         def prepare(r, days = 2000, window_size = WINDOW_SIZE):
             '''一年交易日约为244日 分钟线只需要oclhva，日线以上有indicators应该够用了
             '''
-            stock5m = self.dataworker.latest(r.code, ktype="5", days = days) # 5分钟线 [OCLHVA]
+            stock5m = None if day_only \
+                else self.dataworker.latest(r.code, ktype="5", days = days) # 5分钟线 [OCLHVA]
             stock = self.dataworker.latest(r.code, ktype="d", days = days) # 股票日线[reward, landmark, indicators]
             sector = self.dataworker.latest(r.sector, ktype="d", days = days) # 板块日线 [indicators]
             market_code = self.get_market(r.code)
@@ -38,8 +40,9 @@ class StockmarketEnv(gym.Env):
             # min_day and max_day from stock
             self.trade_days = self.dataworker.actual_days(stock)   
             # Preprocessing
-            self.stock5m = self.preprocessor.load(stock5m).clean().fill_empty_days(trade_days= self.trade_days).df[TDT+OCLHVA] 
-            self.stock = self.preprocessor.load(stock).bundle_process()[TD+OCLHVA+REWARD+indicators+WEEKDAY]
+            self.stock5m = None if day_only \
+                else self.preprocessor.load(stock5m).clean().fill_empty_days(trade_days= self.trade_days).df[TDT+OCLHVA] 
+            self.stock = self.preprocessor.load(stock).bundle_process()[TD+OCLHVA+REWARD+indicators+WEEKDAY+OCLHVA_HELPER]
             self.sector = self.preprocessor.load(sector).clean().fill_empty_days(trade_days= self.trade_days).add_indicators().df[TD + indicators]
             self.market = self.preprocessor.load(market).clean().fill_empty_days(trade_days= self.trade_days).add_indicators().df[TD + indicators] # 大盘日线 [indicators]
 
@@ -47,7 +50,7 @@ class StockmarketEnv(gym.Env):
             # self.sector_matrices = [x.values for x in sector.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
             # self.market_matrices = [x.values for x in market.rolling(window_size)][window_size-1:] # 获得rolling的矩阵
 
-            print("days comparison:",len(set(self.stock5m.date)), len(set(self.stock.date)), len(set(self.sector.date)), len(set(self.market.date)))
+            # print("days comparison:",len(set(self.stock5m.date)), len(set(self.stock.date)), len(set(self.sector.date)), len(set(self.market.date)))
             # assert data_valid(), "days mismatched" # validing data: the days must be matched.
 
             print(f"Data ready: {r.code} {r['name']}, from {self.stock.date.min()} to {self.stock.date.max()}, {len(self.stock)} days.")
@@ -81,7 +84,8 @@ class StockmarketEnv(gym.Env):
         # 使用days作为指针，获取stock, sector, market的指定范围的数据
         # 注意特定股票的交易日，不一定對應days
         days = self.trade_days.iloc[self.iter +1 - self.window_size : self.iter+1].calendar_date # 警惕:df.loc[] 左闭右闭，df.iloc[]左闭右开
-        s0 = self.stock5m[self.stock5m.date.isin(days)]  # 分钟线 oclhva
+        s0 = None if self.day_only \
+            else self.stock5m[self.stock5m.date.isin(days)]  # 分钟线 oclhva
         s1 = self.stock[self.stock.date.isin(days)]    # 股票日线， landmark, reward, indicators
         s2 = self.sector[self.sector.date.isin(days)]   # 板块日线，仅indicators
         s3 = self.market[self.market.date.isin(days)]   # 股市日线，仅indicators

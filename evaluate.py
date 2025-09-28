@@ -1,6 +1,8 @@
 import pandas as pd
-import os
 import numpy as np
+import stockstats
+import os
+from utils import validate
 
 
 class Evaluator():
@@ -15,7 +17,7 @@ class Evaluator():
 
     def __init__(self, df, predicted=None, episode=None ):
         self.df = df
-
+        validate(df, required=['close', 'action'])
         self.evaluated = pd.DataFrame(columns = ['ticker','tp','fp','tn','fn','accuracy','precision','recall','f1_score','tpr','fpr','reward'])
 
     def asset_change(self):
@@ -24,6 +26,7 @@ class Evaluator():
         before: self.df.columns = ['ticker','date','close','action','reward']
         after: self.df.columns = ['ticker','date','close','action','reward','real_action','change_wo_short', 'change_w_short','asset_wo_short','asset_w_short']
         4 columns added.
+        action in (-1, 0, 1)
         '''
         # def reduce_same(d1):  # action buy和sell的action应该交替出现，所以应该合并连续的sell或连续的buy
         #     i = 0
@@ -65,7 +68,8 @@ class Evaluator():
         # [func(x,y) for (x,y) in zip(d1,d2)]
 
         # self.df[['change_wo_short','change_w_short']] = self.df[['change_wo_short','change_w_short']].fillna(1)
-
+        
+        # a more elegant way:
         d = self.df.copy()
         # 去掉一开头的0
         # idx = (d.action != 0).idxmax()    # False<True，寻找第一个不等于0的
@@ -75,11 +79,12 @@ class Evaluator():
             # d['action'] = list(map(lambda x,y: y if x==0 else x, d['action'], d['action'].shift(1)))
             # d['action'].map(lambda x,y: y if x==0 else x, d['action'], d['action'].shift(1))) # 做法2
         # 做法3：将0替换成Nan，然后用ffill()填入上面的最近的1或-1值。@21级苏伟政
-        d['action'].replace(0,np.nan).ffill(inplace=True) 
+        d['action'].replace(0,np.nan).ffill(inplace=True)  # hold的内涵：前面为buy时我继续buy，前面sell时我继续sell
         d['action'] = d['action'].dropna().astype('int')  # 去掉仍然为Nan的行，例如第一行
         d['change_wo_short'] = d['change_w_short'] = d.close/d.close.shift(1) # 只做多情况下与上一天的变化比例，会在第一行留下nan
-        d.loc[d.action == -1,'change_wo_short'] = 1     # 不做空的日子，与上一天相比没变化
+        d.loc[d.action == -1,'change_wo_short'] = 1     # 不做空的日子，与上一天相比没变化，等同于 **=0
         d.loc[d.action == -1,'change_w_short'] **= -1   # 有做空的日子，与上一天的比率取倒数
+        # SettingWithCopyWarning: A value is trying to be set on a copy of a slice from a DataFrame
         d[['change_wo_short','change_w_short']].fillna(1, inplace=True)# 补齐第一行的Nan
         self.df = d
         return self
@@ -91,6 +96,9 @@ class Evaluator():
 
         pass
 
+    def sharpe_ratio(self):
+        pass
+    
     def class_perf(self):
         '''performance as classification'''
         # 作为二分类问题，这里应该用action而非real_action
@@ -106,7 +114,7 @@ class Evaluator():
         tpr = recall
         fpr = fp/(fp+tn)
         reward = self.df.reward.mean()
-        self.evaluated.loc[len(self.evaluated)] = [self.df.iloc[0].ticker,tp,fp,tn,fn,accuracy, precision, recall, f1_score, tpr, fpr,reward]
+        self.evaluated.loc[len(self.evaluated)] = [self.df.iloc[0].ticker,tp,fp,tn,fn,accuracy, precision, recall, f1_score, tpr, fpr, reward]
         return self.evaluated
     
     def regr_perf(self):
