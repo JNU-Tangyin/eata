@@ -1,0 +1,49 @@
+# 虚拟环境
+.venv/
+venv/
+env/
+
+# 数据库文件
+*.db
+*.sqlite
+*.sqlite3
+
+# 大数据集文件
+nemots/dataset/
+dataset/
+
+# 日志文件
+logs/
+*.log
+
+# 缓存文件
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.so
+
+# IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# 系统文件
+.DS_Store
+Thumbs.db
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+*.ipynb
+
+# 测试文件
+Test/
+test/
+
+# Excel文件（如果太大）
+000016(full).xls
+
+# 图片文件
+reflex.jpeg
