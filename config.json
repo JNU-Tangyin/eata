@@ -1,0 +1,20 @@
+{
+  "nemots": {
+    "exploration_rate": 1.5,
+    "num_runs": 8,
+    "eta": 1.8,
+    "max_len": 30,
+    "max_module_init": 20,
+    "epoch": 15
+  },
+  "trading": {
+    "buy_threshold": 1.008,
+    "sell_threshold": 0.992,
+    "uncertainty_threshold": 0.15
+  },
+  "system": {
+    "window_size": 30,
+    "lookahead": 10,
+    "auto_restart_mae_threshold": 0.8
+  }
+}
