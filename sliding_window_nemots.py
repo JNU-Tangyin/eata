@@ -26,9 +26,15 @@ class NullWriter:
     def write(self, txt): pass
     def flush(self): pass
 
-# 导入NEMoTS核心模块
-from nemots.engine import Engine
-from nemots.args import Args
+# 导入NEMoTS核心模块（师弟优化版本）
+try:
+    from eata_agent.engine import Engine
+    from eata_agent.args import Args
+    print("✅ 使用师弟优化版本的NEMoTS引擎")
+except ImportError:
+    from nemots.engine import Engine
+    from nemots.args import Args
+    print("⚠️ 回退到原版NEMoTS引擎")
 
 
 class SlidingWindowNEMoTS:
@@ -395,13 +401,17 @@ class SlidingWindowNEMoTS:
                         old_value = getattr(self.hyperparams, key)
                         setattr(self.hyperparams, key, value)
                         print(f"   📝 {key}: {old_value} → {value}")
+                    else:
+                        # 动态添加新属性
+                        setattr(self.hyperparams, key, value)
+                        print(f"   📝 {key}: 新增 → {value}")
             
             # 应用系统参数
             if 'system' in config and 'window_size' in config['system']:
                 new_size = config['system']['window_size']
-                if new_size != self.window_size:
-                    print(f"   📝 window_size: {self.window_size} → {new_size}")
-                    self.window_size = new_size
+                if new_size != self.lookback:
+                    print(f"   📝 lookback: {self.lookback} → {new_size}")
+                    self.lookback = new_size
             
             self._last_config_time = mtime
             print(f"✅ 配置更新完成")
@@ -510,12 +520,30 @@ class SlidingWindowNEMoTS:
 
     def sliding_fit(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
-        滑动窗口训练
+        滑动窗口训练（师弟优化版本）
         """
         print(f"\n开始滑动窗口训练...")
         
-        # 检查配置更新
+        # 检查配置更新（减少频率）
         self.check_and_apply_config()
+        
+        # 【师弟优化】动态调整参数
+        if self.previous_best_tree is not None:
+            # 后续窗口，使用轻量参数
+            print("检测到已有语法树，切换到轻量化快速迭代参数...")
+            # 直接修改Model对象内部的参数以确保生效
+            if hasattr(self.engine.model, 'num_transplant'):
+                self.engine.model.num_transplant = 2
+                self.engine.model.transplant_step = 100
+                self.engine.model.num_aug = 2
+        else:
+            # 首次窗口，使用重量参数
+            print("首次运行，使用重量级深度搜索参数...")
+            # 确保Model对象使用的是重量级参数
+            if hasattr(self.engine.model, 'num_transplant'):
+                self.engine.model.num_transplant = 5
+                self.engine.model.transplant_step = 500
+                self.engine.model.num_aug = 5
         
         try:
             # 1. 准备滑动窗口数据
@@ -527,43 +555,29 @@ class SlidingWindowNEMoTS:
             # 3. 语法树继承
             inherited_tree = self._inherit_previous_tree()
             
-            # 4. 直接调用engine.simulate（简化调用链）
+            # 4. 【师弟优化】直接调用engine.simulate，传递语法树
             print(f"调用核心模块: engine.simulate...")
             try:
-                # 临时隐藏所有输出
-                original_stderr = sys.stderr
-                original_stdout = sys.stdout
-                sys.stderr = NullWriter()
-                sys.stdout = NullWriter()
+                # 师弟版本：简化调用链，直接传递inherited_tree
+                result = self.engine.simulate(window_data, inherited_tree)
                 
-                # 尝试调用engine.simulate，可能的返回值格式不确定
-                result = self.engine.simulate(window_data)
-                
-                # 恢复输出
-                sys.stderr = original_stderr
-                sys.stdout = original_stdout
-                
-                # 处理不同的返回格式
-                if isinstance(result, tuple) and len(result) >= 5:
-                    best_exp, all_times, test_data, loss, mae = result[:5]
-                    mse = result[5] if len(result) > 5 else mae
-                    corr = result[6] if len(result) > 6 else 0.5
-                    policy = result[7] if len(result) > 7 else None
-                    reward = result[8] if len(result) > 8 else max(0, -loss)
+                # 处理师弟版本的返回格式（10个返回值）
+                if isinstance(result, tuple) and len(result) >= 9:
+                    best_exp, all_times, test_data, loss, mae, mse, corr, policy, reward = result[:9]
+                    new_best_tree = result[9] if len(result) > 9 else None
                 else:
-                    # 简化处理
+                    # 兼容处理
                     best_exp = "simplified_expression"
                     loss = 0.01
                     mae = 0.01
                     mse = 0.001
                     corr = 0.5
-                    reward = 0.02
-                    
+                    policy = None
+                    reward = max(0, -loss)
+                    new_best_tree = None
+            
             except Exception as e:
-                # 恢复输出
-                sys.stderr = original_stderr
-                sys.stdout = original_stdout
-                print(f"⚠️ NEMoTS调用失败: {e}")
+                print(f"❌ NEMoTS调用失败: {e}")
                 # 使用默认值
                 best_exp = "fallback_expression"
                 loss = 0.05
@@ -571,13 +585,19 @@ class SlidingWindowNEMoTS:
                 mse = 0.01
                 corr = 0.0
                 reward = 0.0
+                new_best_tree = None
             
             # 4. 管理多样性池
             self._manage_diversity_pool(str(best_exp), mae)
             
-            # 5. 保存最优解供下次继承
+            # 5. 【师弟优化】保存最优解供下次继承
             self.previous_best_expression = str(best_exp)
-            self.previous_best_tree = best_exp  # 保存语法树结构
+            # 核心修复：保存正确的树节点对象
+            if new_best_tree is not None:
+                self.previous_best_tree = new_best_tree
+            elif inherited_tree is not None:
+                # 如果没有新树，保持当前树
+                self.previous_best_tree = inherited_tree
             
             # 6. 更新训练状态
             self.is_trained = True

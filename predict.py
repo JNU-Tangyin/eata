@@ -1,167 +1,95 @@
-'''
-run preditor will return all the predicted action for tickers in watchlist 
-支持NEMoTS符号回归预测器集成
-'''
-import datetime
 import pandas as pd
-from data import MODEL_PATH, DataStorage
-from preprocess import Preprocessor 
-from retrying import retry
-import pysnooper
-import globals
+import numpy as np
 
-# NEMoTS集成
-try:
-    from nemots_adapter import NEMoTSPredictor
-    NEMOTS_AVAILABLE = True
-except ImportError:
-    print("NEMoTS适配器不可用，使用传统预测器")
-    NEMOTS_AVAILABLE = False
-
-MODEL_PATH = ""
-
-try:
-    from .bandwagon import Bandwagon
-except ImportError:
-    # 如果相对导入失败，尝试绝对导入
-    try:
-        from bandwagon import Bandwagon
-    except ImportError:
-        print("Bandwagon模块不可用")
-        Bandwagon = None
+# 核心改动：直接导入我们改造后的Agent
+from agent import Agent
 
 class Predictor:
-
-    def __init__(self, file_name: str = "", use_nemots: bool = True):
+    def __init__(self):
         """
-        初始化预测器
-        
+        新版预测器，核心职责是初始化和调用Agent。
+        """
+        # 注意：Agent的初始化可能需要一个股票列表df，这里我们暂时传入一个空的
+        # 在实际应用中，可以传入self.ds.get_watchlist()等
+        self.agent = Agent(df=pd.DataFrame())
+        print("🤖 新版 Predictor 初始化完成，内含新版 EATA Agent。")
+
+    def predict(self, df: pd.DataFrame) -> int:
+        """
+        使用Agent对单个数据窗口进行预测。
+
         Args:
-            file_name: 模型文件名（传统预测器使用）
-            use_nemots: 是否使用NEMoTS预测器
-        """
-        self.ds = DataStorage()
-        self.use_nemots = use_nemots and NEMOTS_AVAILABLE
-        
-        if self.use_nemots:
-            print("🧠 初始化NEMoTS预测器...")
-            # 默认使用简化版本，更稳定
-            self.nemots_predictor = NEMoTSPredictor(lookback=20, use_full_nemots=False)
-            self.is_trained = False
-        else:
-            print("📊 使用传统Bandwagon预测器...")
-            if Bandwagon is not None:
-                try:
-                    df = pd.read_excel("000016closeweight(5).xls", dtype={'code':'str'}, header = 0)
-                    self.bw = Bandwagon(df)
-                except Exception as e:
-                    print(f"传统预测器初始化失败: {e}")
-                    self.bw = None
-            else:
-                self.bw = None
+            df (pd.DataFrame): 包含[open, high, low, close, volume, amount]的单个股票数据窗口。
 
-    def fit(self, df: pd.DataFrame):
-        """训练预测器"""
-        if self.use_nemots:
-            try:
-                self.nemots_predictor.fit(df)
-                self.is_trained = True
-                print("✅ NEMoTS预测器训练完成")
-            except Exception as e:
-                print(f"❌ NEMoTS训练失败: {e}")
-                self.is_trained = False
-        else:
-            print("传统预测器无需额外训练")
-
-    def predict(self, state=None, df=None):
-        """
-        预测交易动作
-        
-        Args:
-            state: 传统预测器使用的状态
-            df: NEMoTS预测器使用的数据
-            
         Returns:
             int: 交易动作 (1: 买入, 0: 持有, -1: 卖出)
         """
-        if self.use_nemots and self.is_trained and df is not None:
+        print("\n[Predictor] -> 调用 Agent.criteria 进行决策...")
+        action = self.agent.criteria(df)
+        action_name = {-1: '卖出', 0: '持有', 1: '买入'}[action]
+        print(f"[Predictor] <- Agent决策结果: {action} ({action_name})")
+        return action
+
+    def run_for_all_stocks(self, stock_data_dict: dict) -> dict:
+        """
+        为一个字典中的所有股票数据运行预测。
+        这是未来整合到main.py的示例。
+
+        Args:
+            stock_data_dict (dict): key为股票代码, value为该股票的DataFrame。
+
+        Returns:
+            dict: key为股票代码, value为预测的交易动作。
+        """
+        results = {}
+        print("\n--- 开始为多支股票批量预测 ---")
+        for ticker, df in stock_data_dict.items():
+            print(f"\n--- 正在预测: {ticker} ---")
             try:
-                action = self.nemots_predictor.predict_action(df)
-                print(f"🧠 NEMoTS预测动作: {action}")
-                return action
+                # 为每支股票独立调用predict，Agent内部会处理语法树继承
+                action = self.predict(df)
+                results[ticker] = action
             except Exception as e:
-                print(f"❌ NEMoTS预测失败: {e}")
-                # 回退到传统方法
-        
-        # 传统预测方法
-        if self.bw is not None:
-            action = 1 if self.bw.vote() > 40 else -1
-            print(f"📊 传统预测动作: {action}")
-        else:
-            action = 0  # 默认持有
-            print("⚠️  无可用预测器，默认持有")
-        
-        self.ds.save_action()
-        return action 
+                print(f"❌ 预测 {ticker} 失败: {e}")
+                results[ticker] = 0 # 出错则持有
+        print("\n--- 批量预测完成 ---")
+        return results
 
-    def latest_actions(self)->list[tuple]:
-        ''' pretty much the same as 'watch(·)'
-            w.r.t. each ticker in watchlist, get the trend(t). latest action is the last row of the dataframe
-            this func can also be replaced by:
-                result = [(self.end_time, t, t.iloc[-1].action) for t in self.trends(WatchList)]
-                df = pd.DataFrame(result,columns=['date','ticker','action'],dtype=int)
-        '''
-        latest_action = lambda t: self.trend(t).iloc[-1].action
-        result = [(self.end_time, t,latest_action(t)) for t in watchlist]
-        df = pd.DataFrame(result,columns=['date','ticker','action'],dtype=int)
-        self.ds.save_predicted(df[df.action.isin([-1,1])], if_exists = 'append') # save only action in [-1,1]
-        return result # or, df as 'st.table(df)' in visualize.py
-    
-    def save_action(self, a, price):
-        '''将本次决策保存在predicted
-        a - 决策
-        price - 当前close价
-        '''
-        pass
-
-'''
-buy or sell sz50etf by predicting its constituent
-'''
 
 if __name__ == "__main__":
-    print("🚀 启动NEMoTS预测系统")
-    print("=" * 50)
-    
-    # 创建NEMoTS预测器
-    predictor = Predictor(use_nemots=True)
-    
-    print(f"✅ 预测器初始化完成")
-    print(f"   使用NEMoTS: {predictor.use_nemots}")
-    
-    # 创建测试数据进行预测演示
-    import numpy as np
+    print("🚀 启动 EATA 项目核心功能演示")
+    print("======================================================")
+    print("本脚本现在是项目的主要功能入口和测试平台。")
+    print("它将演示如何使用新的Agent对数据进行预测。")
+    print("======================================================")
+
+    # 1. 初始化Predictor (它会自动创建新的Agent)
+    predictor = Predictor()
+
+    # 2. 创建模拟数据 (与sliding_window_nemots.py中的测试数据类似)
+    #    这代表了您为单支股票准备的、用于输入模型的数据。
+    print("\n[Main] 准备模拟输入数据...")
     test_data = pd.DataFrame({
-        'open': [100 + i + np.random.randn()*0.1 for i in range(30)],
-        'high': [102 + i + np.random.randn()*0.1 for i in range(30)],
-        'low': [98 + i + np.random.randn()*0.1 for i in range(30)],
-        'close': [101 + i + np.random.randn()*0.1 for i in range(30)],
-        'volume': [1000 + i*10 for i in range(30)]
+        'open': [100 + i*0.1 + np.random.randn()*0.1 for i in range(40)],
+        'high': [102 + i*0.1 + np.random.randn()*0.1 for i in range(40)],
+        'low': [98 + i*0.1 + np.random.randn()*0.1 for i in range(40)],
+        'close': [101 + i*0.1 + np.random.randn()*0.1 for i in range(40)],
+        'volume': [1000 + i*10 for i in range(40)]
     })
-    # 添加amount字段（成交额 = 成交量 * 收盘价）
     test_data['amount'] = test_data['volume'] * test_data['close']
-    
-    print("\n📊 开始NEMoTS预测演示...")
-    try:
-        # 训练NEMoTS
-        predictor.fit(test_data)
-        
-        # 进行预测
-        action = predictor.predict(df=test_data.tail(10))
-        action_name = {-1: '卖出', 0: '持有', 1: '买入'}[action]
-        
-        print(f"✅ NEMoTS预测结果: {action} ({action_name})")
-        
-    except Exception as e:
-        print(f"⚠️ 预测过程出错: {e}")
-    
-    print("\n🎉 NEMoTS预测系统运行完成！")
+    print(f"[Main] 模拟数据创建完成 ({len(test_data)}条记录)。")
+
+    # 3. 执行预测
+    #    在第一次调用时，Agent会使用“重量级”参数进行“冷启动”训练。
+    print("\n[Main] === 第一次预测 (冷启动) ===")
+    predictor.predict(df=test_data)
+
+    # 4. 模拟数据更新，再次执行预测
+    #    在第二次调用时，Agent会检测到已有的语法树，并使用“轻量级”参数进行“热启动”迭代。
+    print("\n[Main] === 第二次预测 (热启动/继承) ===")
+    # 模拟时间推移，数据发生变化
+    updated_data = test_data.iloc[5:].copy() 
+    updated_data = pd.concat([updated_data, test_data.tail(5)], ignore_index=True) # 简单模拟数据滚动
+    predictor.predict(df=updated_data)
+
+    print("\n🎉 EATA 项目核心功能演示完成！")

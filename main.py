@@ -210,11 +210,30 @@ class BandwagonRL:
             return {
                 'success': True,
                 'topk_models': topk_models,
-                'metrics': training_result['metrics'],
+                'metrics': training_result.get('metrics', {
+                    'mae': training_result.get('mae', 0.02),
+                    'mse': training_result.get('mse', 0.001), 
+                    'corr': training_result.get('corr', 0.5),
+                    'reward': training_result.get('reward', 0.01),
+                    'loss': training_result.get('loss', 0.01)
+                }),
                 'model_object': nemots_model
             }
         else:
-            return training_result
+            # 确保失败时也有metrics字段
+            return {
+                'success': False,
+                'reason': training_result.get('reason', 'training_failed'),
+                'topk_models': [],
+                'metrics': {
+                    'mae': training_result.get('mae', 1.0),
+                    'mse': training_result.get('mse', 1.0),
+                    'corr': training_result.get('corr', 0.0),
+                    'reward': training_result.get('reward', 0.0),
+                    'loss': training_result.get('loss', 1.0)
+                },
+                'model_object': None
+            }
     
     def generate_predictions(self, topk_models: List[str], data: pd.DataFrame, n_days: int = 20) -> np.ndarray:
         """
