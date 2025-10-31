@@ -36,6 +36,61 @@ class PVNet(nn.Module):
         raw_dist_out = torch.where(torch.isnan(raw_dist_out), torch.zeros_like(raw_dist_out), raw_dist_out)
         value_out = self.value_out(out)
         return raw_dist_out, value_out
+    
+    def compute_quantile_loss(self, predictions, targets, q_low=0.25, q_high=0.75):
+        """
+        计算分位数损失 (Pinball Loss)
+        
+        Args:
+            predictions: 预测值 [batch_size, seq_len] 或 [num_samples, seq_len]
+            targets: 真实值 [seq_len]
+            q_low: 低分位数 (默认0.25)
+            q_high: 高分位数 (默认0.75)
+            
+        Returns:
+            torch.Tensor: 总的分位数损失
+        """
+        import numpy as np
+        
+        # 确保输入是torch.Tensor
+        if not isinstance(predictions, torch.Tensor):
+            predictions = torch.tensor(predictions, dtype=torch.float32, device=next(self.parameters()).device)
+        if not isinstance(targets, torch.Tensor):
+            targets = torch.tensor(targets, dtype=torch.float32, device=next(self.parameters()).device)
+        
+        # 如果predictions是2D，计算分位数
+        if predictions.dim() == 2 and predictions.shape[0] > 1:
+            # 计算Q25和Q75分位数
+            q25_pred = torch.quantile(predictions, q_low, dim=0)
+            q75_pred = torch.quantile(predictions, q_high, dim=0)
+        else:
+            # 如果只有一个预测，直接使用
+            q25_pred = predictions.flatten()
+            q75_pred = predictions.flatten()
+        
+        # 确保targets维度匹配
+        if targets.dim() > 1:
+            targets = targets.flatten()
+        
+        # 调整维度匹配
+        min_len = min(len(q25_pred), len(targets))
+        q25_pred = q25_pred[:min_len]
+        q75_pred = q75_pred[:min_len]
+        targets = targets[:min_len]
+        
+        # 计算分位数损失 (Pinball Loss)
+        def pinball_loss(y_true, y_pred, quantile):
+            error = y_true - y_pred
+            return torch.mean(torch.maximum(quantile * error, (quantile - 1) * error))
+        
+        # 计算Q25和Q75的分位数损失
+        loss_q25 = pinball_loss(targets, q25_pred, q_low)
+        loss_q75 = pinball_loss(targets, q75_pred, q_high)
+        
+        # 总损失
+        total_loss = loss_q25 + loss_q75
+        
+        return total_loss
 
 
 class PVNetCtx:

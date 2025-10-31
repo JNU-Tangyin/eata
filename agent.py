@@ -40,7 +40,14 @@ class Agent:
     def _create_hyperparams(self) -> Args:
         """创建超参数配置"""
         args = Args()
-        args.device = torch.device("cpu")
+        # 设备配置 - 支持Apple M4 MPU
+        if torch.backends.mps.is_available():
+            args.device = torch.device("mps")  # Apple Metal Performance Shaders
+        elif torch.cuda.is_available():
+            args.device = torch.device("cuda")
+        else:
+            args.device = torch.device("cpu")
+        
         args.seed = 42
         args.seq_in = self.lookback
         args.seq_out = self.lookahead

@@ -200,9 +200,11 @@ class MCTS():
         return A  # 返回这个探索性策略
 #与network的借口哦
     def get_policy3(self, nA, UC, seq, state, network, softmax=True):
-        # 功能：调用神经网络获取策略(policy)和价值(value)。
-        policy, value = network.policy_value(seq, state) # 调用网络的前向传播函数。
+        # 功能：调用神经网络获取策略(policy)、价值(value)和奖励(reward)。
+        policy, value, reward_pred = network.policy_value(seq, state) # 调用网络的前向传播函数。
         policy = policy.cpu().detach().squeeze(0).numpy()
+        # 保存reward预测用于后续训练
+        self.last_reward_pred = reward_pred.cpu().detach().squeeze(0).numpy()
         
         if nA == 0:   # 如果没有可用动作
             pass
@@ -255,6 +257,7 @@ class MCTS():
         seq_records = []
         policy_records = []
         value_records = []
+        reward_records = []  # 新增：reward记录
 
 #——————这里就要动手了 我们不要每次都生成，而是进行修补
         for i_episode in range(1, num_episodes + 1):
@@ -366,6 +369,8 @@ class MCTS():
                     seq_records.append(seq)
                     policy_records.append(policy)
                     value_records.append(float(value_nn))
+                    # 新增：记录真实的reward值
+                    reward_records.append(float(reward))
 
                 if not done:  # 如果展开后还未结束。 要下一步继续选择
                     # 融合value
@@ -392,7 +397,7 @@ class MCTS():
                 reward_his.append(best_solution[1])
 
         return best_solution_node, best_solution, self.good_modules, zip(state_records, seq_records, policy_records,
-                                                                 value_records)
+                                                                 value_records, reward_records)
 
     # 返回：奖励历史，最优解，优秀模块库，以及用于训练的经验数据。
     @staticmethod

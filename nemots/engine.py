@@ -280,5 +280,66 @@ class OptimizedMetrics:
 
         return mae, mse, corr, best_exp
 
+    def train_with_quantile_loss(self, predictions, targets):
+        """
+        使用分位数损失训练PVNET
+        
+        Args:
+            predictions: 预测值数组 [num_samples, seq_len]
+            targets: 真实值数组 [seq_len]
+            
+        Returns:
+            dict: 训练指标
+        """
+        import torch
+        import numpy as np
+        
+        # 计算分位数损失
+        quantile_loss = self.model.p_v_net_ctx.pv_net.compute_quantile_loss(predictions, targets)
+        
+        # 反向传播
+        self.optimizer.zero_grad()
+        quantile_loss.backward()
+        
+        # 梯度裁剪
+        torch.nn.utils.clip_grad_norm_(self.model.p_v_net_ctx.pv_net.parameters(), self.args.clip)
+        
+        # 更新参数
+        self.optimizer.step()
+        
+        # 计算指标
+        with torch.no_grad():
+            if isinstance(predictions, torch.Tensor):
+                pred_np = predictions.cpu().numpy()
+            else:
+                pred_np = np.array(predictions)
+            
+            if isinstance(targets, torch.Tensor):
+                target_np = targets.cpu().numpy()
+            else:
+                target_np = np.array(targets)
+            
+            # 计算Q25和Q75
+            if pred_np.ndim == 2 and pred_np.shape[0] > 1:
+                q25 = np.percentile(pred_np, 25, axis=0)
+                q75 = np.percentile(pred_np, 75, axis=0)
+            else:
+                q25 = pred_np.flatten()
+                q75 = pred_np.flatten()
+            
+            # 计算覆盖率
+            coverage_25 = np.mean(target_np >= q25)
+            coverage_75 = np.mean(target_np <= q75)
+            coverage_both = np.mean((target_np >= q25) & (target_np <= q75))
+        
+        return {
+            'quantile_loss': quantile_loss.item(),
+            'q25_values': q25,
+            'q75_values': q75,
+            'coverage_25': coverage_25,
+            'coverage_75': coverage_75,
+            'coverage_both': coverage_both
+        }
+
 # Example usage (assuming exps, scores, and data are defined)
 # metrics = OptimizedMetrics.metrics(exps, scores, data)
