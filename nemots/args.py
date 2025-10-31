@@ -15,10 +15,29 @@ class Args:
     """
     
     def __init__(self):
-        # 设备配置
-        self.device = torch.device("cpu")
+        # 设备配置 - 支持Apple M4 MPU
+        self.device = self._select_optimal_device()
+        
         self.seed = 42
         
+        # 初始化数据配置
+        self._init_data_config()
+        
+        # 初始化NEMoTS参数
+        self._init_nemots_params()
+    
+    def _select_optimal_device(self):
+        """选择最优计算设备"""
+        # 优先使用MPU进行性能优化
+        if torch.backends.mps.is_available():
+            return torch.device("mps")
+        elif torch.cuda.is_available():
+            return torch.device("cuda")
+        else:
+            return torch.device("cpu")
+    
+    def _init_data_config(self):
+        """初始化数据配置"""
         # 数据配置
         self.data = 'custom'
         self.root_path = './dataset/'
@@ -28,7 +47,9 @@ class Args:
         self.features = 'M'  # M:multivariate predict multivariate
         self.target = 'OT'
         self.used_dimension = 1
-        
+    
+    def _init_nemots_params(self):
+        """初始化NEMoTS参数"""
         # NEMoTS核心参数
         self.symbolic_lib = "NEMoTS"
         self.max_len = 20
@@ -38,7 +59,7 @@ class Args:
         self.eta = 1.0
         self.num_aug = 0
         self.exploration_rate = 1 / np.sqrt(2)
-        self.transplant_step = 1000
+        self.transplant_step = 200
         self.norm_threshold = 1e-5
         
         # 序列长度配置

@@ -1,11 +1,11 @@
 {
   "nemots": {
-    "exploration_rate": 1.5,
-    "num_runs": 8,
-    "eta": 1.8,
-    "max_len": 30,
-    "max_module_init": 20,
-    "epoch": 15
+    "exploration_rate": 1.15,
+    "num_runs": 2,
+    "eta": 1.2,
+    "max_len": 18,
+    "max_module_init": 8,
+    "epoch": 4
   },
   "trading": {
     "buy_threshold": 1.008,
@@ -13,8 +13,9 @@
     "uncertainty_threshold": 0.15
   },
   "system": {
-    "window_size": 30,
-    "lookahead": 10,
-    "auto_restart_mae_threshold": 0.8
+    "window_size": 18,
+    "lookahead": 4,
+    "auto_restart_mae_threshold": 0.8,
+    "fast_mode": true
   }
 }

@@ -84,19 +84,20 @@ ipython_config.py
 # pyenv
 # .python-version
 
-# pipenv
-#Pipfile.lock
+# Bandwagon特定文件
+bandwagon_feedback_state.pkl
+trading_history.json
+trading_history.csv
+*.pkl
 
-# UV
-#uv.lock
-
-# poetry
-#poetry.lock
-#poetry.toml
+# 已删除的适配器文件
+nemots_adapter.py
+nemots_full_adapter.py
+*adapter*.log
+poetry.toml
 
 # pdm
 #pdm.lock
-#pdm.toml
 .pdm-python
 .pdm-build/
 
@@ -200,3 +201,17 @@ test/
 
 # 图片文件
 reflex.jpeg
+
+# Bandwagon特定文件
+bandwagon_feedback_state.pkl
+trading_history.json
+trading_history.csv
+*.pkl
+
+# 已删除的适配器文件
+nemots_adapter.py
+nemots_full_adapter.py
+*adapter*.log
+
+# 配置文件（可选择性忽略）
+# config.json
