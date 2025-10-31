@@ -77,7 +77,7 @@ class Engine(object):
         cumulative_loss = 0
         
         # 从经验池中一次性采样全量数据
-        state_batch_full, seq_batch_full, policy_batch_full, value_batch_full, _ = self.preprocess_data()
+        state_batch_full, seq_batch_full, policy_batch_full, value_batch_full, reward_batch_full, _ = self.preprocess_data()
 
         if not state_batch_full:
             print("[WARN] No data sampled from memory buffer for training.")
@@ -104,6 +104,7 @@ class Engine(object):
                 seq_batch = [seq_batch_full[j] for j in mini_batch_indices]
                 policy_batch = [policy_batch_full[j] for j in mini_batch_indices]
                 value_batch = torch.Tensor([value_batch_full[j] for j in mini_batch_indices])
+                reward_batch = torch.Tensor([reward_batch_full[j] for j in mini_batch_indices])
                 
                 length_indices = self.obtain_policy_length(policy_batch)
 
@@ -113,11 +114,15 @@ class Engine(object):
                     continue
 
                 # 【模块互通】对迷你批次进行前向传播
-                raw_dis_out, value_out = self.model.p_v_net_ctx.policy_value_batch(seq_batch, state_batch)
+                raw_dis_out, value_out, reward_out = self.model.p_v_net_ctx.policy_value_batch(seq_batch, state_batch)
 
                 # --- 计算损失 ---
                 value_batch[torch.isnan(value_batch)] = 0.
                 value_loss = F.mse_loss(value_out, value_batch.to(value_out.device))
+                
+                # 新增：reward损失计算
+                reward_batch[torch.isnan(reward_batch)] = 0.
+                reward_loss = F.mse_loss(reward_out, reward_batch.to(reward_out.device))
 
                 dist_loss = []
                 if length_indices: # 确保length_indices不为空
@@ -129,11 +134,11 @@ class Engine(object):
                         dist_out = Categorical(probs=out_policy)
                         dist_loss.append(torch.distributions.kl_divergence(dist_target, dist_out).mean())
                 
-                # 总损失 = 价值损失 + 策略损失
+                # 总损失 = 价值损失 + 策略损失 + reward损失
                 if not dist_loss or not any(dist_loss):
-                    total_loss = value_loss
+                    total_loss = value_loss + reward_loss
                 else:
-                    total_loss = value_loss + sum(dist_loss)
+                    total_loss = value_loss + sum(dist_loss) + reward_loss
                 
                 epoch_loss += total_loss.item()
                 num_batches += 1
@@ -195,18 +200,20 @@ class Engine(object):
         seq_batch = [data[1][1] for data in mini_batch]
         policy_batch = [data[2] for data in mini_batch]
         value_batch = [data[3] for data in mini_batch]
-        # 将采样出的数据解包成state, seq, policy, value等不同的批次 这就体现了一个随机性
+        # 新增：提取reward数据（假设在data[4]位置）
+        reward_batch = [data[4] if len(data) > 4 else 0.0 for data in mini_batch]
+        # 将采样出的数据解包成state, seq, policy, value, reward等不同的批次
 
         length_indices = self.obtain_policy_length(policy_batch)
         # 调用obtain_policy_length对策略进行分组。
-        return state_batch, seq_batch, policy_batch, value_batch, length_indices
+        return state_batch, seq_batch, policy_batch, value_batch, reward_batch, length_indices
 
 
     def eval(self, data):
         pass
-# 评估方法，目前是空的，没有实现。 这里要添加评估方式 前面不是已经算出指标了 可以利用这
+    # 评估方法，目前是空的，没有实现。 这里要添加评估方式 前面不是已经算出指标了 可以利用这
 
- # 定义一个独立的指标计算类。
+# 定义一个独立的指标计算类。
 class OptimizedMetrics:
     @staticmethod
     # 定义为静态方法，可以直接通过类名调用，无需创建实例。
@@ -262,6 +269,64 @@ class OptimizedMetrics:
                 corr = 0.
 
         return mae, mse, corr, best_exp
+
+    def train_with_quantile_loss(self, predictions, targets):
+        """
+        使用分位数损失训练PVNET
+        
+        Args:
+            predictions: 预测值数组 [num_samples, seq_len]
+            targets: 真实值数组 [seq_len]
+            
+        Returns:
+            dict: 训练指标
+        """
+        # 计算分位数损失
+        quantile_loss = self.model.p_v_net_ctx.pv_net.compute_quantile_loss(predictions, targets)
+        
+        # 反向传播
+        self.optimizer.zero_grad()
+        quantile_loss.backward()
+        
+        # 梯度裁剪
+        torch.nn.utils.clip_grad_norm_(self.model.p_v_net_ctx.pv_net.parameters(), self.args.clip)
+        
+        # 更新参数
+        self.optimizer.step()
+        
+        # 计算指标
+        with torch.no_grad():
+            if isinstance(predictions, torch.Tensor):
+                pred_np = predictions.cpu().numpy()
+            else:
+                pred_np = np.array(predictions)
+            
+            if isinstance(targets, torch.Tensor):
+                target_np = targets.cpu().numpy()
+            else:
+                target_np = np.array(targets)
+            
+            # 计算Q25和Q75
+            if pred_np.ndim == 2 and pred_np.shape[0] > 1:
+                q25 = np.percentile(pred_np, 25, axis=0)
+                q75 = np.percentile(pred_np, 75, axis=0)
+            else:
+                q25 = pred_np.flatten()
+                q75 = pred_np.flatten()
+            
+            # 计算覆盖率
+            coverage_25 = np.mean(target_np >= q25)
+            coverage_75 = np.mean(target_np <= q75)
+            coverage_both = np.mean((target_np >= q25) & (target_np <= q75))
+        
+        return {
+            'quantile_loss': quantile_loss.item(),
+            'q25_values': q25,
+            'q75_values': q75,
+            'coverage_25': coverage_25,
+            'coverage_75': coverage_75,
+            'coverage_both': coverage_both
+        }
 
 # Example usage (assuming exps, scores, and data are defined)
 # metrics = OptimizedMetrics.metrics(exps, scores, data)

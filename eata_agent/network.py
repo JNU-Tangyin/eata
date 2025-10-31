@@ -27,6 +27,8 @@ class PVNet(nn.Module):
 
         self.dist_out = nn.Linear(hidden_dim * 2, len(self.grammar_vocab) + num_transplant - 2)
         self.value_out = nn.Linear(hidden_dim * 2, 1)
+        # 新增：reward预测头 - 第三个输出头
+        self.reward_out = nn.Linear(hidden_dim * 2, 1)
 
     def forward(self, seq, state_idx, need_embeddings=True):
         #定义了数据在网络中的流动方式（前向传播）
@@ -44,7 +46,50 @@ class PVNet(nn.Module):
         raw_dist_out = self.dist_out(out)
         raw_dist_out = torch.where(torch.isnan(raw_dist_out), torch.zeros_like(raw_dist_out), raw_dist_out)
         value_out = self.value_out(out)
-        return raw_dist_out, value_out
+        # 新增：reward预测输出
+        reward_out = self.reward_out(out)
+        return raw_dist_out, value_out, reward_out
+    
+    def compute_quantile_loss(self, predictions, targets, q_low=0.25, q_high=0.75):
+        """
+        计算分位数损失 (Pinball Loss)
+        
+        Args:
+            predictions: 预测值 [batch_size, seq_len] 或 [num_samples, seq_len]
+            targets: 真实值 [seq_len]
+            q_low: 低分位数 (默认0.25)
+            q_high: 高分位数 (默认0.75)
+            
+        Returns:
+            torch.Tensor: 总的分位数损失
+        """
+        # 确保输入是torch.Tensor
+        if not isinstance(predictions, torch.Tensor):
+            predictions = torch.tensor(predictions, dtype=torch.float32, device=next(self.parameters()).device)
+        if not isinstance(targets, torch.Tensor):
+            targets = torch.tensor(targets, dtype=torch.float32, device=next(self.parameters()).device)
+        
+        # 如果predictions是多个样本，计算分位数
+        if predictions.dim() == 2 and predictions.shape[0] > 1:
+            q25_pred = torch.quantile(predictions, q_low, dim=0)
+            q75_pred = torch.quantile(predictions, q_high, dim=0)
+        else:
+            # 如果只有一个预测，直接使用
+            q25_pred = predictions.squeeze()
+            q75_pred = predictions.squeeze()
+        
+        # 计算Q25的Pinball Loss
+        q25_errors = targets - q25_pred
+        q25_loss = torch.where(q25_errors >= 0, q_low * q25_errors, (q_low - 1) * q25_errors)
+        
+        # 计算Q75的Pinball Loss  
+        q75_errors = targets - q75_pred
+        q75_loss = torch.where(q75_errors >= 0, q_high * q75_errors, (q_high - 1) * q75_errors)
+        
+        # 总损失
+        total_loss = q25_loss.mean() + q75_loss.mean()
+        
+        return total_loss
 
 #与mcts统一的接口 真正调用的part
 class PVNetCtx:
@@ -66,8 +111,8 @@ class PVNetCtx:
         state_list = state.split(",")
         state_idx = torch.Tensor([self.symbol2idx[item] for item in state_list]).to(self.device)
         seq = torch.Tensor(seq).to(self.device)
-        raw_dist_out, value_out = self.pv_net(seq[1, :].unsqueeze(0), state_idx.unsqueeze(0))
-        return raw_dist_out, value_out
+        raw_dist_out, value_out, reward_out = self.pv_net(seq[1, :].unsqueeze(0), state_idx.unsqueeze(0))
+        return raw_dist_out, value_out, reward_out
    #返回概率和价值
 
     def process_state(self, state):
@@ -96,8 +141,8 @@ class PVNetCtx:
 
         states = torch.stack(states_list).to(self.device)
         seqs = torch.stack(seqs).to(self.device)
-        raw_dist_out, value_out = self.pv_net(seqs, states, False)
-        return raw_dist_out, value_out
+        raw_dist_out, value_out, reward_out = self.pv_net(seqs, states, False)
+        return raw_dist_out, value_out, reward_out
 
     def update_grammar_vocab_name(self, aug_grammars):
         # Rebuild the vocabulary with the base and augmented grammars

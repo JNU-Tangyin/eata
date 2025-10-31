@@ -3,7 +3,7 @@ import numpy as np
 import stockstats
 import os
 from utils import validate
-import empyrical as ep
+import quantstats as qs
 
 
 class Evaluator():
@@ -98,11 +98,11 @@ class Evaluator():
         r_wo = pd.Series(r_wo).replace([np.inf, -np.inf], 0).fillna(0)
         r_w = pd.Series(r_w).replace([np.inf, -np.inf], 0).fillna(0)
         try:
-            ar_wo = float(ep.annual_return(r_wo))
+            ar_wo = float(qs.stats.cagr(r_wo))
         except Exception:
             ar_wo = np.nan
         try:
-            ar_w = float(ep.annual_return(r_w))
+            ar_w = float(qs.stats.cagr(r_w))
         except Exception:
             ar_w = np.nan
         return ar_wo, ar_w
@@ -114,19 +114,19 @@ class Evaluator():
         r_wo = pd.Series(r_wo).replace([np.inf, -np.inf], 0).fillna(0)
         r_w = pd.Series(r_w).replace([np.inf, -np.inf], 0).fillna(0)
         try:
-            sp_wo = float(ep.sharpe_ratio(r_wo))
+            sp_wo = float(qs.stats.sharpe(r_wo))
         except Exception:
             sp_wo = np.nan
         try:
-            sp_w = float(ep.sharpe_ratio(r_w))
+            sp_w = float(qs.stats.sharpe(r_w))
         except Exception:
             sp_w = np.nan
         try:
-            mdd_wo = float(ep.max_drawdown(r_wo))
+            mdd_wo = float(qs.stats.max_drawdown(r_wo))
         except Exception:
             mdd_wo = np.nan
         try:
-            mdd_w = float(ep.max_drawdown(r_w))
+            mdd_w = float(qs.stats.max_drawdown(r_w))
         except Exception:
             mdd_w = np.nan
         return sp_wo, sp_w, mdd_wo, mdd_w
