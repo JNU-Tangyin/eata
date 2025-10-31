@@ -90,7 +90,7 @@ class BandwagonRL:
         # 集成RL反馈系统
         self.feedback_system = IntegratedRLFeedbackSystem()
         
-        # 时间统计 - 按老师建议添加
+        # 时间统计
         self.timing_stats = {
             'total_time': 0,
             'training_times': [],
@@ -758,8 +758,8 @@ class BandwagonRL:
         return [0] * self.lookahead  # 默认持有
     
     def _print_timing_analysis(self):
-        """按老师建议：打印详细的时间分析"""
-        print(f"\n⏱️ 详细时间分析 (按老师建议)")
+        """打印详细的时间分析"""
+        print(f"\n⏱️ 详细时间分析")
         print("=" * 60)
         
         stats = self.timing_stats

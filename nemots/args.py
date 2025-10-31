@@ -27,8 +27,8 @@ class Args:
         self._init_nemots_params()
     
     def _select_optimal_device(self):
-        """按老师建议强制使用MPU"""
-        # 按老师建议：改用MPU运行进行性能分析
+        """选择最优计算设备"""
+        # 优先使用MPU进行性能优化
         if torch.backends.mps.is_available():
             return torch.device("mps")
         elif torch.cuda.is_available():

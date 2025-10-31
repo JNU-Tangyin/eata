@@ -26,7 +26,7 @@ class NullWriter:
     def write(self, txt): pass
     def flush(self): pass
 
-# 导入NEMoTS核心模块（师弟优化版本）
+# 导入NEMoTS核心模块
 try:
     from eata_agent.engine import Engine
     from eata_agent.args import Args
@@ -90,7 +90,7 @@ class SlidingWindowNEMoTS:
         """
         args = Args()
         
-        # 按老师建议强制使用MPU
+        # 优先使用MPU进行性能优化
         if torch.backends.mps.is_available():
             args.device = torch.device("mps")
         elif torch.cuda.is_available():
@@ -525,7 +525,7 @@ class SlidingWindowNEMoTS:
 
     def sliding_fit(self, df: pd.DataFrame) -> Dict[str, Any]:
         """
-        滑动窗口训练（师弟优化版本）
+        滑动窗口训练
         """
         print(f"\n开始滑动窗口训练...")
         
@@ -568,7 +568,7 @@ class SlidingWindowNEMoTS:
         # 检查配置更新（减少频率）
         self.check_and_apply_config()
         
-        # 【师弟优化】动态调整参数
+        # 动态调整参数优化
         if self.previous_best_tree is not None:
             # 后续窗口，使用轻量参数
             print("检测到已有语法树，切换到轻量化快速迭代参数...")
@@ -874,7 +874,7 @@ class SlidingWindowNEMoTS:
                 print(f"   Q75覆盖率: {quantile_metrics['coverage_75']*100:.1f}%")
                 print(f"   区间覆盖率: {quantile_metrics['coverage_both']*100:.1f}%")
                 
-                # 【关键】计算并记录四分位数MSE - 老师要求观察的核心指标
+                # 【关键】计算并记录四分位数MSE - 核心指标观察
                 if len(future_prices) > 0:
                     q25_values = quantile_metrics['q25_values']
                     q75_values = quantile_metrics['q75_values']
@@ -899,25 +899,25 @@ class SlidingWindowNEMoTS:
                         'combined_mse': combined_quantile_mse
                     })
                     
-                    # 分析趋势（老师说要看"震荡向下"）
+                    # 分析MSE震荡下行趋势
                     if len(self.quantile_mse_history) >= 3:
                         recent_mses = [record['combined_mse'] for record in self.quantile_mse_history[-3:]]
                         trend = "向下" if recent_mses[-1] < recent_mses[0] else "向上"
                         print(f"   📈 最近3次MSE趋势: {trend}")
                         
-                        # 保存MSE历史到文件，方便老师观察
+                        # 保存MSE历史到文件以便分析
                         import os
                         import matplotlib.pyplot as plt
                         os.makedirs('logs', exist_ok=True)
                         
                         # 保存TXT文件
                         with open('logs/quantile_mse_history.txt', 'w') as f:
-                            f.write("# 四分位数MSE历史记录 - 老师要求观察震荡向下趋势\n")
+                            f.write("# 四分位数MSE历史记录 - 震荡下行趋势观察\n")
                             f.write("迭代次数\tQ25_MSE\tQ75_MSE\t组合MSE\n")
                             for record in self.quantile_mse_history:
                                 f.write(f"{record['iteration']}\t{record['q25_mse']:.6f}\t{record['q75_mse']:.6f}\t{record['combined_mse']:.6f}\n")
                         
-                        # 创建可视化图表 - 老师更喜欢看图
+                        # 创建可视化图表以便直观分析
                         iterations = [record['iteration'] for record in self.quantile_mse_history]
                         q25_mses = [record['q25_mse'] for record in self.quantile_mse_history]
                         q75_mses = [record['q75_mse'] for record in self.quantile_mse_history]
@@ -975,7 +975,7 @@ class SlidingWindowNEMoTS:
             # 4. 管理多样性池
             self._manage_diversity_pool(str(best_exp), mae)
             
-            # 5. 【师弟优化】保存最优解供下次继承
+            # 5. 保存最优解供下次继承
             self.previous_best_expression = str(best_exp)
             # 核心修复：保存正确的树节点对象
             if new_best_tree is not None:
