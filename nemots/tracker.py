@@ -107,7 +107,7 @@ class Tracker:
         for key in keys:
             # 跳过含空值的数据
             if all(x is None for x in self.history[key]):
-                print(f"[警告] {key} 全部为空值，跳过绘图")
+                # print(f"[警告] {key} 全部为空值，跳过绘图")  # 禁用警告
                 continue
                 
             plt.figure()
@@ -159,7 +159,7 @@ class Tracker:
                 print(f"[调试] 保存对比图表到: {save_path}")
                 plt.close()
             else:
-                print("[警告] reward 和 best_score 全部为空值，跳过绘图")
+                pass  # print("[警告] reward 和 best_score 全部为空值，跳过绘图")  # 禁用警告
             
         # 如果是双目标模式，绘制双目标特有指标
         if self.dual_target:
@@ -167,7 +167,7 @@ class Tracker:
                 print(f"[调试] 双目标数据点数量: {len(self.dual_history['train_step'])}")
                 self.plot_dual_metrics(save_prefix)
             else:
-                print("[警告] 双目标数据为空，跳过双目标指标图表绘制")
+                pass  # print("[警告] 双目标数据为空，跳过双目标指标图表绘制")  # 禁用警告
     
     def plot_dual_metrics(self, save_prefix="dual_target"):
         """绘制双目标特有指标图表"""
