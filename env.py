@@ -3,7 +3,10 @@ import numpy as np
 from data import BaostockDataWorker
 from preprocess import Preprocessor
 from datetime import datetime
-import gym
+try:
+    import gymnasium as gym
+except ImportError:
+    import gym
 from globals import TDT, TD , OCLHVA, indicators, REWARD, WEEKDAY, WINDOW_SIZE, OCLHVA_HELPER
 
 

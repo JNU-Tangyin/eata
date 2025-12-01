@@ -4,45 +4,49 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import json
 
+# Use English for all plots to avoid font issues
+plt.rcParams['font.family'] = 'sans-serif'
+plt.rcParams['axes.unicode_minus'] = False
+
 
 class Tracker:
     """
-    增强版跟踪器，支持训练过程指标跟踪和最终预测结果可视化
-    同时支持单目标和双目标(Q25/Q75)训练
+    Enhanced tracker for training process metrics and prediction visualization
+    Supports both single-target and dual-target (Q25/Q75) training
     """
     def __init__(self, save_dir="logs", dual_target=True):
         self.save_dir = save_dir
         self.eval_dir = os.path.join(save_dir, "evaluation")
         os.makedirs(self.save_dir, exist_ok=True)
         os.makedirs(self.eval_dir, exist_ok=True)
-        self.dual_target = dual_target  # 是否为双目标训练
+        self.dual_target = dual_target  # Whether dual-target training
         self.reset()
 
     def reset(self):
-        # 基本训练指标
+        # Basic training metrics
         self.history = {
             "train_step": [],
             "alpha": [],
             "policy_entropy": [],
             "policy_maxprob": [],
-            "value": [],  # 双目标时表示平均MAE
-            "reward": [], # 双目标时表示-MAE
-            "corr": [],   # 双目标时表示Q25/Q75关系正确率
+            "value": [],  # Average MAE for dual-target
+            "reward": [], # -MAE for dual-target
+            "corr": [],   # Q25/Q75 relationship accuracy for dual-target
             "best_score": []
         }
         
-        # 双目标特有指标
+        # Dual-target specific metrics
         if self.dual_target:
             self.dual_history = {
                 "train_step": [],
                 "mae_q25": [],
                 "mae_q75": [],
-                "q_violations": [],  # Q75<Q25的比例
-                "q_diff": []         # Q75-Q25差值
+                "q_violations": [],  # Ratio of Q75<Q25
+                "q_diff": []         # Q75-Q25 difference
             }
 
     def update(self, step, alpha, policy=None, value=None, reward=None, corr=None, best_score=None):
-        """更新基本训练指标"""
+        """Update basic training metrics"""
         self.history["train_step"].append(step)
         self.history["alpha"].append(alpha)
         if policy is not None:
@@ -60,16 +64,16 @@ class Tracker:
         self.history["best_score"].append(best_score)
         
     def update_dual_metrics(self, step, mae_q25, mae_q75, pred_q25=None, pred_q75=None):
-        """更新双目标特有指标"""
+        """Update dual-target specific metrics"""
         if not self.dual_target:
-            print("\u8b66告: 在非双目标模式下调用update_dual_metrics")
+            print("Warning: update_dual_metrics called in non-dual-target mode")
             return
             
         self.dual_history["train_step"].append(step)
         self.dual_history["mae_q25"].append(mae_q25)
         self.dual_history["mae_q75"].append(mae_q75)
         
-        # 如果提供了预测值，计算验证指标
+        # If predictions provided, calculate validation metrics
         if pred_q25 is not None and pred_q75 is not None:
             q_violations = (pred_q75 < pred_q25).sum() / len(pred_q25)
             q_diff = np.mean(pred_q75 - pred_q25)
@@ -81,18 +85,18 @@ class Tracker:
             self.dual_history["q_diff"].append(None)
 
     def plot(self, keys=None, save_prefix="training_log"):
-        """绘制基本训练指标图表"""
-        # 输出调试信息
-        print(f"\n[调试] plot内部 - 当前保存目录: {self.save_dir}")
-        print(f"[调试] 实际目录是否存在: {os.path.exists(self.save_dir)}")
-        print(f"[调试] 当前数据点数量: {len(self.history['train_step'])}")
+        """Plot basic training metrics charts"""
+        # Debug output
+        print(f"\n[Debug] plot internal - current save dir: {self.save_dir}")
+        print(f"[Debug] directory exists: {os.path.exists(self.save_dir)}")
+        print(f"[Debug] current data points: {len(self.history['train_step'])}")
         
-        # 如果没有数据点则创建空白图表
+        # Create blank chart if no data points
         if len(self.history['train_step']) == 0:
-            print("[警告] 当前还没有数据点，创建空白图表")
-            # 创建一个空的图表标记当前状态
+            print("[Warning] No data points yet, creating blank chart")
+            # Create empty chart to mark current state
             plt.figure(figsize=(8, 6))
-            plt.text(0.5, 0.5, "训练初始化中...", ha="center", va="center", fontsize=14)
+            plt.text(0.5, 0.5, "Training Initializing...", ha="center", va="center", fontsize=14)
             plt.title(f"No Data Yet - {save_prefix}")
             plt.tight_layout()
             # 确保目录存在
@@ -103,15 +107,15 @@ class Tracker:
 
         if keys is None:
             keys = [k for k in self.history if k != "train_step"]
-        # 单独曲线
+        # Individual curves
         for key in keys:
-            # 跳过含空值的数据
+            # Skip data with null values
             if all(x is None for x in self.history[key]):
-                # print(f"[警告] {key} 全部为空值，跳过绘图")  # 禁用警告
+                print(f"[Warning] {key} all null values, skipping plot")
                 continue
                 
             plt.figure()
-            # 筛选非空值
+            # Filter non-null values
             steps = []
             values = []
             for i, val in enumerate(self.history[key]):
@@ -119,21 +123,21 @@ class Tracker:
                     steps.append(self.history["train_step"][i])
                     values.append(val)
             
-            if len(steps) > 0:  # 确保有数据可绘制
+            if len(steps) > 0:  # 确保有数据可Plot
                 plt.plot(steps, values, marker="o")
                 plt.xlabel("Train Step")
                 plt.ylabel(key)
                 plt.title(key)
                 plt.tight_layout()
-                # 确保目录存在
+                # Ensure directory exists
                 os.makedirs(self.save_dir, exist_ok=True)
                 save_path = os.path.join(self.save_dir, f"{save_prefix}_{key}.png")
                 plt.savefig(save_path)
-                print(f"[调试] 保存图表到: {save_path}")
+                print(f"[Debug] Saved chart to: {save_path}")
             plt.close()
-        # reward vs best_score 双曲线
+        # reward vs best_score dual curve
         if "reward" in self.history and "best_score" in self.history:
-            # 筛选两个指标都有效的数据点
+            # Filter data points where both metrics are valid
             steps = []
             rewards = []
             scores = []
@@ -143,7 +147,7 @@ class Tracker:
                     rewards.append(self.history["reward"][i])
                     scores.append(self.history["best_score"][i])
             
-            if len(steps) > 0:  # 确保有数据可绘制
+            if len(steps) > 0:  # 确保有数据可Plot
                 plt.figure()
                 plt.plot(steps, rewards, label="Train Best Reward", marker="o")
                 plt.plot(steps, scores, label="Test Score", marker="x")
@@ -152,33 +156,33 @@ class Tracker:
                 plt.title("Train Best Reward vs Test Score")
                 plt.legend()
                 plt.tight_layout()
-                # 确保目录存在
+                # Ensure directory exists
                 os.makedirs(self.save_dir, exist_ok=True)
                 save_path = os.path.join(self.save_dir, f"{save_prefix}_reward_vs_testscore.png")
                 plt.savefig(save_path)
-                print(f"[调试] 保存对比图表到: {save_path}")
+                print(f"[Debug] Save对比图表到: {save_path}")
                 plt.close()
             else:
-                pass  # print("[警告] reward 和 best_score 全部为空值，跳过绘图")  # 禁用警告
+                print("[Warning] reward 和 best_score all null values, skip plotting")
             
-        # 如果是双目标模式，绘制双目标特有指标
+        # 如果是双目标模式，Plot双目标特有指标
         if self.dual_target:
             if len(self.dual_history["train_step"]) > 0:
-                print(f"[调试] 双目标数据点数量: {len(self.dual_history['train_step'])}")
+                print(f"[Debug] 双目标数据点数量: {len(self.dual_history['train_step'])}")
                 self.plot_dual_metrics(save_prefix)
             else:
-                pass  # print("[警告] 双目标数据为空，跳过双目标指标图表绘制")  # 禁用警告
+                print("[Warning] 双目标数据为空，跳过双目标指标图表Plot")
     
     def plot_dual_metrics(self, save_prefix="dual_target"):
-        """绘制双目标特有指标图表"""
+        """Plot双目标特有指标图表"""
         if not self.dual_target:
             return
         
-        print(f"[调试] plot_dual_metrics - 数据点数量: {len(self.dual_history['train_step'])}")
+        print(f"[Debug] plot_dual_metrics - 数据点数量: {len(self.dual_history['train_step'])}")
         
         # 确保目录存在
         os.makedirs(self.save_dir, exist_ok=True)
-        print(f"[调试] 确保目录存在: {self.save_dir}")
+        print(f"[Debug] 确保目录存在: {self.save_dir}")
             
         # 筛选有效数据点
         steps = []
@@ -191,8 +195,8 @@ class Tracker:
                 q25_values.append(self.dual_history["mae_q25"][i])
                 q75_values.append(self.dual_history["mae_q75"][i])
                 
-        # 绘制MAE对比图
-        if len(steps) > 0:  # 确保有数据可绘制
+        # PlotMAE对比图
+        if len(steps) > 0:  # 确保有数据可Plot
             plt.figure()
             plt.plot(steps, q25_values, label="Q25 MAE", marker="o")
             plt.plot(steps, q75_values, label="Q75 MAE", marker="x")
@@ -203,10 +207,10 @@ class Tracker:
             plt.tight_layout()
             save_path = os.path.join(self.save_dir, f"{save_prefix}_mae_comparison.png")
             plt.savefig(save_path)
-            print(f"[调试] 保存MAE对比图到: {save_path}")
+            print(f"[Debug] SaveMAE对比图到: {save_path}")
             plt.close()
         else:
-            print("[警告] 没有有效的MAE数据点，跳过绘制")
+            print("[Warning] 没有有效的MAE数据点，跳过Plot")
             # 创建一个空白图表
             plt.figure(figsize=(8, 6))
             plt.text(0.5, 0.5, "等待MAE数据...", ha="center", va="center", fontsize=14)
@@ -216,12 +220,12 @@ class Tracker:
             plt.savefig(save_path)
             plt.close()
         
-        # 绘制Q25/Q75关系指标
+        # PlotQ25/Q75关系指标
         if any(v is not None for v in self.dual_history["q_violations"]):
-            print(f"[调试] 绘制Q25/Q75关系指标 - 有效数据点: {sum(1 for v in self.dual_history['q_violations'] if v is not None)}")
+            print(f"[Debug] PlotQ25/Q75关系指标 - 有效数据点: {sum(1 for v in self.dual_history['q_violations'] if v is not None)}")
             
             plt.figure()
-            # 筛选非空值
+            # Filter non-null values
             steps = []
             violations = []
             for i, v in enumerate(self.dual_history["q_violations"]):
@@ -229,7 +233,7 @@ class Tracker:
                     steps.append(self.dual_history["train_step"][i])
                     violations.append(v * 100)  # 转为百分比
             
-            if len(steps) > 0:  # 确保有数据可绘制
+            if len(steps) > 0:  # 确保有数据可Plot
                 plt.plot(steps, violations, label="Q75<Q25 比例", marker="o", color='r')
                 plt.axhline(y=0.0, color='g', linestyle='--', label="目标值(0%)")
                 plt.xlabel("Train Step")
@@ -239,12 +243,12 @@ class Tracker:
                 plt.tight_layout()
                 save_path = os.path.join(self.save_dir, f"{save_prefix}_q_validation.png")
                 plt.savefig(save_path)
-                print(f"[调试] 保存Q25/Q75关系图表到: {save_path}")
+                print(f"[Debug] SaveQ25/Q75关系图表到: {save_path}")
                 plt.close()
             else:
-                print("[警告] 没有有效的Q25/Q75关系数据点，跳过绘制")
+                print("[Warning] 没有有效的Q25/Q75关系数据点，跳过Plot")
         else:
-            print("[警告] 没有Q25/Q75关系数据，创建等待图表")
+            print("[Warning] 没有Q25/Q75关系数据，创建等待图表")
             # 创建一个空白图表
             plt.figure(figsize=(8, 6))
             plt.text(0.5, 0.5, "等待Q25/Q75关系数据...", ha="center", va="center", fontsize=14)
@@ -254,12 +258,12 @@ class Tracker:
             plt.savefig(save_path)
             plt.close()
             
-        # 绘制Q75-Q25差值变化
+        # PlotQ75-Q25差值变化
         if any(d is not None for d in self.dual_history["q_diff"]):
-            print(f"[调试] 绘制Q75-Q25差值图表 - 有效数据点: {sum(1 for d in self.dual_history['q_diff'] if d is not None)}")
+            print(f"[Debug] PlotQ75-Q25差值图表 - 有效数据点: {sum(1 for d in self.dual_history['q_diff'] if d is not None)}")
             
             plt.figure()
-            # 筛选非空值
+            # Filter non-null values
             steps = []
             diffs = []
             for i, d in enumerate(self.dual_history["q_diff"]):
@@ -267,7 +271,7 @@ class Tracker:
                     steps.append(self.dual_history["train_step"][i])
                     diffs.append(d)
             
-            if len(steps) > 0:  # 确保有数据可绘制
+            if len(steps) > 0:  # 确保有数据可Plot
                 plt.plot(steps, diffs, label="Q75-Q25 差值", marker="o", color='b')
                 plt.axhline(y=0.0, color='r', linestyle='--', label="最小可接受值(0)")
                 plt.xlabel("Train Step")
@@ -277,12 +281,12 @@ class Tracker:
                 plt.tight_layout()
                 save_path = os.path.join(self.save_dir, f"{save_prefix}_q_diff.png")
                 plt.savefig(save_path)
-                print(f"[调试] 保存Q75-Q25差值图表到: {save_path}")
+                print(f"[Debug] SaveQ75-Q25差值图表到: {save_path}")
                 plt.close()
             else:
-                print("[警告] 没有有效的Q75-Q25差值数据点，跳过绘制")
+                print("[Warning] 没有有效的Q75-Q25差值数据点，跳过Plot")
         else:
-            print("[警告] 没有Q75-Q25差值数据，创建等待图表")
+            print("[Warning] 没有Q75-Q25差值数据，创建等待图表")
             # 创建一个空白图表
             plt.figure(figsize=(8, 6))
             plt.text(0.5, 0.5, "等待Q75-Q25差值数据...", ha="center", va="center", fontsize=14)
@@ -309,17 +313,17 @@ class Tracker:
     def plot_predictions_vs_actual(self, dates, pred_q25, pred_q75, actual, title="价格预测与实际对比", 
                                    filename="prediction_vs_actual.png"):
         """
-        绘制预测区间与实际价格的对比图
+        Plot预测区间与实际价格的对比图
         """
         plt.figure(figsize=(12, 6))
         
-        # 绘制预测区间
+        # Plot预测区间
         plt.fill_between(range(len(dates)), pred_q25, pred_q75, color='lightblue', alpha=0.5, label='预测价格区间(Q25-Q75)')
         
-        # 绘制实际价格曲线
+        # Plot实际价格曲线
         plt.plot(range(len(dates)), actual, 'r-', label='实际价格', linewidth=2)
         
-        # 绘制Q25和Q75预测曲线
+        # PlotQ25和Q75预测曲线
         plt.plot(range(len(dates)), pred_q25, 'b--', label='Q25预测', linewidth=1)
         plt.plot(range(len(dates)), pred_q75, 'g--', label='Q75预测', linewidth=1)
         
@@ -353,7 +357,7 @@ class Tracker:
     def plot_prediction_error(self, dates, pred_q25, pred_q75, actual, title="预测误差分析", 
                              filename="prediction_error.png"):
         """
-        绘制预测误差的分析图，包括MAE和区间违规率
+        Plot预测误差的分析图，包括MAE和区间违规率
         """
         error_q25 = np.abs(pred_q25 - actual)
         error_q75 = np.abs(pred_q75 - actual)
@@ -411,7 +415,7 @@ class Tracker:
     def plot_trading_risk_heatmap(self, dates, pred_q25, pred_q75, actual, title="交易风险热图", 
                                filename="trading_risk_heatmap.png"):
         """
-        绘制交易风险热图，展示不同时间点的买入/卖出风险
+        Plot交易风险热图，展示不同时间点的买入/卖出风险
         """
         # 计算风险指标
         below_q25 = actual < pred_q25  # 卖出风险
@@ -519,7 +523,7 @@ class Tracker:
         # 计算评估指标
         metrics = self.calculate_evaluation_metrics(pred_q25, pred_q75, actual)
         
-        # 保存指标到JSON文件
+        # Save指标到JSON文件
         with open(os.path.join(self.eval_dir, "evaluation_metrics.json"), 'w') as f:
             json.dump(metrics, f, indent=4)
             
@@ -590,7 +594,7 @@ class Tracker:
     def plot_predictions_vs_actual(self, dates, pred_q25, pred_q75, actual, title="价格预测与实际对比", 
                                    filename="prediction_vs_actual.png"):
         """
-        绘制预测区间与实际价格的对比图
+        Plot预测区间与实际价格的对比图
         
         Args:
             dates: 日期序列
@@ -598,17 +602,17 @@ class Tracker:
             pred_q75: Q75预测值
             actual: 实际价格
             title: 图表标题
-            filename: 保存的文件名
+            filename: Save的文件名
         """
         plt.figure(figsize=(12, 6))
         
-        # 绘制预测区间
+        # Plot预测区间
         plt.fill_between(range(len(dates)), pred_q25, pred_q75, color='lightblue', alpha=0.5, label='预测价格区间(Q25-Q75)')
         
-        # 绘制实际价格曲线
+        # Plot实际价格曲线
         plt.plot(range(len(dates)), actual, 'r-', label='实际价格', linewidth=2)
         
-        # 绘制Q25和Q75预测曲线
+        # PlotQ25和Q75预测曲线
         plt.plot(range(len(dates)), pred_q25, 'b--', label='Q25预测', linewidth=1)
         plt.plot(range(len(dates)), pred_q75, 'g--', label='Q75预测', linewidth=1)
         
@@ -642,7 +646,7 @@ class Tracker:
     def plot_prediction_error(self, dates, pred_q25, pred_q75, actual, title="预测误差分析", 
                              filename="prediction_error.png"):
         """
-        绘制预测误差的分析图，包括MAE和区间违规率
+        Plot预测误差的分析图，包括MAE和区间违规率
         
         Args:
             dates: 日期序列
@@ -650,7 +654,7 @@ class Tracker:
             pred_q75: Q75预测值
             actual: 实际价格
             title: 图表标题
-            filename: 保存的文件名
+            filename: Save的文件名
         """
         error_q25 = np.abs(pred_q25 - actual)
         error_q75 = np.abs(pred_q75 - actual)
@@ -717,7 +721,7 @@ class Tracker:
     def plot_trading_risk_heatmap(self, dates, pred_q25, pred_q75, actual, title="交易风险热图", 
                                filename="trading_risk_heatmap.png"):
         """
-        绘制交易风险热图，展示不同时间点的买入/卖出风险
+        Plot交易风险热图，展示不同时间点的买入/卖出风险
         
         Args:
             dates: 日期序列
@@ -725,7 +729,7 @@ class Tracker:
             pred_q75: Q75预测值
             actual: 实际价格
             title: 图表标题
-            filename: 保存的文件名
+            filename: Save的文件名
         """
         # 计算风险指标
         below_q25 = actual < pred_q25  # 卖出风险
@@ -828,14 +832,14 @@ class Tracker:
         self.plot_prediction_error(dates, pred_q25, pred_q75, actual)
         self.plot_trading_risk_heatmap(dates, pred_q25, pred_q75, actual)
         
-        # 计算并保存评估指标
+        # 计算并Save评估指标
         metrics = self.calculate_evaluation_metrics(pred_q25, pred_q75, actual)
         
         import json
         with open(os.path.join(self.save_dir, "evaluation_metrics.json"), 'w') as f:
             json.dump(metrics, f, indent=4)
             
-        print(f"\n所有可视化图表和指标已保存到 {self.save_dir} 目录")
+        print(f"\n所有可视化图表和指标已Save到 {self.save_dir} 目录")
         return metrics
         
     def calculate_evaluation_metrics(self, pred_q25, pred_q75, actual):

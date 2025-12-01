@@ -8,15 +8,15 @@ from datetime import datetime, timedelta
 from itertools import count
 import tushare as ts
 
-DATABASE = "stock.db"
+DATABASE = "stock_large.db"
 DATABASE_PATH = MAIN_PATH  # 这句话在其他import的时候就已经执行，所以未必能达到想要的效果 # 直接调用上面globals.MAIN_PATH 导致不能正确建立conn，main不能及时修改globals.MAIN_PATH
 ALL_TICKERS_DATA = "all_tickers"
-RAW_DATA = "downloaded" # by 'date'
-PROCESSED_DATA = "downloaded" # by 'date'
-TRAINED_DATA = "downlowded" #  by 'date'
-EVALUATED_DATA = "downloaded" # by 'date' 下一回合数据到来的时候即清空
+RAW_DATA = "raw_data" # by 'date'
+PROCESSED_DATA = "processed_data" # by 'date'
+TRAINED_DATA = "trained_data" # by 'date'
+EVALUATED_DATA = "evaluated_data" # by 'date' 下一回合数据到来的时候即清空
 TRAIN_HISTORY_DATA = "train_history" # by 'episode'  长期保存做评估
-ACTION_HISTORY_DATA = "action_hisory" #  by 'action' action_history结构和evaluated一样，但去掉了action==0的记录，供长期保存做评估
+ACTION_HISTORY_DATA = "action_history" # by 'action' action_history结构和evaluated一样，但去掉了action==0的记录，供长期保存做评估
 PREDICTED_DATA = "predicted" # by 'action', action prediction for WatchList，保存用作评估
 MODEL_PATH = "./model/" # table name
 MODEL_NAME = "trained_model" # trained model name
@@ -59,7 +59,7 @@ class DataStorage():
         self.conn.close()
 
     def load(self,from_table:str) -> pd.DataFrame:
-        return pd.read_sql(f'SELECT * FROM {from_table}', con = self.conn,index_col='index')
+        return pd.read_sql(f'SELECT * FROM {from_table}', con = self.conn)
 
     def save(self, df:pd.DataFrame, to_table:str, if_exists='replace'):
         return df.to_sql(name=to_table,con = self.conn, if_exists = if_exists)

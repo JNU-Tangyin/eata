@@ -165,26 +165,24 @@ class Model:
         all_eqs = []
         test_scores = []
         final_best_tree = None
-#初始化三个列表，用于存放多次运行 (num_runs) 的结果：耗时、找到的表达式和它们的分数
+        all_mcts_records = [] # 用于收集所有MCTS记录
 
         module_grow_step = (self.max_len - self.max_module_init) / self.num_transplant
- #计算模块的步长
+
         for i_test in range(self.num_runs):
-            #开始外部循环，执行 num_runs 次独立的、完整的符号回归搜索，以提高找到最优解的概率。
             best_solution = ('nothing', 0)
 
-            exploration_rate = self.exploration_rate  # 设置探索率
-            max_module = self.max_module_init  # 设置最大模块
-            reward_his = []  # 初始化奖励历史
-            best_modules = []  # 初始化最佳模块
-            aug_grammars = []  # 初始化增强语法
+            exploration_rate = self.exploration_rate
+            max_module = self.max_module_init
+            reward_his = []
+            best_modules = []
+            aug_grammars = []
 
-            start_time = time.time()  # 记录开始时间
+            start_time = time.time()
 
             self.p_v_net_ctx.reset_grammar_vocab_name()
 
             for i_itr in range(self.num_transplant):
-                # 开始内部循环，这是算法的核心，被称为“移植（transplant）”或迭代增强过程。
                 mcts_block = MCTS(data_sample=supervision_data,
                                   base_grammars=self.base_grammar,
                                   aug_grammars=[x[0] for x in sorted(self.aug_grammars_counter.items(), key=lambda item: item[1], reverse=True)[:20]],
@@ -196,19 +194,7 @@ class Model:
                                   exploration_rate=self.exploration_rate,
                                   eta=self.eta,
                                   initial_tree=previous_best_tree)
-                #实例化 MCTS 引擎*。
-     #接口*: 这是与 mcts.py 模块最核心的接口。它创建了 MCTS 类的一个实例，并传入了大量配置参数：
-      #*   data_sample: 用于评分的数据。
-      #*   base_grammars, aug_grammars: 基础语法和从上一轮学到的增强语法。
-      #*   nt_nodes: 非终端节点，来自 symbolics.py 模块。
-       #  `func_score=self.score_with_est`: 函数回调接口*。将 score.py 模块中的评分函数 score_with_est 作为一个参数传递给 MCTS，MCTS内部会调用这个函数来评估它发现的表达式的好坏
-                #
-                #从mcts导入了MCTS 这里把MCTS模式改变后，对应的参数肯定变化，这里肯定要动刀
 
-
-                
-
-                # 判断经验池是否已满，决定是否用网络引导  这一部分不用修改
                 buffer_size = self.data_buffer.maxlen
                 current_buffer_size = len(self.data_buffer)
                 warmup = int(buffer_size * 0.1)
@@ -216,11 +202,7 @@ class Model:
                     alpha = 0.0
                 else:
                     alpha = min(1.0, (current_buffer_size - warmup) / (buffer_size - warmup))
-                    #计算alpha值，用于warmup，
-                    # 这部分逻辑用于实现一个“预热”（warmup）阶段。在经验池 data_buffer 中的数据量较少时，alpha 值较低，MCTS
-  #更依赖随机搜索；随着数据增多，alpha 增大，MCTS 会更依赖神经网络的引导
 
-                #————执行MCTS搜索———— 调用的是mcts文件中的run部分
                 new_best_tree_node, current_solution, good_modules, records = mcts_block.run(
                     input_data,
                     self.transplant_step,
@@ -232,49 +214,29 @@ class Model:
                     buffer_size=buffer_size,
                     current_buffer_size=current_buffer_size
                 )
-                #按照mcts中核心run方式格式进行，具体细节看mcts 这里要大改
-#这是与mcts接口的调用 它执行了 mcts.py 中 MCTS 实例的 run 方法
-                #network=self.p_v_net_ctx`: 核心接口*。将 network.py 中定义的神经网络对象 p_v_net_ctx 传递给 MCTS。在 MCTS 内部，它会反复调用network.forward() 方法来获取策略（下一步该如何构建表达式）和价值（当前表达式的潜力评分），从而引导整个搜索过程。
-# use_network=True: 明确指示 MCTS 使用神经网络进行引导。
-  # 返回值*:
-      #*   current_solution: 本轮 MCTS 找到的最佳表达式及其分数。
-      #*   good_modules: 搜索过程中发现的有潜力的子表达式（模块）。
-      #*   records: 搜索过程的详细记录（(状态, 策略, 价值)元组），用于填充经验回放池
 
-                self.data_buffer.extend(list(records)[:])
-                #将 MCTS返回的 records添加到经验回放池self.data_buffe 中。这些数据未来可用于重新训练神经网络，使其引导能力越来越强
-                # 更新最佳模块 如果没有最佳模块，则将好的模块赋值给最佳模块
+                all_mcts_records.extend(list(records)[:]) # 收集记录，而不是直接存入buffer
+
                 if not best_modules:
                     best_modules = good_modules
                 else:
-                    # 否则，将最佳模块和好的模块合并，并按照评分进行排序
                     best_modules = sorted(list(set(best_modules + good_modules)), key=lambda x: x[1])
 
-                # 更新增强语法
                 aug_grammars = [x[0] for x in best_modules[-self.num_aug:]]
                 for grammar in aug_grammars:
                     self.aug_grammars_counter[grammar] += 1
 
-                # 将最佳解决方案的评分添加到奖励历史中  这种历史概念是不是要用到我们的改造当中
                 reward_his.append(best_solution[1])
 
-                # 如果当前解决方案的评分大于最佳解决方案的评分，则更新最佳解决方案
                 if current_solution[1] > best_solution[1]:
                     best_solution = current_solution
                     final_best_tree = new_best_tree_node
 
-                # 增加最大模块 这里的模块对应的概念是有用的子表达式，例如符号增强吧
                 max_module += module_grow_step
-                # 增加探索率
                 exploration_rate *= 5
 
-                # 检查是否发现了解决方案。如果是，提前停止。
-                #在一轮内部迭代结束后，对当前找到的最佳解进行一次最终评分。
                 test_score = \
                     self.score_with_est(score.simplify_eq(best_solution[0]), 0, supervision_data, eta=self.eta)[0]
-#接口*:
-      #*   score.simplify_eq(): 调用 score.py (或相关工具模块) 中的函数来化简表达式字符串。
-      #*   self.score_with_est(): 再次调用来自 score.py 的评分函数来计算最终分数。
 
             all_eqs.append(score.simplify_eq(best_solution[0]))
             test_scores.append(test_score)
@@ -287,10 +249,11 @@ class Model:
             print('test score: {}'.format(test_score))
             print()
 
-        # 返回 policy_batch[0] 和 reward_his[-1]
-        policy = None # Placeholder, policy_batch is not available in this scope
+        policy = None
         reward = reward_his[-1] if len(reward_his) > 0 else None
-        return all_eqs, all_times, test_scores, supervision_data, policy, reward, final_best_tree
+        
+        # 修复并激活正确的返回语句，并增加 all_mcts_records 作为返回值
+        return all_eqs, all_times, test_scores, all_mcts_records, policy, reward, final_best_tree
 
 
     #module就是语法增强最直接的利用对象：子结构  会被添加到语法增加库当中 #细节还是在mcts代码当中

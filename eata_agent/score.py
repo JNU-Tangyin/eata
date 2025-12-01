@@ -47,6 +47,9 @@ def prune_poly_c(eq):
 
 
 def score_with_est(eq, tree_size, data, t_limit=1.0, eta=0.999):
+    if not eq or not isinstance(eq, str) or not eq.strip():
+        return 0, "0"
+
     """
     该函数计算一个完整解析树的奖励分数。
     如果方程中包含占位符C，也会为C执行估计。
@@ -144,6 +147,10 @@ def score_with_est(eq, tree_size, data, t_limit=1.0, eta=0.999):
         # Check for non-numeric or empty arrays
         if f_pred.size == 0 or not np.isfinite(f_pred).all():
             return 0, eq
+
+        # Ensure f_pred and f_true are finite before calculating MSE
+        f_pred = np.nan_to_num(f_pred, nan=0.0, posinf=0.0, neginf=0.0)
+        f_true = np.nan_to_num(f_true, nan=0.0, posinf=0.0, neginf=0.0)
 
         mse = np.linalg.norm(f_pred - f_true, 2)**2 / f_true.shape[0]
         # Temporarily simplify the reward to focus on MSE, ignoring complexity penalty

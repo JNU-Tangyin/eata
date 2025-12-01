@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
-import quantstats as qs
+import empyrical as ep
 from globals import summary, test_result
 from pathlib import Path
 from functools import partial
@@ -97,7 +97,7 @@ class WebServer:
 
         if self.perf is not None:
             st.header("Summary")
-            # histograms of metrics (classification + quantstats metrics)
+            # histograms of metrics (classification + empyrical metrics)
             base_cols = ['accuracy','precision','recall','f1_score','fpr','reward']
             extra_cols = ['ann_ret_wo','ann_ret_w','sharpe_wo','sharpe_w','max_dd_wo','max_dd_w']
             my_list = [c for c in base_cols + extra_cols if c in self.perf.columns]
@@ -147,7 +147,7 @@ class WebServer:
             # st.subheader("CLOSE & ASSET GRAPH")
             st.metric(label="Ticker", value = self.ticker, delta = 'latest '+ self.record +' days')
             
-            # KPIs (Window-based using quantstats)
+            # KPIs (Window-based using empyrical)
             # Build daily returns from change multipliers if available
             scope_df = self.df if kpi_scope == 'Window' else df
             r_wo = (scope_df['change_wo_short'].astype(float) - 1) if 'change_wo_short' in scope_df.columns else pd.Series(dtype=float)
@@ -161,12 +161,12 @@ class WebServer:
                 except Exception:
                     return float('nan')
 
-            ann_wo = safe_metric(qs.stats.cagr, r_wo)
-            ann_w = safe_metric(qs.stats.cagr, r_w)
-            shp_wo = safe_metric(qs.stats.sharpe, r_wo)
-            shp_w = safe_metric(qs.stats.sharpe, r_w)
-            mdd_wo = safe_metric(qs.stats.max_drawdown, r_wo)
-            mdd_w = safe_metric(qs.stats.max_drawdown, r_w)
+            ann_wo = safe_metric(ep.annual_return, r_wo)
+            ann_w = safe_metric(ep.annual_return, r_w)
+            shp_wo = safe_metric(ep.sharpe_ratio, r_wo)
+            shp_w = safe_metric(ep.sharpe_ratio, r_w)
+            mdd_wo = safe_metric(ep.max_drawdown, r_wo)
+            mdd_w = safe_metric(ep.max_drawdown, r_w)
 
             st.subheader(f"KPIs ({kpi_scope})")
             c1, c2, c3, c4, c5, c6 = st.columns(6)
