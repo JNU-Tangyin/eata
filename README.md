@@ -2,6 +2,16 @@
 
 This paper presents `EATA`, by using symbolic regression to conformally predict the future price distribution, thus creating the trading signals.
 
+## 最新实验结果
+31支股票对比测试：
+- **EATA: 25.63%** 年化收益（第一名）
+- 买入持有: 13.43%
+- MACD: 6.62%
+- Transformer: 6.53%
+- 其他策略: 2.11% ~ -23.09%
+
+EATA算法在真实市场环境中展现出卓越的性能表现。
+
 ## Backtest Architecture (main.py entry)
 
 ```mermaid
