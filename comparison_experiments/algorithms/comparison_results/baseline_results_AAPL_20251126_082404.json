@@ -1,0 +1,13 @@
+{
+  "arima": {
+    "metrics": {
+      "annualized_return": 0,
+      "sharpe_ratio": 0,
+      "max_drawdown": 0,
+      "total_return": 0,
+      "num_trades": 0
+    },
+    "description": "ARIMA时间序列预测",
+    "success": true
+  }
+}

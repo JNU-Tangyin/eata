@@ -1,0 +1,55 @@
+[
+  {
+    "total_return": 0.0,
+    "annualized_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "volatility": 0.0,
+    "final_portfolio_value": 0.0,
+    "num_periods": 0,
+    "algorithm": "EATA",
+    "total_time": 0,
+    "num_trades": 0,
+    "config": {
+      "algorithm": "EATA",
+      "dataset": "AAPL",
+      "stock": "AAPL",
+      "windows": 50,
+      "lookback": 50,
+      "lookahead": 10,
+      "stride": 1,
+      "depth": 300
+    },
+    "success": false,
+    "error": "'NoneType' object has no attribute 'run_single_test'",
+    "experiment_id": "EATA_AAPL_1763711472",
+    "timestamp": "2025-11-21T15:51:12.865595",
+    "experiment_time": 0.18352317810058594,
+    "data_size": 1000
+  },
+  {
+    "total_return": 2.2670107256712875,
+    "annualized_return": 0.347615325254238,
+    "sharpe_ratio": 1.1152411265329016,
+    "max_drawdown": 0.3398535018547644,
+    "volatility": 0.3108362923288536,
+    "final_portfolio_value": 3267010.7256712876,
+    "num_periods": 1000,
+    "algorithm": "BuyHold",
+    "total_time": 0.008974075317382812,
+    "num_trades": 2,
+    "config": {
+      "algorithm": "BuyHold",
+      "dataset": "AAPL",
+      "stock": "AAPL",
+      "lookback": 50,
+      "lookahead": 10,
+      "stride": 2,
+      "depth": 300
+    },
+    "experiment_id": "BuyHold_AAPL_1763711472",
+    "timestamp": "2025-11-21T15:51:12.874605",
+    "experiment_time": 0.008995771408081055,
+    "data_size": 1000
+  }
+]

@@ -1,0 +1,100 @@
+{
+  "buy_and_hold": {
+    "metrics": {
+      "total_return": 8.509093173053603,
+      "annualized_return": 0.1623321632681598,
+      "sharpe_ratio": 0.6372370137800583,
+      "max_drawdown": 0.5136896862398307,
+      "num_trades": 0.0
+    },
+    "description": "买入持有策略",
+    "success": true
+  },
+  "macd": {
+    "metrics": {
+      "total_return": 6.622275467840358,
+      "annualized_return": 0.14528808892051814,
+      "sharpe_ratio": 0.748024730566017,
+      "max_drawdown": 0.3581151360022459,
+      "num_trades": 267.0
+    },
+    "description": "MACD交叉策略",
+    "success": true
+  },
+  "arima": {
+    "metrics": {
+      "total_return": -0.7993324724164012,
+      "annualized_return": -0.30060737168251495,
+      "sharpe_ratio": -0.9136199207218656,
+      "max_drawdown": 0.8005932207148627,
+      "num_trades": 34.0
+    },
+    "description": "ARIMA时间序列预测",
+    "success": true
+  },
+  "gp": {
+    "metrics": {
+      "total_return": -0.2881547953765755,
+      "annualized_return": -0.07287383926518864,
+      "sharpe_ratio": -0.06292647097998794,
+      "max_drawdown": 0.5627741616198693,
+      "num_trades": 1148.0
+    },
+    "description": "遗传编程策略",
+    "success": true
+  },
+  "lightgbm": {
+    "metrics": {
+      "total_return": -0.6482124448422677,
+      "annualized_return": -0.20832453425004438,
+      "sharpe_ratio": -0.5368729404957998,
+      "max_drawdown": 0.7828325121201206,
+      "num_trades": 166.0
+    },
+    "description": "LightGBM机器学习策略",
+    "success": true
+  },
+  "lstm": {
+    "metrics": {
+      "total_return": -0.004797399044036865,
+      "annualized_return": -0.001069969366687351,
+      "sharpe_ratio": -0.47202931168258316,
+      "max_drawdown": 0.004797399044036865,
+      "num_trades": 2.0
+    },
+    "description": "LSTM神经网络策略",
+    "success": true
+  },
+  "transformer": {
+    "metrics": {
+      "total_return": 1.4279351219474754,
+      "annualized_return": 0.21831471793120083,
+      "sharpe_ratio": 0.7628396639346016,
+      "max_drawdown": 0.3855424749063601,
+      "num_trades": 0.0
+    },
+    "description": "Transformer模型策略",
+    "success": true
+  },
+  "ppo": {
+    "metrics": {
+      "total_return": 0.724141210285234,
+      "annualized_return": 0.12892378579372465,
+      "sharpe_ratio": 0.6135458404727707,
+      "max_drawdown": 0.39591598830070523,
+      "num_trades": 932.0
+    },
+    "description": "PPO强化学习策略",
+    "success": true
+  },
+  "eata": {
+    "metrics": {
+      "annualized_return": 0.3089389950075838,
+      "sharpe_ratio": 0.9265335452389398,
+      "max_drawdown": 0.3780489801514008,
+      "total_return": 1.9323355024304742
+    },
+    "description": "EATA强化学习策略",
+    "success": true
+  }
+}

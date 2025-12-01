@@ -1,0 +1,29 @@
+[
+  {
+    "total_return": -0.024093697463989257,
+    "annualized_return": -0.004865862881611727,
+    "sharpe_ratio": -1.6883214496166215,
+    "max_drawdown": 0.04625256590270996,
+    "volatility": 0.0,
+    "final_portfolio_value": 975906.3025360107,
+    "num_periods": 20,
+    "algorithm": "EATA",
+    "total_time": 8.8147451877594,
+    "num_trades": 20,
+    "config": {
+      "algorithm": "EATA",
+      "dataset": "AAPL",
+      "stock": "AAPL",
+      "windows": 20,
+      "lookback": 50,
+      "lookahead": 10,
+      "stride": 1,
+      "depth": 300
+    },
+    "success": true,
+    "experiment_id": "EATA_AAPL_1763718743",
+    "timestamp": "2025-11-21T17:52:23.505596",
+    "experiment_time": 8.825510025024414,
+    "data_size": 1258
+  }
+]

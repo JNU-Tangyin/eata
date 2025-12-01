@@ -1,0 +1,46 @@
+{
+  "eata": {
+    "metrics": {
+      "total_return": -0.34195970931284503,
+      "annualized_return": -0.13052560136374114,
+      "sharpe_ratio": -0.47698151579240705,
+      "max_drawdown": 0.3996279417592007,
+      "num_trades": 201.0
+    },
+    "description": "EATA强化学习策略",
+    "success": true
+  },
+  "lstm": {
+    "metrics": {
+      "total_return": 0.007938217289640281,
+      "annualized_return": 0.002646110969133364,
+      "sharpe_ratio": 0.10793502691036128,
+      "max_drawdown": 0.033661842346191406,
+      "num_trades": 2.0
+    },
+    "description": "LSTM神经网络策略",
+    "success": true
+  },
+  "transformer": {
+    "metrics": {
+      "total_return": 0.0,
+      "annualized_return": 0.0,
+      "sharpe_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "num_trades": 0.0
+    },
+    "description": "Transformer模型策略",
+    "success": true
+  },
+  "ppo": {
+    "metrics": {
+      "total_return": 0.31596744690297895,
+      "annualized_return": 0.0961091811292043,
+      "sharpe_ratio": 0.48998818235206576,
+      "max_drawdown": 0.2754814548638398,
+      "num_trades": 365.0
+    },
+    "description": "PPO强化学习策略",
+    "success": true
+  }
+}

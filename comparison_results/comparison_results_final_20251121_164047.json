@@ -1,0 +1,30 @@
+[
+  {
+    "total_return": 0.0,
+    "annualized_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "volatility": 0.0,
+    "final_portfolio_value": 0.0,
+    "num_periods": 0,
+    "algorithm": "EATA",
+    "total_time": 0,
+    "num_trades": 0,
+    "config": {
+      "algorithm": "EATA",
+      "dataset": "AAPL",
+      "stock": "AAPL",
+      "windows": 50,
+      "lookback": 50,
+      "lookahead": 10,
+      "stride": 1,
+      "depth": 300
+    },
+    "success": false,
+    "error": "'NoneType' object has no attribute 'run_single_test'",
+    "experiment_id": "EATA_AAPL_1763714447",
+    "timestamp": "2025-11-21T16:40:47.673489",
+    "experiment_time": 0.17623496055603027,
+    "data_size": 1000
+  }
+]
