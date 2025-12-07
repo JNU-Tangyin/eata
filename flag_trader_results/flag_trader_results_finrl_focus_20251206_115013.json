@@ -1,0 +1,81 @@
+{
+  "experiment_type": "finrl_focus",
+  "experiment_config": {
+    "name": "FinRL Focused Comparison",
+    "strategies": [
+      "eata",
+      "finrl_ppo",
+      "finrl_a2c",
+      "finrl_sac",
+      "finrl_td3",
+      "finrl_ddpg",
+      "buy_and_hold",
+      "ppo"
+    ],
+    "description": "专注于FinRL强化学习方法的对比"
+  },
+  "tickers": [
+    "AAPL"
+  ],
+  "parameters": {
+    "lookback": 50,
+    "lookahead": 10,
+    "stride": 1,
+    "depth": 300,
+    "num_runs": 1
+  },
+  "experiment_time": 3.116873025894165,
+  "timestamp": "20251206_115013",
+  "results": {
+    "AAPL": {
+      "eata": {
+        "metrics": "total_return         0.0\nannualized_return    0.0\nsharpe_ratio         0.0\nmax_drawdown         0.0\nnum_trades           0.0\ndtype: float64",
+        "backtest_results": "          date        open  ...  strategy_return  cumulative_return\n350 2022-12-17  151.890934  ...              0.0                0.0\n351 2022-12-18  152.670261  ...              0.0                0.0\n352 2022-12-19  148.645213  ...             -0.0                0.0\n353 2022-12-20  149.264161  ...              0.0                0.0\n354 2022-12-21  143.456861  ...             -0.0                0.0\n..         ...         ...  ...              ...                ...\n495 2023-05-11  133.960929  ...              0.0                0.0\n496 2023-05-12  135.104929  ...              0.0                0.0\n497 2023-05-13  136.434354  ...              0.0                0.0\n498 2023-05-14  132.635932  ...             -0.0                0.0\n499 2023-05-15  137.780807  ...              0.0                0.0\n\n[150 rows x 9 columns]",
+        "description": "EATA强化学习策略",
+        "success": true
+      },
+      "finrl_ppo": {
+        "metrics": null,
+        "backtest_results": null,
+        "description": "FinRL PPO强化学习策略",
+        "success": false
+      },
+      "finrl_a2c": {
+        "metrics": null,
+        "backtest_results": null,
+        "description": "FinRL A2C强化学习策略",
+        "success": false
+      },
+      "finrl_sac": {
+        "metrics": null,
+        "backtest_results": null,
+        "description": "FinRL SAC强化学习策略",
+        "success": false
+      },
+      "finrl_td3": {
+        "metrics": null,
+        "backtest_results": null,
+        "description": "FinRL TD3强化学习策略",
+        "success": false
+      },
+      "finrl_ddpg": {
+        "metrics": null,
+        "backtest_results": null,
+        "description": "FinRL DDPG强化学习策略",
+        "success": false
+      },
+      "buy_and_hold": {
+        "metrics": "total_return         0.366383\nannualized_return    0.170754\nsharpe_ratio         0.637126\nmax_drawdown         0.509398\nnum_trades           0.000000\ndtype: float64",
+        "backtest_results": "          date        open  ...  strategy_return  cumulative_return\n0   2022-01-01   99.301842  ...         0.000000           0.000000\n1   2022-01-02  100.935107  ...         0.011189           0.011189\n2   2022-01-03  102.792214  ...         0.013005           0.024340\n3   2022-01-04  103.195633  ...         0.006942           0.031452\n4   2022-01-05   99.129129  ...        -0.039273          -0.009057\n..         ...         ...  ...              ...                ...\n495 2023-05-11  133.960929  ...         0.030215           0.339912\n496 2023-05-12  135.104929  ...         0.003764           0.344955\n497 2023-05-13  136.434354  ...         0.014424           0.364355\n498 2023-05-14  132.635932  ...        -0.024739           0.330602\n499 2023-05-15  137.780807  ...         0.026891           0.366383\n\n[500 rows x 9 columns]",
+        "description": "买入持有策略",
+        "success": true
+      },
+      "ppo": {
+        "metrics": "total_return          -0.054419\nannualized_return     -0.090297\nsharpe_ratio          -0.261805\nmax_drawdown           0.207301\nnum_trades           146.000000\ndtype: float64",
+        "backtest_results": "          date        open  ...  strategy_return  cumulative_return\n350 2022-12-17  151.890934  ...         0.000000           0.000000\n351 2022-12-18  152.670261  ...         0.000000           0.000000\n352 2022-12-19  148.645213  ...        -0.019870          -0.019870\n353 2022-12-20  149.264161  ...        -0.000212          -0.020078\n354 2022-12-21  143.456861  ...        -0.000000          -0.020078\n..         ...         ...  ...              ...                ...\n495 2023-05-11  133.960929  ...         0.000000          -0.061699\n496 2023-05-12  135.104929  ...        -0.003764          -0.065231\n497 2023-05-13  136.434354  ...         0.014424          -0.051748\n498 2023-05-14  132.635932  ...         0.024739          -0.028289\n499 2023-05-15  137.780807  ...        -0.026891          -0.054419\n\n[150 rows x 9 columns]",
+        "description": "PPO强化学习策略",
+        "success": true
+      }
+    }
+  }
+}
