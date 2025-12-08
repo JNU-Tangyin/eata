@@ -1,233 +1,361 @@
-# Explainable Algorithmic Trading Agent via Symbolic Regression
+# EATA: Explainable Algorithmic Trading Agent via Symbolic Regression
 
-This paper presents `EATA`, by using symbolic regression to conformally predict the future price distribution, thus creating the trading signals.
+[![Python 3.8+](https://img.shields.io/badge/python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-2.0+-ee4c2c.svg)](https://pytorch.org/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
+**EATA** (Explainable Algorithmic Trading Agent) 是一个基于**符号回归**和**蒙特卡洛树搜索 (MCTS)** 的可解释量化交易系统。该系统通过自动发现数学表达式来预测价格分布，从而生成可解释的交易信号。
+
+## 核心创新
+
+1. **符号回归驱动的价格预测**: 使用 MCTS + 神经网络引导的符号回归，自动发现描述市场动态的数学公式
+2. **双头价值网络**: 同时预测表达式精度 (V_accuracy) 和交易盈利 (V_profit)
+3. **语法树继承机制**: 滑动窗口间传递最优表达式，实现热启动加速
+4. **可解释性**: 输出人类可读的数学表达式，而非黑盒模型
 
 ## 最新实验结果
-31支股票对比测试：
-- **EATA: 25.63%** 年化收益（第一名）
-- 买入持有: 13.43%
-- MACD: 6.62%
-- Transformer: 6.53%
-- 其他策略: 2.11% ~ -23.09%
 
-EATA算法在真实市场环境中展现出卓越的性能表现。
+31支股票对比测试（2020-2024）：
 
-## Backtest Architecture (main.py entry)
+| 策略 | 年化收益 | 排名 |
+|------|----------|------|
+| **EATA** | **25.63%** | 🥇 |
+| Buy & Hold | 13.43% | 2 |
+| MACD | 6.62% | 3 |
+| Transformer | 6.53% | 4 |
+| PPO | 2.11% | 5 |
+| LSTM | -5.23% | 6 |
+| ARIMA | -23.09% | 7 |
 
-```mermaid
-graph LR
-    entry[main.py] -->|schedule 18:00| predictTask[predict]
-    entry -->|schedule 18:00| evalTask[evaluate]
-    entry -->|hourly| wsTask[test_webserver]
+---
 
-    predictTask --> PredictorCls[Predictor-predict.py]
-    PredictorCls -->|use_nemots==True| NTP[NEMoTSPredictor - nemots_adapter.py]
-    PredictorCls -->|fallback| BW[Bandwagon]
-    NTP -->|fit/predict_action| nemotsEng[Engine -nemots/engine.py]
-    nemotsEng --> nemotsModel[Model]
-    nemotsModel --> nemotsMCTS[MCTS]
-    nemotsModel --> nemotsNet[PVNetCtx]
-    nemotsModel --> nemotsScore[score_with_est]
-    nemotsEng --> nemotsMetrics[OptimizedMetrics]
-
-    PredictorCls -->|save_action/save_predicted| DS[DataStorage]
-    DS -->|write CSV| TestDir[Test/ ...]
-
-    evalTask --> EvalCls[Evaluator evaluate.py]
-    EvalCls -->|read CSV| TestDir
-    EvalCls -->|asset_change + class_perf| Summary[evaluated.csv]
-
-    wsTask --> WebUI[WebServer visualize.py]
-    WebUI -->|read| Summary
-    WebUI -->|read| TestDir
-    WebUI -->|serve| Browser[(Streamlit UI)]
-```
-
-- **调度**: `main.py` 使用 `schedule` 定时触发 `predict()`, `evaluate()`, `test_webserver()`。
-- **预测**: `predict.Predictor` 可走 `NEMoTSPredictor`（符号回归）或 Bandwagon；动作写入 `Test/`。
-- **评估**: `evaluate.Evaluator.asset_change()/class_perf()` 产出 `evaluated.csv`。
-- **可视化**: `visualize.WebServer` 读取 `Test/` 与 `evaluated.csv`，以 Streamlit 展示。
-
-## Full Reinforcement Learning (NEMoTS) Architecture
-
-```mermaid
-graph TD
-    subgraph Data Prep
-        DIn[（open,high,low,close,volume,amount:DF）]
-        PreA[_prepare_training_data -FullNEMoTSAdapter / sliding_window_nemots]
-        DIn --> PreA --> Tensor[X,y/window tensor]
-    end
-
-    subgraph Engine Layer
-        Eng[Engine]
-        Mod[Model]
-        Eng -->|simulate X,y,inherited_tree?| Mod
-    end
-
-    subgraph Search & Policy
-        M[MCTS]
-        Adp[MCTSAdapter.patch_mcts]
-        Net[PVNetCtx]
-        Gram[grammar - symbolics.py]
-        Score[score_with_est - score.py]
-        Metric[OptimizedMetrics engine.py]
-        Track[Tracker]
-        Buffer[(data_buffer deque)]
-    end
-
-    Tensor --> Eng
-    Mod -->|init/run| M
-    Mod --> Gram
-    Adp --> M
-    M -->|get_policy3| Net
-    M -->|update_modules/rollout| M
-    M -->|records| Buffer
-    Mod --> Buffer
-    Eng -->|train uses| Track
-    Mod -->|score_with_est| Score
-    Eng -->|metrics| Metric
-
-    subgraph Inheritance
-        Prev[previous_best_expression/tree]
-        Prev -->|inherited_tree| Eng
-    end
-
-    subgraph Outputs
-        Best[best_exp]
-        MAE[MAE/MSE/Corr]
-        Policy[policy]
-        Reward[reward]
-    end
-
-    Metric --> MAE
-    Eng --> Best
-    Eng --> Policy
-    Eng --> Reward
-
+## 项目结构
 
 ```
-
-- **数据准备**: `FullNEMoTSAdapter._prepare_training_data()` 或 `SlidingWindowNEMoTS._prepare_sliding_window_data()` 生成张量输入。
-- **引擎**: `engine.Engine.simulate()` 调 `model.Model.run()`；`MCTSAdapter` 动态修补策略维度。
-- **搜索/策略**: `MCTS` 结合 `PVNetCtx` 与 UCB；`score.score_with_est()` 打分；`Tracker` 采集训练指标；`data_buffer` 驱动 NN 融合系数。
-- **继承**: 滑窗训练中将 `previous_best_expression` 作为 `inherited_tree` 传入，提升稳定性。
-- **输出**: 最优表达式与评估指标（MAE/MSE/Corr/Reward）用于后续交易信号与回测。
-
-## 模块依赖关系图
-
-```mermaid
-graph TD
-    subgraph Project Root
-        README[README.md]
-        QQE[QQE.py]
-        SW[sliding_window_nemots.py]
-        Adapter[nemots_adapter.py]
-        TestDir[Test/ ...]
-    end
-
-    subgraph nemots
-        NEngine[engine.py Engine, OptimizedMetrics]
-        NModel[model.py Model]
-        NMCTS[mcts.py MCTS]
-        NMCTSAdp[mcts_adapter.py MCTSAdapter]
-        NNet[network.py PVNetCtx]
-        NSym[symbolics.py grammar & functions]
-        NScore[score.py score_with_est, simplify_eq]
-        NArgs[args.py Args]
-        NTrack[tracker.py Tracker]
-        NMetrics[OptimizedMetrics]
-    end
-
-    Adapter --> |uses| NPredict[NEMoTSPredictor in nemots_adapter.py]
-    NPredict --> |optional| Full[FullNEMoTSAdapter]
-    NPredict --> |fallback| Simple[SimpleNEMoTS]
-
-    Full --> |.fit/.predict_action| NEngine
-    Full --> |prepare data| Adapter
-    NEngine --> |run| NModel
-    NModel --> |search| NMCTS
-    NModel --> |policy/value| NNet
-    NModel --> |grammar| NSym
-    NModel --> |score| NScore
-    NModel --> |records| NTrack
-    NMCTSAdp --> |patch| NMCTS
-    NEngine --> NMetrics
-
-    SW --> |Engine + Args| NEngine
-    SW --> |hyperparams| NArgs
-
-    Simple --> |random expr| Adapter
-    Simple --> |score| Adapter
+eata/
+├── agent.py                    # 核心Agent类，集成决策流程
+├── predict.py                  # 预测器与回测入口
+├── main.py                     # 定时调度入口
+├── evaluate.py                 # 评估模块
+├── visualize.py                # Streamlit可视化
+├── performance_metrics.py      # 交易指标计算
+│
+├── eata_agent/                 # 核心算法模块
+│   ├── engine.py               # 引擎层：训练循环与经验管理
+│   ├── model.py                # 模型层：MCTS编排与语法管理
+│   ├── mcts.py                 # MCTS搜索：UCT + 神经网络融合
+│   ├── network.py              # PVNet：策略-价值-盈利三头网络
+│   ├── score.py                # 表达式评分与系数优化
+│   ├── symbolics.py            # 语法规则库（含金融函数）
+│   ├── environment.py          # 滑动窗口环境
+│   ├── tracker.py              # 训练指标追踪
+│   └── args.py                 # 超参数配置
+│
+├── comparison_experiments/     # 对比实验框架
+│   ├── algorithms/             # 基线策略实现
+│   │   ├── eata.py             # EATA策略封装
+│   │   ├── buy_and_hold.py     # 买入持有
+│   │   ├── macd.py             # MACD策略
+│   │   ├── transformer.py      # Transformer
+│   │   ├── ppo.py              # PPO强化学习
+│   │   ├── lstm.py             # LSTM预测
+│   │   ├── gp.py               # 遗传规划
+│   │   ├── arima.py            # ARIMA
+│   │   └── baseline.py         # 统一运行器
+│   └── data/                   # 实验数据
+│
+├── run_experiments.py          # 批量实验脚本
+└── requirements.txt            # 依赖列表
 ```
 
-关键关系引用：
+---
 
-- [NEMoTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:666:0-706:9) 统一入口，内部的 [NEMoTSPredictor](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:461:0-664:39) 根据数据量选择：
-  - 充足数据：[FullNEMoTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:226:0-459:38) 调用 [nemots.engine.Engine.simulate()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:26:4-52:80) → [model.Model.run()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:237:4-357:79) → [mcts.MCTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:7:0-365:36) + `network.PVNetCtx`，并用 [mcts_adapter.MCTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:17:0-165:24) 对齐维度，打分经 [score.score_with_est](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/score.py:48:0-136:16) 与 [engine.OptimizedMetrics.metrics](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:164:4-280:39)。
-  - 数据不足：[SimpleNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:132:0-224:40) 在 [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 内部生成与评估符号表达式。
-- [sliding_window_nemots.py](cci:7://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:0:0-0:0) 的 [SlidingWindowNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:16:0-291:9) 直接构造 [Engine(Args)](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:16:0-160:12)，使用滑窗数据并将前一窗最佳表达式以继承方式传入 [simulate()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:26:4-52:80)。
+## 快速开始
 
-## 训练/预测时序图（完整 NEMoTS 路径）
+### 安装依赖
+
+```bash
+pip install -r requirements.txt
+```
+
+### 运行单股票回测
+
+```bash
+python predict.py --project_name my_test
+```
+
+### 运行对比实验
+
+```bash
+# 单参数集实验
+python run_experiments.py --mode single --tickers AAPL MSFT GOOGL --runs 3
+
+# 参数扫描实验
+python run_experiments.py --mode sweep --tickers AAPL MSFT --runs 5
+```
+
+### 启动可视化界面
+
+```bash
+streamlit run visualize.py
+```
+
+---
+
+## 系统架构
+
+### 整体架构图
+
+```mermaid
+graph TB
+    subgraph Input
+        Data[(股票数据<br/>OHLCVA)]
+    end
+    
+    subgraph Agent Layer
+        Agent[Agent<br/>agent.py]
+        Predictor[Predictor<br/>predict.py]
+    end
+    
+    subgraph Core Engine
+        Engine[Engine<br/>engine.py]
+        Model[Model<br/>model.py]
+    end
+    
+    subgraph Search & Learning
+        MCTS[MCTS<br/>mcts.py]
+        PVNet[PVNetCtx<br/>network.py]
+        Grammar[Grammar<br/>symbolics.py]
+        Score[Score<br/>score.py]
+    end
+    
+    subgraph Output
+        Expression[数学表达式]
+        Signal[交易信号<br/>-1/0/1]
+        Metrics[评估指标]
+    end
+    
+    Data --> Predictor
+    Predictor --> Agent
+    Agent --> Engine
+    Engine --> Model
+    Model --> MCTS
+    MCTS <--> PVNet
+    MCTS --> Grammar
+    MCTS --> Score
+    Model --> Expression
+    Agent --> Signal
+    Signal --> Metrics
+```
+
+### 核心流程
 
 ```mermaid
 sequenceDiagram
-    autonumber
-    participant User as User Code
-    participant Adapter as NEMoTSAdapter
-    participant Pred as NEMoTSPredictor
-    participant Full as FullNEMoTSAdapter
-    participant Eng as nemots.Engine
-    participant Mod as nemots.Model
-    participant MCTS as nemots.MCTS (+ MCTSAdapter)
-    participant Net as PVNetCtx (network)
-    participant Score as score/metrics
-
-    User->>Adapter: train(df)
-    Adapter->>Pred: .fit(df)
-    Pred->>Full: 构造 + .fit(df)
-    Full->>Full: _prepare_training_data(df) → (X,y)
-    Full->>Full: _convert_to_nemots_format(X,y) → data
-    Full->>Eng: simulate(data, inherited_tree?)
-
-    Eng->>Mod: run(X, y, inherited_tree)
-    Mod->>MCTS: 构造(MCTSAdapter.patch_mcts)
+    participant P as Predictor
+    participant A as Agent
+    participant E as Engine
+    participant M as Model
+    participant MCTS as MCTS
+    participant Net as PVNet
+    
+    P->>A: predict(df, shares_held)
+    A->>A: _prepare_data(df) → 变化率矩阵
+    A->>E: simulate(data, previous_best_tree)
+    E->>M: run(X, y, inherited_tree)
+    
     loop num_transplant × num_runs
-        MCTS->>Net: get_policy3(...) → policy_nn, value
-        MCTS->>MCTS: 融合 NN policy 与 UCB
-        MCTS->>MCTS: 搜索/rollout/回传
-        MCTS->>Mod: 返回 best_solution, records
-        Mod->>Mod: 更新 data_buffer / aug_grammars
+        M->>MCTS: 初始化搜索树
+        MCTS->>Net: get_policy3() → policy, value, profit
+        MCTS->>MCTS: UCT选择 + 展开 + 回传
+        MCTS-->>M: best_solution, records
     end
-    Mod-->>Eng: all_eqs, test_scores, supervision_data, policy, reward
-    Eng->>Score: OptimizedMetrics.metrics(...)
-    Score-->>Eng: mae, mse, corr, best_exp
-    Eng-->>Full: 返回(best_exp, mae, mse, corr, ...)
-
-    Full-->>Pred: is_trained=True
-    Pred-->>Adapter: done
-
-    User->>Adapter: predict(df)
-    Adapter->>Pred: .predict_action(df)
-    alt FullNEMoTSAdapter
-        Pred->>Full: .predict_action(df)
-        Full-->>Pred: action {-1,0,1}
-    else SimpleNEMoTS
-        Pred->>Pred: 简化表达式预测
-        Pred-->>Adapter: action {-1,0,1}
-    end
+    
+    M-->>E: all_eqs, scores, mcts_records
+    E->>E: OptimizedMetrics.metrics()
+    E-->>A: best_exp, top_10_exps, new_best_tree
+    
+    A->>A: _predict_distribution(top_10_exps)
+    A->>A: _calculate_rl_reward_and_signal()
+    A->>E: store_experiences(stamped_records)
+    A-->>P: (signal, rl_reward)
 ```
 
-## 补充说明
+---
 
-- **顶层入口**：
+## 核心模块详解
 
-  - [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 提供统一接口：[NEMoTSAdapter.train()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:676:4-686:24), [NEMoTSAdapter.predict()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:688:4-693:48)。
-  - [sliding_window_nemots.py](cci:7://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:0:0-0:0) 提供滑窗增强版本：[SlidingWindowNEMoTS.sliding_fit()](cci:1://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:160:4-220:13), [SlidingWindowNEMoTS.predict()](cci:1://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:222:4-272:20)，直接用 [Engine](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:16:0-160:12) 与 [Args](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:237:8-297:90)。
-- **核心搜索与评估链路**：
+### 1. Agent (`agent.py`)
 
-  - [nemots/model.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/model.py:0:0-0:0) 中 [Model.run()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/model.py:69:4-252:80) 负责构建 [MCTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:7:0-365:36)，组织 grammar（[symbolics.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/symbolics.py:0:0-0:0)），引导搜索（`network.PVNetCtx`），并将搜索轨迹缓存到 `data_buffer`。
-  - [nemots/mcts_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:0:0-0:0) 的 [MCTSAdapter.patch_mcts()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:70:4-126:28) 对 [MCTS.get_policy3()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:207:4-214:28) 进行维度对齐，保证 NN 策略输出与 MCTS 语法空间一致。
-  - [nemots/score.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/score.py:0:0-0:0) 的 [score_with_est()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/score.py:48:0-136:16) 对表达式进行系数估计与评分，[nemots/engine.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:0:0-0:0) 的 [OptimizedMetrics.metrics()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:164:4-280:39) 用于最终度量与表达式选择。
-- **简化路径**：
+Agent是系统的决策核心，负责：
+- **数据预处理**: 将OHLCVA转换为变化率矩阵
+- **符号回归调用**: 通过Engine发现最优数学表达式
+- **分布预测**: 使用Top-10表达式生成未来价格分布
+- **信号生成**: 基于Q25/Q75分位数规则生成交易信号
+- **经验管理**: 将RL奖励"盖戳"到MCTS经验上
 
-  - [SimpleNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:132:0-224:40) 在 [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 中，通过随机表达式模板与 [StockScorer.score_expression()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:71:4-130:34) 简化评估，数据不足时兜底。
+```python
+# 核心决策流程
+action, rl_reward = agent.criteria(df, shares_held)
+```
+
+### 2. Engine (`eata_agent/engine.py`)
+
+Engine是训练循环的控制中心：
+- **simulate()**: 执行一次完整的符号回归搜索
+- **train()**: 使用经验池训练神经网络
+- **store_experiences()**: 接收带RL奖励的经验数据
+
+```python
+# 三头损失函数
+total_loss = value_loss + profit_loss + policy_loss
+```
+
+### 3. Model (`eata_agent/model.py`)
+
+Model负责MCTS的编排和语法管理：
+- **动态语法生成**: 根据输入维度自动生成变量终结符
+- **语法增强**: 维护高质量子表达式库 (aug_grammars)
+- **搜索控制**: 管理num_transplant × num_runs的嵌套循环
+
+### 4. MCTS (`eata_agent/mcts.py`)
+
+蒙特卡洛树搜索的核心实现：
+- **UCT公式**: `Q/N + C * sqrt(ln(N_parent)/N)`
+- **神经网络融合**: `policy = α * policy_nn + (1-α) * policy_ucb`
+- **双头价值融合**: `value = w * V_accuracy + (1-w) * V_profit`
+- **语法树继承**: 支持从上一窗口继承最优树
+
+### 5. PVNet (`eata_agent/network.py`)
+
+三头策略-价值网络：
+- **输入**: 状态序列 (LSTM) + 语法树嵌入 (Embedding)
+- **输出**: 
+  - `policy`: 下一步语法规则的概率分布
+  - `value`: 表达式精度预测
+  - `profit`: 交易盈利预测
+
+### 6. Score (`eata_agent/score.py`)
+
+表达式评分与系数优化：
+- **score_with_est()**: 计算 `reward = 1 / (1 + MSE)`
+- **系数估计**: 使用Powell优化器估计表达式中的常数C
+
+### 7. Symbolics (`eata_agent/symbolics.py`)
+
+语法规则库，包含：
+- **基础运算**: `+, -, *, /, cos, sin, exp, log, sqrt`
+- **金融函数**: `delay, ma, diff, mom, rsi, volatility`
+- **动态终结符**: `x0, x1, ..., xn` (对应OHLCVA特征)
+
+---
+
+## 超参数配置
+
+| 参数 | 默认值 | 说明 |
+|------|--------|------|
+| `lookback` | 50 | 回看窗口长度 |
+| `lookahead` | 10 | 预测窗口长度 |
+| `stride` | 1 | 滑动步长 |
+| `depth` | 300 | 搜索深度 |
+| `max_len` | 35 | 表达式最大长度 |
+| `num_transplant` | 5 | 语法增强轮数 |
+| `num_runs` | 5 | 每轮MCTS运行次数 |
+| `transplant_step` | 800 | 每次MCTS的episode数 |
+| `lr` | 1e-5 | 学习率 |
+| `train_size` | 64 | 训练批次大小 |
+
+---
+
+## 评估指标
+
+系统使用 `TradingMetrics` 类计算完整的交易指标：
+
+| 指标 | 说明 |
+|------|------|
+| Annual Return (AR) | 年化收益率 |
+| Sharpe Ratio | 夏普比率 |
+| Sortino Ratio | 索提诺比率 |
+| Max Drawdown (MDD) | 最大回撤 |
+| Calmar Ratio | 卡玛比率 |
+| Win Rate | 胜率 |
+| Profit Factor | 盈利因子 |
+| Alpha | 超额收益 |
+| Beta | 市场敏感度 |
+
+---
+
+## 对比实验框架
+
+`comparison_experiments/` 提供了完整的基线对比框架：
+
+```python
+from comparison_experiments.algorithms.baseline import BaselineRunner
+
+runner = BaselineRunner()
+results = runner.run_real_data_experiment(
+    ticker='AAPL',
+    strategies=['eata', 'buy_and_hold', 'macd', 'transformer'],
+    lookback=50,
+    lookahead=10
+)
+```
+
+支持的策略：
+- **EATA**: 本项目的符号回归方法
+- **Buy & Hold**: 买入持有基准
+- **MACD**: 技术指标策略
+- **Transformer**: 深度学习预测
+- **PPO**: 强化学习策略
+- **LSTM**: 序列预测模型
+- **GP**: 遗传规划
+- **LightGBM**: 梯度提升
+- **ARIMA**: 时间序列模型
+
+---
+
+## 输出文件
+
+运行后生成的文件：
+- `asset_curve_{project}_{ticker}.png`: 资产曲线图
+- `rl_reward_trend_{project}_{ticker}.png`: RL奖励趋势图
+- `EATA_Strategy_Report_{project}_{ticker}.html`: QuantStats详细报告
+- `experiment_results/`: 实验结果CSV文件
+
+---
+
+## 依赖环境
+
+```
+torch>=2.0.1
+numpy>=1.23.2
+pandas>=1.5.0
+scipy>=1.9.0
+sympy>=1.11
+gplearn>=0.4.2
+quantstats>=0.0.62
+streamlit>=1.32.0
+matplotlib>=3.8.3
+seaborn>=0.13.2
+```
+
+---
+
+## 引用
+
+如果您使用了本项目，请引用：
+
+```bibtex
+@article{eata2024,
+  title={EATA: Explainable Algorithmic Trading Agent via Symbolic Regression},
+  author={...},
+  journal={...},
+  year={2024}
+}
+```
+
+---
+
+## License
+
+MIT License
