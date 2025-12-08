@@ -1,0 +1,409 @@
+% 3.method.tex - EATA Methodology
+\section{Methodology}
+\label{sec:method}
+
+This section presents the technical details of the Explainable Algorithmic Trading Agent (EATA). We first introduce the notation and terminology, then describe the overall framework, followed by detailed algorithms for each component.
+
+%==============================================================================
+\subsection{Notation and Terminology}
+\label{subsec:notation}
+
+Table~\ref{tab:notation} summarizes the key notation used throughout this paper.
+
+\begin{table}[htbp]
+\centering
+\caption{Notation and Terminology}
+\label{tab:notation}
+\begin{tabular}{cl}
+\toprule
+\textbf{Symbol} & \textbf{Description} \\
+\midrule
+\multicolumn{2}{l}{\textit{Data and Time Series}} \\
+$\mathbf{X} \in \mathbb{R}^{T \times d}$ & Input time series with $T$ timesteps and $d$ features \\
+$\mathbf{y} \in \mathbb{R}^{H}$ & Target sequence (lookahead horizon $H$) \\
+$x_i$ & The $i$-th feature variable in symbolic expressions \\
+$T_{\text{in}}$ & Lookback window size (input sequence length) \\
+$H$ & Lookahead horizon (prediction length) \\
+\midrule
+\multicolumn{2}{l}{\textit{Grammar and Symbolic Regression}} \\
+$\mathcal{G}$ & Context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, S)$ \\
+$\mathcal{V}$ & Set of non-terminal symbols \\
+$\Sigma$ & Set of terminal symbols \\
+$\mathcal{R}$ & Set of production rules \\
+$S$ & Start symbol \\
+$e$ & A symbolic expression (equation string) \\
+$\tau$ & A derivation sequence (list of applied rules) \\
+$\mathcal{M}$ & Module library (high-quality sub-expressions) \\
+$L_{\text{module}}$ & Maximum module length for extraction \\
+\midrule
+\multicolumn{2}{l}{\textit{Monte Carlo Tree Search}} \\
+$s$ & State in MCTS (partial derivation sequence) \\
+$a$ & Action (production rule to apply) \\
+$Q(s,a)$ & Cumulative reward for state-action pair \\
+$N(s,a)$ & Visit count for state-action pair \\
+$C$ & Exploration constant in UCT formula \\
+$\alpha$ & Neural network guidance weight $\in [0,1]$ \\
+\midrule
+\multicolumn{2}{l}{\textit{Neural Network (PVNet)}} \\
+$\pi_\theta(a|s)$ & Policy head output (action probability distribution) \\
+$V_\theta(s)$ & Value head output (expression accuracy prediction) \\
+$P_\theta(s)$ & Profit head output (trading profit prediction) \\
+$\theta$ & Neural network parameters \\
+$\omega$ & Value fusion weight between $V$ and $P$, default 0.7 \\
+\midrule
+\multicolumn{2}{l}{\textit{Loss Function}} \\
+$\mathcal{L}$ & Total loss function \\
+$\lambda_\pi, \lambda_V, \lambda_P$ & Loss weights for policy, value, profit heads \\
+$r_{\text{acc}}$ & Accuracy reward (expression fitness) \\
+$r_{\text{profit}}$ & Profit reward (trading performance) \\
+\midrule
+\multicolumn{2}{l}{\textit{Experience Replay}} \\
+$\mathcal{B}$ & Experience replay buffer \\
+$|\mathcal{B}|_{\max}$ & Maximum buffer size \\
+$B_{\text{train}}$ & Minimum buffer size to trigger training \\
+\midrule
+\multicolumn{2}{l}{\textit{Hyperparameters}} \\
+$L_{\max}$ & Maximum expression length \\
+$K$ & Number of MCTS episodes per iteration \\
+$M$ & Number of grammar augmentation iterations \\
+$N_{\text{run}}$ & Number of independent MCTS runs \\
+$|\mathcal{M}|_{\max}$ & Maximum module library size \\
+$n_{\text{play}}$ & Number of rollout simulations \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+%==============================================================================
+\subsection{Problem Formulation}
+\label{subsec:problem}
+
+Given a multivariate financial time series $\mathbf{X} = \{x_t\}_{t=1}^{T}$ where $x_t \in \mathbb{R}^d$ represents $d$ features (e.g., OHLCV: open, high, low, close, volume) at time $t$, our goal is to discover an interpretable mathematical expression $e^*$ that:
+
+\begin{enumerate}
+    \item Accurately models the underlying market dynamics
+    \item Generates profitable trading signals
+    \item Remains human-readable and explainable
+\end{enumerate}
+
+Formally, we seek:
+\begin{equation}
+e^* = \arg\max_{e \in \mathcal{E}} \left[ \eta \cdot \text{Accuracy}(e, \mathbf{X}, \mathbf{y}) + (1-\eta) \cdot \text{Profit}(e, \mathbf{X}) \right]
+\label{eq:objective}
+\end{equation}
+where $\mathcal{E}$ is the space of valid expressions defined by grammar $\mathcal{G}$, and $\eta \in [0,1]$ balances prediction accuracy against trading profitability.
+
+%==============================================================================
+\subsection{System Architecture}
+\label{subsec:architecture}
+
+EATA consists of four main components as illustrated in Figure~\ref{fig:architecture}:
+
+\begin{enumerate}
+    \item \textbf{Grammar Engine}: Defines the search space via context-free grammar with financial operators
+    \item \textbf{MCTS Search}: Explores the expression space using neural-guided tree search
+    \item \textbf{PVNet}: Three-headed neural network providing policy, value, and profit predictions
+    \item \textbf{Experience Replay}: Stores and samples experiences for network training
+\end{enumerate}
+
+\begin{figure}[htbp]
+\centering
+\begin{tikzpicture}[
+    node distance=0.6cm,
+    scale=0.8, transform shape,
+    box/.style={rectangle, draw, rounded corners, minimum width=1.6cm, minimum height=0.6cm, align=center, font=\scriptsize},
+    arrow/.style={->, >=stealth, thick}
+]
+% Data Layer
+\node[box, fill=blue!20] (data) {Data\\$\mathbf{X}, \mathbf{y}$};
+
+% Grammar
+\node[box, fill=green!20, right=1cm of data] (grammar) {Grammar\\$\mathcal{G} + \mathcal{M}$};
+
+% MCTS
+\node[box, fill=orange!20, right=1cm of grammar] (mcts) {MCTS};
+
+% PVNet
+\node[box, fill=red!20, below=0.6cm of mcts] (pvnet) {PVNet};
+
+% Score
+\node[box, fill=yellow!20, above=0.6cm of mcts] (score) {Score};
+
+% Buffer
+\node[box, fill=purple!20, below=0.6cm of grammar] (buffer) {Buffer};
+
+% Output
+\node[box, fill=gray!20, right=1cm of mcts] (output) {$e^*$, Signal};
+
+% Arrows
+\draw[arrow] (data) -- (grammar);
+\draw[arrow] (grammar) -- (mcts);
+\draw[arrow] (mcts) -- (output);
+\draw[arrow] (pvnet) -- (mcts);
+\draw[arrow] (mcts) -- (score);
+\draw[arrow] (score.west) -- +(-0.3,0) |- (mcts.north);
+\draw[arrow] (mcts.south) -- (buffer.east);
+\draw[arrow] (buffer) -- (pvnet);
+
+\end{tikzpicture}
+\caption{EATA System Architecture. MCTS explores the grammar-defined expression space guided by PVNet. Experiences are stored in buffer $\mathcal{B}$ for network training.}
+\label{fig:architecture}
+\end{figure}
+
+%==============================================================================
+\subsection{Context-Free Grammar for Financial Expressions}
+\label{subsec:grammar}
+
+We define a domain-specific context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, S)$ tailored for financial time series:
+
+\begin{itemize}
+    \item $\mathcal{V} = \{A, B\}$: Non-terminal symbols
+    \item $\Sigma = \{x_0, x_1, \ldots, x_{d-1}, C, +, -, \times, \div, \sin, \cos, \exp, \log, \sqrt{}\}$: Terminal symbols including variables, constants, and operators
+    \item $S = A$: Start symbol
+\end{itemize}
+
+The production rules $\mathcal{R}$ include:
+
+\textbf{Arithmetic Operations:}
+\begin{align}
+A &\rightarrow A + A \mid A - A \mid A \times A \mid A \div A \mid A \times C
+\end{align}
+
+\textbf{Mathematical Functions:}
+\begin{align}
+A &\rightarrow \cos(A) \mid \sin(A) \mid \exp(A) \mid \log(B) \mid \sqrt{B}
+\end{align}
+
+\textbf{Financial Operators:}
+\begin{align}
+A &\rightarrow \text{delay}(A, k) \mid \text{ma}(A, w) \mid \text{diff}(A, k) \\
+A &\rightarrow \text{mom}(A, k) \mid \text{rsi}(A, p) \mid \text{vol}(A, w)
+\end{align}
+
+\textbf{Terminal Symbols:}
+\begin{align}
+A &\rightarrow x_i \quad \text{for } i \in \{0, 1, \ldots, d-1\}
+\end{align}
+
+where $\text{delay}(\cdot, k)$ returns the $k$-step lagged value, $\text{ma}(\cdot, w)$ computes the $w$-period moving average, $\text{diff}(\cdot, k)$ calculates the $k$-step difference, $\text{mom}(\cdot, k)$ measures momentum, $\text{rsi}(\cdot, p)$ computes the relative strength index, and $\text{vol}(\cdot, w)$ estimates volatility.
+
+%==============================================================================
+\subsection{Neural-Guided Monte Carlo Tree Search}
+\label{subsec:mcts}
+
+Algorithm~\ref{alg:mcts} presents the core MCTS procedure enhanced with neural network guidance.
+
+\begin{algorithm}[htbp]
+\caption{Neural-Guided MCTS for Symbolic Regression}
+\label{alg:mcts}
+\begin{algorithmic}[1]
+\Require Data $\mathbf{X}$, grammar $\mathcal{G}$, network $f_\theta$, episodes $K$, guidance $\alpha$, fusion $\omega$
+\Ensure Best expression $e^*$, best tree node $\tau^*$
+\State Initialize $Q(\cdot), N(\cdot) \leftarrow 0$, $e^* \leftarrow \emptyset$, $r^* \leftarrow 0$
+\For{$k = 1$ \textbf{to} $K$}
+    \State $s \leftarrow s_0$
+    \State $\mathcal{U} \leftarrow \{a : N(s,a) = 0\}$
+    \While{$\mathcal{U} = \emptyset$ \textbf{and} $s$ is non-terminal} \Comment{Selection}
+        \State $\pi_{\text{nn}}, V, P \leftarrow f_\theta(s)$
+        \State $\pi_{\text{uct}} \leftarrow \textsc{ComputeUCT}(s)$
+        \State $\pi \leftarrow \alpha \cdot \pi_{\text{nn}} + (1-\alpha) \cdot \pi_{\text{uct}}$
+        \State $a \sim \pi$
+        \State $s, r, \text{done}, e \leftarrow \textsc{Step}(s, a)$
+        \If{done}
+            \State $v \leftarrow \omega \cdot V + (1-\omega) \cdot P$ \Comment{Fuse value heads}
+            \State $r \leftarrow \alpha \cdot v + (1-\alpha) \cdot \textsc{Rollout}(s, n_{\text{play}})$
+            \If{$r > r^*$}
+                \State $e^* \leftarrow e$, $r^* \leftarrow r$, $\tau^* \leftarrow s$
+            \EndIf
+            \State \textsc{Backpropagate}$(s, a, r)$
+            \State \textbf{break}
+        \EndIf
+        \If{$|s| \geq L_{\max}$} \Comment{Length limit}
+            \State \textsc{Backpropagate}$(s, a, 0)$; \textbf{break}
+        \EndIf
+        \State $\mathcal{U} \leftarrow \{a : N(s,a) = 0\}$
+    \EndWhile
+    \If{$\mathcal{U} \neq \emptyset$} \Comment{Expansion}
+        \State $\pi_{\text{nn}}, V, P \leftarrow f_\theta(s)$
+        \State $a \sim \alpha \cdot \pi_{\text{nn}} + (1-\alpha) \cdot \textsc{Uniform}(\mathcal{U})$
+        \State $s', r, \text{done}, e \leftarrow \textsc{Step}(s, a)$
+        \If{\textbf{not} done}
+            \State $r \leftarrow \alpha \cdot (\omega V + (1-\omega) P) + (1-\alpha) \cdot \textsc{Rollout}(s', n_{\text{play}})$
+        \EndIf
+        \State \textsc{Backpropagate}$(s, a, r)$
+    \EndIf
+\EndFor
+\State \Return $e^*$, $\tau^*$
+\end{algorithmic}
+\end{algorithm}
+
+\textbf{Rollout Function.} The $\textsc{Rollout}(s, n)$ function performs $n$ random simulations from state $s$, each time randomly selecting valid production rules until a complete expression is formed, then returns the best reward found.
+
+The UCT (Upper Confidence bounds applied to Trees) formula balances exploration and exploitation:
+\begin{equation}
+\text{UCT}(s, a) = \frac{Q(s,a)}{N(s,a)} + C \sqrt{\frac{\ln N(s)}{N(s,a)}}
+\label{eq:uct}
+\end{equation}
+
+%==============================================================================
+\subsection{Three-Headed Policy-Value-Profit Network}
+\label{subsec:pvnet}
+
+The PVNet architecture (Algorithm~\ref{alg:pvnet}) processes both the input time series and the current derivation state to output three predictions.
+
+\begin{algorithm}[htbp]
+\caption{PVNet Forward Pass}
+\label{alg:pvnet}
+\begin{algorithmic}[1]
+\Require Time series $\mathbf{x} \in \mathbb{R}^{T}$, state sequence $s = [r_1, r_2, \ldots, r_l]$
+\Ensure Policy $\pi$, value $V$, profit $P$
+\State $\mathbf{h}_s \leftarrow \textsc{Embedding}(s)$
+\State $\mathbf{h}_s \leftarrow \textsc{LSTM}_{\text{state}}(\mathbf{h}_s)$
+\State $\mathbf{h}_x \leftarrow \textsc{LSTM}_{\text{seq}}(\mathbf{x})$
+\State $\mathbf{h} \leftarrow [\mathbf{h}_s; \mathbf{h}_x]$
+\State $\mathbf{h} \leftarrow \textsc{MLP}(\mathbf{h})$
+\State $\pi \leftarrow \textsc{Softmax}(\mathbf{W}_\pi \mathbf{h})$
+\State $V \leftarrow \mathbf{W}_V \mathbf{h}$
+\State $P \leftarrow \mathbf{W}_P \mathbf{h}$
+\State \Return $\pi, V, P$
+\end{algorithmic}
+\end{algorithm}
+
+The network is trained with a weighted composite loss:
+\begin{equation}
+\mathcal{L} = \lambda_\pi \mathcal{L}_{\text{policy}} + \lambda_V \mathcal{L}_{\text{value}} + \lambda_P \mathcal{L}_{\text{profit}}
+\label{eq:loss}
+\end{equation}
+where $\lambda_\pi = \lambda_V = \lambda_P = 1.0$ by default (ablation study in Section~\ref{sec:experiments}), and:
+\begin{align}
+\mathcal{L}_{\text{policy}} &= D_{\text{KL}}(\pi_{\text{target}} \| \pi_\theta) \label{eq:loss_policy}\\
+\mathcal{L}_{\text{value}} &= \text{MSE}(V_\theta, r_{\text{acc}}) \label{eq:loss_value}\\
+\mathcal{L}_{\text{profit}} &= \text{MSE}(P_\theta, r_{\text{profit}}) \label{eq:loss_profit}
+\end{align}
+
+\textbf{Remark on Loss Normalization.} Since the three losses may have different scales, we normalize $r_{\text{acc}}$ and $r_{\text{profit}}$ to $[0, 1]$ before training. Specifically, $r_{\text{acc}} = 1/(1+\text{MSE})$ is already bounded, and $r_{\text{profit}}$ is clipped to $[-1, 1]$ and rescaled to $[0, 1]$.
+
+%==============================================================================
+\subsection{Expression Scoring and Coefficient Optimization}
+\label{subsec:scoring}
+
+Given an expression $e$ potentially containing placeholder constants $C$, Algorithm~\ref{alg:score} computes its fitness score.
+
+\begin{algorithm}[htbp]
+\caption{Expression Scoring with Coefficient Estimation}
+\label{alg:score}
+\begin{algorithmic}[1]
+\Require Expression $e$, data $(\mathbf{X}, \mathbf{y})$, time limit $t_{\max}$
+\Ensure Score $r$, optimized expression $e'$
+\State $n_c \leftarrow \textsc{CountConstants}(e)$
+\If{$n_c = 0$}
+    \State $\hat{\mathbf{y}} \leftarrow \textsc{Evaluate}(e, \mathbf{X})$
+\ElsIf{$n_c > 10$}
+    \State \Return $0, e$
+\Else
+    \State $\mathbf{c}^* \leftarrow \arg\min_{\mathbf{c}} \|\textsc{Evaluate}(e, \mathbf{X}, \mathbf{c}) - \mathbf{y}\|_2$
+    \State $e' \leftarrow \textsc{Substitute}(e, \mathbf{c}^*)$
+    \State $\hat{\mathbf{y}} \leftarrow \textsc{Evaluate}(e', \mathbf{X})$
+\EndIf
+\State $\text{MSE} \leftarrow \frac{1}{T}\|\hat{\mathbf{y}} - \mathbf{y}\|_2^2$
+\State $r \leftarrow \frac{1}{1 + \text{MSE}}$
+\State \Return $r, e'$
+\end{algorithmic}
+\end{algorithm}
+
+%==============================================================================
+\subsection{Grammar Augmentation via Module Extraction}
+\label{subsec:augmentation}
+
+To accelerate search, we extract high-quality sub-expressions (modules) and add them as new grammar rules. Algorithm~\ref{alg:augment} describes this process.
+
+\begin{algorithm}[htbp]
+\caption{Grammar Augmentation}
+\label{alg:augment}
+\begin{algorithmic}[1]
+\Require Module library $\mathcal{M}$, expression $e$, reward $r$, max size $|\mathcal{M}|_{\max}$
+\Ensure Updated module library $\mathcal{M}'$
+\State $m \leftarrow \textsc{ExtractModule}(e)$
+\If{$\textsc{Length}(m) \leq L_{\text{module}}$}
+    \If{$m \notin \mathcal{M}$}
+        \If{$|\mathcal{M}| < |\mathcal{M}|_{\max}$}
+            \State $\mathcal{M}' \leftarrow \mathcal{M} \cup \{(m, r)\}$
+        \ElsIf{$r > \min_{(m', r') \in \mathcal{M}} r'$}
+            \State Remove lowest-reward module from $\mathcal{M}$
+            \State $\mathcal{M}' \leftarrow \mathcal{M} \cup \{(m, r)\}$
+        \EndIf
+    \EndIf
+\EndIf
+\State \Return $\mathcal{M}'$
+\end{algorithmic}
+\end{algorithm}
+
+%==============================================================================
+\subsection{Overall Training Pipeline}
+\label{subsec:pipeline}
+
+Algorithm~\ref{alg:main} presents the complete EATA training procedure integrating all components.
+
+\begin{algorithm}[htbp]
+\caption{EATA Training Pipeline}
+\label{alg:main}
+\begin{algorithmic}[1]
+\Require Data $\mathbf{X}$, hyperparameters $\{T_{\text{in}}, H, M, N_{\text{run}}, K\}$
+\Ensure Trained network $f_\theta$, best expression $e^*$
+\State Initialize network $f_\theta$, buffer $\mathcal{B} \leftarrow \emptyset$, grammar $\mathcal{G}$
+\State $\tau_{\text{prev}} \leftarrow \texttt{null}$
+\For{each sliding window $(\mathbf{X}_w, \mathbf{y}_w)$}
+    \For{$i = 1$ \textbf{to} $N_{\text{run}}$}
+        \State $\mathcal{M} \leftarrow \emptyset$
+        \For{$j = 1$ \textbf{to} $M$}
+            \State $\mathcal{G}' \leftarrow \mathcal{G} \cup \{A \rightarrow m : m \in \mathcal{M}\}$
+            \State $\alpha \leftarrow \min(1, |\mathcal{B}| / |\mathcal{B}|_{\max})$
+            \State $e, \tau, \mathcal{D} \leftarrow \textsc{MCTS}(\mathbf{X}_w, \mathcal{G}', f_\theta, K, \alpha, \tau_{\text{prev}})$
+            \State Update $\mathcal{M}$ with modules from $e$
+        \EndFor
+    \EndFor
+    \State $\hat{\mathbf{y}} \leftarrow \textsc{PredictDistribution}(e, \mathbf{X}_w)$
+    \State $r_{\text{profit}} \leftarrow \textsc{ComputeProfitReward}(\hat{\mathbf{y}}, \mathbf{y}_w)$
+    \For{each experience $(s, \mathbf{x}, \pi, v) \in \mathcal{D}$}
+        \State $\mathcal{B} \leftarrow \mathcal{B} \cup \{(s, \mathbf{x}, \pi, v, r_{\text{profit}})\}$
+    \EndFor
+    \If{$|\mathcal{B}| > B_{\text{train}}$}
+        \State Sample mini-batch from $\mathcal{B}$
+        \State Update $\theta$ by minimizing $\mathcal{L}$ (Eq.~\ref{eq:loss})
+    \EndIf
+    \State $\tau_{\text{prev}} \leftarrow \tau$
+\EndFor
+\State \Return $f_\theta$, $e^*$
+\end{algorithmic}
+\end{algorithm}
+
+%==============================================================================
+\subsection{Trading Signal Generation}
+\label{subsec:signal}
+
+Given the top-$k$ discovered expressions, we generate trading signals using a quantile-based consensus rule:
+
+\begin{enumerate}
+    \item Evaluate each expression on the lookback window to obtain fitted values
+    \item Extrapolate predictions for the lookahead horizon via linear trend fitting
+    \item Aggregate predictions from all $k$ expressions into a distribution
+    \item Compute quantiles $Q_{25}$ and $Q_{75}$ of the prediction distribution
+    \item Generate signal:
+    \begin{equation}
+    \text{signal} = \begin{cases}
+    +1 \text{ (buy)} & \text{if } Q_{25} > 0 \\
+    -1 \text{ (sell)} & \text{if } Q_{75} < 0 \\
+    0 \text{ (hold)} & \text{otherwise}
+    \end{cases}
+    \label{eq:signal}
+    \end{equation}
+\end{enumerate}
+
+This conservative rule ensures that we only take positions when there is strong consensus among the discovered expressions about the direction of future price movement.
+
+%==============================================================================
+\subsection{Complexity Analysis}
+\label{subsec:complexity}
+
+\textbf{Time Complexity:} Each MCTS episode requires $O(L_{\max})$ steps. With $K$ episodes, $M$ augmentation iterations, and $N_{\text{run}}$ runs, the total complexity per window is $O(N_{\text{run}} \cdot M \cdot K \cdot L_{\max})$. Neural network inference adds $O(|\mathcal{R}|)$ per step for policy computation.
+
+\textbf{Space Complexity:} The MCTS tree stores $O(K \cdot L_{\max})$ nodes. The experience buffer has fixed size $|\mathcal{B}|_{\max}$. The module library is bounded by $|\mathcal{M}|_{\max}$.
