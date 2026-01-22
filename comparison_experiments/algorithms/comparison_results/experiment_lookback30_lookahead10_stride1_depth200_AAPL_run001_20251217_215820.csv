@@ -1,0 +1,2 @@
+﻿timestamp,ticker,strategy,run_id,success,description,lookback,lookahead,stride,depth,total_return,annualized_return,sharpe_ratio,max_drawdown,num_trades
+20251217_215820,AAPL,transformer,1,True,Transformer模型策略,30,10,1,200,0.06029281270222575,0.1128323797746531,0.7240309020972349,0.08157450486334653,59.0

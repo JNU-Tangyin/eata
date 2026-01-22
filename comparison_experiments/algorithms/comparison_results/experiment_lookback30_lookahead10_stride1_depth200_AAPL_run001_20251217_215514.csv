@@ -1,0 +1,3 @@
+﻿timestamp,ticker,strategy,run_id,success,description,lookback,lookahead,stride,depth,total_return,annualized_return,sharpe_ratio,max_drawdown,num_trades
+20251217_215514,AAPL,lstm,1,True,LSTM神经网络策略,30,10,1,200,0.018218443098703574,0.03351854378728647,0.31237770606306486,0.06364876354767761,30.0
+20251217_215514,AAPL,transformer,1,True,Transformer模型策略,30,10,1,200,0.0,0.0,0.0,0.0,0.0

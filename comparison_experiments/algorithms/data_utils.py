@@ -13,19 +13,95 @@ TRAIN_END_DATE = "2020-12-31"
 TEST_START_DATE = "2021-01-01"
 TEST_END_DATE = "2023-12-31"
 
-def load_real_stock_data(ticker: str, db_path: str = "stock.db") -> pd.DataFrame:
+def load_csv_stock_data(ticker: str, csv_dir: str = r"D:\下载\分散的20支股票\分散的20支股票", 
+                       start_date: str = None, end_date: str = None) -> pd.DataFrame:
     """
-    从数据库加载真实股票数据
+    从CSV文件加载股票数据
+    
+    Args:
+        ticker: 股票代码 (e.g., 'AAPL')
+        csv_dir: CSV文件目录路径
+        start_date: 开始日期，默认使用TRAIN_START_DATE
+        end_date: 结束日期，默认使用2024-06-30
+        
+    Returns:
+        pd.DataFrame: 包含股票数据的DataFrame
+    """
+    import os
+    
+    # 设置默认的时间范围
+    if start_date is None:
+        start_date = TRAIN_START_DATE  # "2009-01-01"
+    if end_date is None:
+        end_date = "2024-06-30"
+    
+    # 构建CSV文件路径
+    csv_file = os.path.join(csv_dir, f"{ticker}.csv")
+    
+    if not os.path.exists(csv_file):
+        raise FileNotFoundError(f"CSV file not found: {csv_file}")
+    
+    # 读取CSV文件
+    df = pd.read_csv(csv_file)
+    
+    # 确保有必要的列
+    required_columns = ['date', 'open', 'high', 'low', 'close', 'volume']
+    if not all(col in df.columns for col in required_columns):
+        # 尝试标准化列名
+        column_mapping = {
+            'Date': 'date', 'Open': 'open', 'High': 'high', 
+            'Low': 'low', 'Close': 'close', 'Volume': 'volume',
+            'Adj Close': 'adj_close'
+        }
+        df = df.rename(columns=column_mapping)
+    
+    # 转换日期格式 - 处理多种可能的日期格式
+    try:
+        df['date'] = pd.to_datetime(df['date'])
+    except ValueError:
+        # 尝试不同的日期格式
+        try:
+            df['date'] = pd.to_datetime(df['date'], format='%d-%m-%Y')
+        except ValueError:
+            try:
+                df['date'] = pd.to_datetime(df['date'], format='%m-%d-%Y')
+            except ValueError:
+                # 使用pandas的智能解析
+                df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
+    
+    # 添加ticker列
+    df['ticker'] = ticker
+    
+    # 筛选日期范围
+    df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
+    
+    # 按日期排序
+    df = df.sort_values('date').reset_index(drop=True)
+    
+    return df
+
+def load_real_stock_data(ticker: str, db_path: str = "stock.db", 
+                        start_date: str = None, end_date: str = None) -> pd.DataFrame:
+    """
+    从数据库加载真实股票数据，限制在合理的历史时间范围内
     
     Args:
         ticker: 股票代码 (e.g., 'AAPL')
         db_path: 数据库文件路径
+        start_date: 开始日期，默认使用TRAIN_START_DATE
+        end_date: 结束日期，默认使用2024-06-30 (避免未来数据)
         
     Returns:
         pd.DataFrame: 包含股票数据的DataFrame
     """
     import sqlite3
     import os
+    
+    # 设置默认的时间范围 - 避免使用未来数据
+    if start_date is None:
+        start_date = TRAIN_START_DATE  # "2009-01-01"
+    if end_date is None:
+        end_date = "2024-06-30"  # 避免使用未来数据
     
     # 构建数据库路径
     if not os.path.isabs(db_path):
@@ -40,23 +116,26 @@ def load_real_stock_data(ticker: str, db_path: str = "stock.db") -> pd.DataFrame
     conn = sqlite3.connect(db_path)
     
     query = """
-    SELECT date, open, high, low, close, volume, amount 
-    FROM downloaded 
-    WHERE code = ? 
+    SELECT date, open, high, low, close, volume, 0 as amount 
+    FROM stock_data 
+    WHERE ticker = ? AND date >= ? AND date <= ?
     ORDER BY date
     """
     
-    df = pd.read_sql_query(query, conn, params=(ticker,))
+    df = pd.read_sql_query(query, conn, params=(ticker, start_date, end_date))
     conn.close()
     
     if df.empty:
-        raise ValueError(f"No data found for ticker: {ticker}")
+        raise ValueError(f"No data found for ticker: {ticker} in range {start_date} to {end_date}")
     
     # 添加ticker列
     df['ticker'] = ticker
     
     # 确保日期格式正确
     df['date'] = pd.to_datetime(df['date'])
+    
+    print(f"📊 加载 {ticker} 数据: {len(df)} 条记录")
+    print(f"📅 时间范围: {df['date'].min().date()} 到 {df['date'].max().date()}")
     
     return df
 

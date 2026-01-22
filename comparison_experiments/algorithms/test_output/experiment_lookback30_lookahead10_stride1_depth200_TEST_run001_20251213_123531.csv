@@ -1,0 +1,2 @@
+﻿timestamp,ticker,strategy,run_id,success,description,lookback,lookahead,stride,depth,total_return,annualized_return,sharpe_ratio,max_drawdown,num_trades
+20251213_123531,TEST,buy_and_hold,1,True,买入持有策略,30,10,1,200,0.10279424044196683,2.661096030805627,8.422961755913011,0.01672269365216021,0.0

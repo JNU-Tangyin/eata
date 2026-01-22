@@ -333,6 +333,7 @@ class AuthenticFinRLAgent:
         elif self.algorithm == 'A2C':
             model = A2C("MlpPolicy", env, verbose=0, **algo_params)
         elif self.algorithm == 'SAC':
+            # SAC通常需要更多训练步数
             model = SAC("MlpPolicy", env, verbose=0, **algo_params)
         elif self.algorithm == 'TD3':
             # TD3需要噪声
@@ -581,6 +582,8 @@ def run_finrl_a2c_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame,
 def run_finrl_sac_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, 
                           ticker: str = 'STOCK', **kwargs) -> Tuple[pd.Series, pd.DataFrame]:
     """FinRL原版SAC策略"""
+    # SAC需要更多训练步数
+    kwargs.setdefault('total_timesteps', 100000)
     return authentic_finrl_runner.run_finrl_strategy('SAC', train_df, test_df, ticker, **kwargs)
 
 def run_finrl_td3_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, 
@@ -591,6 +594,8 @@ def run_finrl_td3_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame,
 def run_finrl_ddpg_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, 
                            ticker: str = 'STOCK', **kwargs) -> Tuple[pd.Series, pd.DataFrame]:
     """FinRL原版DDPG策略"""
+    # DDPG需要更多训练步数
+    kwargs.setdefault('total_timesteps', 100000)
     return authentic_finrl_runner.run_finrl_strategy('DDPG', train_df, test_df, ticker, **kwargs)
 
 
