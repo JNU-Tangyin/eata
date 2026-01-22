@@ -73,9 +73,15 @@ def run_eata_core_backtest(
 
     # 窗口与回测参数
     window_len = predictor.agent.lookback + predictor.agent.lookahead + 1
-    num_test_windows = 1000
-    if len(stock_df) < window_len + num_test_windows - 1:
-        raise ValueError(f"股票 {ticker} 的数据不足，无法进行 {num_test_windows} 次窗口测试")
+    
+    # 动态调整测试窗口数量，适应数据长度
+    max_possible_windows = len(stock_df) - window_len + 1
+    num_test_windows = min(1000, max_possible_windows)  # 最多1000次，但不超过数据允许的范围
+    
+    if num_test_windows < 50:  # 至少需要50次测试才有意义
+        raise ValueError(f"股票 {ticker} 的数据不足，只能进行 {num_test_windows} 次窗口测试（最少需要50次）")
+    
+    print(f"📊 EATA将进行 {num_test_windows} 次窗口测试（数据长度: {len(stock_df)}）")
 
     initial_cash = 1_000_000
     cash = initial_cash

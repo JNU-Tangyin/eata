@@ -200,3 +200,21 @@ test/
 
 # 图片文件
 reflex.jpeg
+
+# 实验结果文件
+comparison_results/
+comparison_experiments/algorithms/comparison_results/
+test_detailed_outputs/
+flag_trader_results/
+figures/
+tables/
+data/experiment_*.csv
+*.json
+
+# 临时文件
+test_pytorch_setup.py
+verify_authentic_integration.py
+experiment_pipeline.py
+generate_paper_outputs.py
+run_experiments.py
+run_flag_trader_experiments.py

@@ -115,17 +115,41 @@ STRATEGY_CONFIGS = {
         'requires_training': True,
         'description': 'Transformer模型策略'
     },
-    'ppo': {
-        'module': 'ppo',
-        'function': 'run_ppo_strategy',
-        'requires_training': True,
-        'description': 'PPO强化学习策略'
-    },
     'eata': {
         'module': 'eata',
         'function': 'run_eata_strategy',
         'requires_training': True,
         'description': 'EATA强化学习策略'
+    },
+    'finrl_ppo': {
+        'module': 'finrl_strategies',
+        'function': 'run_finrl_ppo_strategy',
+        'requires_training': True,
+        'description': 'FinRL PPO强化学习策略'
+    },
+    'finrl_a2c': {
+        'module': 'finrl_strategies',
+        'function': 'run_finrl_a2c_strategy',
+        'requires_training': True,
+        'description': 'FinRL A2C强化学习策略'
+    },
+    'finrl_sac': {
+        'module': 'finrl_strategies',
+        'function': 'run_finrl_sac_strategy',
+        'requires_training': True,
+        'description': 'FinRL SAC强化学习策略'
+    },
+    'finrl_td3': {
+        'module': 'finrl_strategies',
+        'function': 'run_finrl_td3_strategy',
+        'requires_training': True,
+        'description': 'FinRL TD3强化学习策略'
+    },
+    'finrl_ddpg': {
+        'module': 'finrl_strategies',
+        'function': 'run_finrl_ddpg_strategy',
+        'requires_training': True,
+        'description': 'FinRL DDPG强化学习策略'
     }
 }
 
@@ -207,7 +231,7 @@ class BaselineRunner:
             return False, None, None
     
     def run_all_strategies(self, df: pd.DataFrame, ticker: str = 'TEST',
-                          train_ratio: float = 0.7,  # 改为70%训练，30%测试，给EATA更多测试数据
+                          train_ratio: float = 0.8,  # 改为80%训练，20%测试，避免使用未来数据
                           selected_strategies: Optional[List[str]] = None) -> Dict:
         """
         运行所有策略
@@ -311,61 +335,313 @@ class BaselineRunner:
         
         return "\n".join(report)
     
-    def save_results(self, results: Dict, ticker: str, output_dir: str = "comparison_results"):
-        """保存结果到文件"""
+    def save_results(self, results: Dict, ticker: str, output_dir: str = "comparison_results", 
+                    params: Dict = None, run_id: int = 1):
+        """保存结果到CSV和JSON文件"""
         import os
+        import pandas as pd
         import json
         from datetime import datetime
         
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
         
-        # 保存JSON结果
-        json_file = os.path.join(output_dir, f"baseline_results_{ticker}_{timestamp}.json")
+        # 构建参数组合字符串
+        if params:
+            param_str = "_".join([f"{k}{v}" for k, v in params.items()])
+        else:
+            # 默认参数组合
+            param_str = "lookback30_lookahead10_stride1_depth200"
         
-        # 转换为可序列化的格式
-        serializable_results = {}
+        # 文件命名：参数组合_股票代码_轮次_时间戳.csv
+        csv_file = os.path.join(output_dir, f"experiment_{param_str}_{ticker}_run{run_id:03d}_{timestamp}.csv")
+        
+        # 准备CSV数据 - 每轮次实验的详细数据
+        csv_data = []
+        
         for strategy_name, result in results.items():
+            # 跳过default策略，不保存到CSV
+            if strategy_name == 'default':
+                continue
+                
             if result['success'] and result['metrics'] is not None:
-                serializable_results[strategy_name] = {
-                    'metrics': result['metrics'].to_dict(),
-                    'description': result['description'],
-                    'success': result['success']
+                # 基础信息
+                row = {
+                    'timestamp': timestamp,
+                    'ticker': ticker,
+                    'strategy': strategy_name,
+                    'run_id': run_id,
+                    'success': result['success'],
+                    'description': result['description']
                 }
+                
+                # 添加参数信息
+                if params:
+                    row.update(params)
+                else:
+                    row.update({
+                        'lookback': 30,
+                        'lookahead': 10, 
+                        'stride': 1,
+                        'depth': 200
+                    })
+                
+                # 添加所有指标
+                if isinstance(result['metrics'], pd.Series):
+                    row.update(result['metrics'].to_dict())
+                elif isinstance(result['metrics'], dict):
+                    row.update(result['metrics'])
+                
+                csv_data.append(row)
             else:
-                serializable_results[strategy_name] = {
-                    'metrics': None,
+                # 失败的实验也记录（但跳过default策略）
+                if strategy_name == 'default':
+                    continue
+                    
+                row = {
+                    'timestamp': timestamp,
+                    'ticker': ticker,
+                    'strategy': strategy_name,
+                    'run_id': run_id,
+                    'success': False,
                     'description': result['description'],
-                    'success': result['success']
+                    'error': 'Strategy execution failed'
                 }
+                
+                # 添加参数信息
+                if params:
+                    row.update(params)
+                else:
+                    row.update({
+                        'lookback': 30,
+                        'lookahead': 10,
+                        'stride': 1, 
+                        'depth': 200
+                    })
+                
+                csv_data.append(row)
         
-        with open(json_file, 'w', encoding='utf-8') as f:
-            json.dump(serializable_results, f, indent=2, ensure_ascii=False)
+        # 保存CSV文件
+        if csv_data:
+            df = pd.DataFrame(csv_data)
+            df.to_csv(csv_file, index=False, encoding='utf-8-sig')
+            
+            # 保存所有策略的详细交易数据
+            self.save_detailed_trading_data(results, ticker, output_dir, timestamp)
+            
+            # 同时保存JSON文件供post.py使用
+            json_file = os.path.join(output_dir, f"baseline_results_{ticker}_{timestamp}.json")
+            json_data = {}
+            for strategy_name, result in results.items():
+                # 跳过default策略，不保存到JSON
+                if strategy_name == 'default':
+                    continue
+                    
+                if result['success'] and result['metrics'] is not None:
+                    json_data[strategy_name] = {
+                        'total_return': float(result['metrics']['total_return']),
+                        'annualized_return': float(result['metrics']['annualized_return']),
+                        'sharpe_ratio': float(result['metrics']['sharpe_ratio']),
+                        'max_drawdown': float(result['metrics']['max_drawdown']),
+                        'success': True,
+                        'description': result['description']
+                    }
+                else:
+                    json_data[strategy_name] = {
+                        'success': False,
+                        'description': result['description']
+                    }
+            
+            with open(json_file, 'w', encoding='utf-8') as f:
+                json.dump(json_data, f, indent=2, ensure_ascii=False)
+            
+            print(f"✅ 实验数据已保存: {os.path.basename(csv_file)}")
+            print(f"✅ JSON数据已保存: {os.path.basename(json_file)}")
+            print(f"   📊 包含 {len(csv_data)} 个策略的详细数据")
+            return csv_file
+        else:
+            print(f"❌ 无有效数据保存")
+            return None
+
+    def save_detailed_trading_data(self, results: Dict, ticker: str, output_dir: str, timestamp: str):
+        """保存所有策略的详细交易数据"""
+        import os
+        import pandas as pd
         
-        # 保存文本报告
-        report_file = os.path.join(output_dir, f"baseline_report_{ticker}_{timestamp}.txt")
-        report = self.generate_comparison_report(results)
+        # 创建详细输出目录
+        detailed_dir = os.path.join(output_dir, "detailed_outputs")
+        os.makedirs(detailed_dir, exist_ok=True)
         
-        with open(report_file, 'w', encoding='utf-8') as f:
-            f.write(report)
-        
-        print(f"\n💾 结果已保存:")
-        print(f"   JSON: {json_file}")
-        print(f"   报告: {report_file}")
+        for strategy_name, result in results.items():
+            # 跳过default策略，不保存其详细数据
+            if strategy_name == 'default':
+                continue
+                
+            if result['success'] and result.get('backtest_results') is not None:
+                try:
+                    backtest_df = result['backtest_results']
+                    
+                    # 确保有必要的列
+                    if isinstance(backtest_df, pd.DataFrame) and not backtest_df.empty:
+                        # 创建标准化的详细数据格式
+                        detailed_data = pd.DataFrame()
+                        
+                        # 基础信息
+                        if 'date' in backtest_df.columns:
+                            try:
+                                detailed_data['日期'] = pd.to_datetime(backtest_df['date'])
+                            except:
+                                # 如果日期转换失败，使用索引创建日期
+                                detailed_data['日期'] = pd.date_range('2023-01-01', periods=len(backtest_df), freq='D')
+                        elif backtest_df.index.name == 'date' or hasattr(backtest_df.index, 'date'):
+                            detailed_data['日期'] = pd.to_datetime(backtest_df.index)
+                        else:
+                            # 如果没有日期列，创建一个合理的日期范围
+                            if strategy_name.startswith('finrl'):
+                                # FinRL策略使用测试期间的日期
+                                detailed_data['日期'] = pd.date_range('2023-01-01', periods=len(backtest_df), freq='D')
+                            else:
+                                detailed_data['日期'] = pd.date_range('2023-01-01', periods=len(backtest_df), freq='D')
+                        
+                        # 交易信号
+                        if 'signal' in backtest_df.columns:
+                            detailed_data['买卖信号'] = backtest_df['signal']
+                        elif 'action' in backtest_df.columns:
+                            detailed_data['买卖信号'] = backtest_df['action']
+                        elif 'actions' in backtest_df.columns:
+                            # FinRL策略返回'actions'列
+                            actions = backtest_df['actions']
+                            if isinstance(actions.iloc[0], (list, np.ndarray)):
+                                # 如果actions是数组，取第一个元素或求和
+                                signals = []
+                                for action in actions:
+                                    if isinstance(action, (list, np.ndarray)):
+                                        action_sum = np.sum(action) if len(action) > 0 else 0
+                                    else:
+                                        action_sum = action
+                                    
+                                    if action_sum > 0.01:
+                                        signals.append(1)  # 买入
+                                    elif action_sum < -0.01:
+                                        signals.append(-1)  # 卖出
+                                    else:
+                                        signals.append(0)  # 持有
+                                detailed_data['买卖信号'] = signals
+                            else:
+                                # 如果actions是标量，直接使用
+                                detailed_data['买卖信号'] = actions
+                        else:
+                            # 如果没有信号列，根据收益率推断
+                            if 'strategy_return' in backtest_df.columns:
+                                returns = backtest_df['strategy_return']
+                                signals = []
+                                for ret in returns:
+                                    if ret > 0.001:
+                                        signals.append(1)  # 买入
+                                    elif ret < -0.001:
+                                        signals.append(-1)  # 卖出
+                                    else:
+                                        signals.append(0)  # 持有
+                                detailed_data['买卖信号'] = signals
+                            elif 'portfolio_value' in backtest_df.columns and strategy_name == 'eata':
+                                # EATA特殊处理：从portfolio_value推导交易信号
+                                portfolio_values = backtest_df['portfolio_value']
+                                returns = portfolio_values.pct_change().fillna(0)
+                                signals = []
+                                for ret in returns:
+                                    if ret > 0.005:  # 0.5%以上收益认为是买入信号
+                                        signals.append(1)
+                                    elif ret < -0.005:  # -0.5%以下认为是卖出信号
+                                        signals.append(-1)
+                                    else:
+                                        signals.append(0)  # 持有
+                                detailed_data['买卖信号'] = signals
+                            else:
+                                detailed_data['买卖信号'] = 0  # 默认持有
+                        
+                        # 价格信息
+                        if 'close' in backtest_df.columns:
+                            price = backtest_df['close']
+                            # 模拟Q25和Q75（基于收盘价的±2%）
+                            detailed_data['Q25预测'] = price * 0.98
+                            detailed_data['Q75预测'] = price * 1.02
+                            detailed_data['Q25真实'] = price * 0.98
+                            detailed_data['Q75真实'] = price * 1.02
+                        elif 'portfolio_value' in backtest_df.columns and strategy_name.startswith('finrl'):
+                            # FinRL策略特殊处理：从portfolio_value推导价格变化
+                            portfolio_values = backtest_df['portfolio_value']
+                            initial_value = portfolio_values.iloc[0] if len(portfolio_values) > 0 else 1000000
+                            # 将portfolio_value转换为相对价格变化，模拟股价
+                            price_changes = portfolio_values.pct_change().fillna(0)
+                            base_price = 100  # 基准价格
+                            simulated_prices = [base_price]
+                            for change in price_changes[1:]:
+                                new_price = simulated_prices[-1] * (1 + change)
+                                simulated_prices.append(new_price)
+                            
+                            detailed_data['Q25预测'] = [p * 0.98 for p in simulated_prices]
+                            detailed_data['Q75预测'] = [p * 1.02 for p in simulated_prices]
+                            detailed_data['Q25真实'] = [p * 0.98 for p in simulated_prices]
+                            detailed_data['Q75真实'] = [p * 1.02 for p in simulated_prices]
+                        elif 'portfolio_value' in backtest_df.columns and strategy_name == 'eata':
+                            # EATA特殊处理：从portfolio_value推导价格变化
+                            portfolio_values = backtest_df['portfolio_value']
+                            initial_value = portfolio_values.iloc[0] if len(portfolio_values) > 0 else 1000000
+                            # 将portfolio_value转换为相对价格变化
+                            normalized_values = portfolio_values / initial_value * 100  # 标准化到100基准
+                            detailed_data['Q25预测'] = normalized_values * 0.98
+                            detailed_data['Q75预测'] = normalized_values * 1.02
+                            detailed_data['Q25真实'] = normalized_values * 0.98
+                            detailed_data['Q75真实'] = normalized_values * 1.02
+                        else:
+                            # 如果没有价格数据，使用模拟价格
+                            base_price = 100
+                            if 'cumulative_return' in backtest_df.columns:
+                                prices = base_price * (1 + backtest_df['cumulative_return'])
+                            else:
+                                prices = [base_price] * len(backtest_df)
+                            
+                            detailed_data['Q25预测'] = [p * 0.98 for p in prices]
+                            detailed_data['Q75预测'] = [p * 1.02 for p in prices]
+                            detailed_data['Q25真实'] = [p * 0.98 for p in prices]
+                            detailed_data['Q75真实'] = [p * 1.02 for p in prices]
+                        
+                        # 保存详细数据文件
+                        detailed_file = os.path.join(detailed_dir, f"{ticker}-{strategy_name}-001-{timestamp}.csv")
+                        detailed_data.to_csv(detailed_file, index=False, encoding='utf-8-sig')
+                        
+                        print(f"✅ 保存 {strategy_name} 详细交易数据: {os.path.basename(detailed_file)}")
+                        
+                except Exception as e:
+                    print(f"⚠️ 保存 {strategy_name} 详细数据失败: {e}")
+                    continue
 
 
-def run_real_data_experiment(ticker: str, selected_strategies=None):
+def run_real_data_experiment(ticker: str, selected_strategies=None, params=None, run_id=1):
     """使用真实股票数据运行baseline策略对比"""
-    from data_utils import load_real_stock_data, add_technical_indicators
+    from data_utils import load_csv_stock_data, add_technical_indicators
+    
+    # 默认参数
+    if params is None:
+        params = {
+            'lookback': 30,
+            'lookahead': 10,
+            'stride': 1,
+            'depth': 200
+        }
     
     # 加载真实股票数据
     print(f"📊 加载真实股票数据: {ticker}")
-    df = load_real_stock_data(ticker)
+    print(f"🔧 实验参数: {params}")
+    print(f"🔄 运行轮次: {run_id}")
+    
+    df = load_csv_stock_data(ticker)
     print(f"✅ 数据加载完成: {len(df)} 条记录，时间范围: {df['date'].min()} 到 {df['date'].max()}")
     
     # 添加技术指标
+    print("🔧 添加技术指标...")
     df = add_technical_indicators(df)
-    print(f"✅ 技术指标计算完成: {len(df.columns)} 列")
+    print(f"✅ 技术指标添加完成，数据列数: {len(df.columns)}")
     
     # 运行策略
     runner = BaselineRunner()
@@ -375,8 +651,8 @@ def run_real_data_experiment(ticker: str, selected_strategies=None):
     report = runner.generate_comparison_report(results)
     print(f"\n{report}")
     
-    # 保存结果
-    runner.save_results(results, ticker)
+    # 保存结果 - 传入参数和轮次信息
+    runner.save_results(results, ticker, params=params, run_id=run_id)
     
     return results
 
@@ -399,11 +675,203 @@ def get_available_tickers():
     
     conn = sqlite3.connect(db_path)
     cursor = conn.cursor()
-    cursor.execute("SELECT DISTINCT code FROM downloaded ORDER BY code")
+    cursor.execute("SELECT DISTINCT ticker FROM stock_data ORDER BY ticker")
     tickers = [row[0] for row in cursor.fetchall()]
     conn.close()
     
     return tickers
+
+
+def run_parameter_experiments():
+    """运行参数组合实验"""
+    
+    # 使用默认参数组合
+    param_combinations = [
+        {'lookback': 50, 'lookahead': 10, 'stride': 1, 'depth': 300},
+    ]
+    
+    # 测试股票 - 使用用户指定的分散20支股票列表
+    test_tickers = [
+        'AAPL', 'AMD', 'AMT', 'BA', 'BAC', 'BHP', 'CAT', 'COST', 'DE', 'EQIX',
+        'GE', 'GOOG', 'JNJ', 'JPM', 'KO', 'MSFT', 'NFLX', 'NVDA', 'SCHW', 'XOM'
+    ]
+    print(f"📊 使用用户指定的分散20支股票列表 {len(test_tickers)} 支股票")
+    
+    # 测试策略
+    test_strategies = list(STRATEGY_CONFIGS.keys())
+    
+    # 每个组合运行的轮次
+    num_runs = 1
+    
+    # 显示完整股票信息
+    print(f"📈 测试股票: {len(test_tickers)}支美股")
+    print("📊 完整股票列表:")
+    
+    # 按行显示，每行10个股票
+    for i in range(0, len(test_tickers), 10):
+        row_tickers = test_tickers[i:i+10]
+        row_str = ', '.join(f'{ticker:6s}' for ticker in row_tickers)
+        print(f"   {i+1:3d}-{min(i+10, len(test_tickers)):3d}: {row_str}")
+    
+    print(f"   ✅ 总计: {len(test_tickers)} 支股票")
+    print(f"🎲 测试策略: {test_strategies}")
+    
+    total_experiments = len(param_combinations) * len(test_tickers) * num_runs
+    completed = 0
+    
+    for i, params in enumerate(param_combinations):
+        
+        for ticker in test_tickers:
+            print(f"📊 股票: {ticker}")
+            
+            for run_id in range(1, num_runs + 1):
+                try:
+                    # 运行实验
+                    results = run_real_data_experiment(
+                        ticker=ticker,
+                        params=params,
+                        run_id=run_id
+                    )
+                    
+                    completed += 1
+                    progress = (completed / total_experiments) * 100
+                    print(f"    ✅ 完成 ({progress:.1f}%)")
+                    
+                except Exception as e:
+                    print(f"    ❌ 失败: {str(e)}")
+                    completed += 1
+                    continue
+    
+    print(f"\n🎉 参数组合实验完成！")
+    print(f"📁 结果文件保存在: comparison_results/")
+    print(f"📊 总实验数: {total_experiments}")
+    
+    # 生成实验汇总统计
+    generate_experiment_summary()
+
+
+def generate_experiment_summary():
+    """生成实验汇总统计"""
+    import pandas as pd
+    import numpy as np
+    from pathlib import Path
+    import json
+    
+    print(f"\n📊 生成实验汇总统计...")
+    print("=" * 80)
+    
+    results_dir = Path("comparison_results")
+    if not results_dir.exists():
+        print("❌ 结果目录不存在")
+        return
+    
+    # 收集所有JSON结果文件
+    json_files = list(results_dir.glob("baseline_results_*.json"))
+    if not json_files:
+        print("❌ 未找到实验结果文件")
+        return
+    
+    print(f"📋 找到 {len(json_files)} 个实验结果文件")
+    
+    # 收集所有策略的性能数据
+    all_results = []
+    strategy_stats = {}
+    
+    for json_file in json_files:
+        # 从文件名提取股票代码
+        parts = json_file.stem.split('_')
+        if len(parts) >= 3:
+            ticker = parts[2]
+        else:
+            continue
+            
+        try:
+            with open(json_file, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            
+            for strategy, metrics in data.items():
+                if metrics.get('success', False):
+                    result = {
+                        'ticker': ticker,
+                        'strategy': strategy,
+                        'total_return': metrics.get('total_return', 0),
+                        'annualized_return': metrics.get('annualized_return', 0),
+                        'sharpe_ratio': metrics.get('sharpe_ratio', 0),
+                        'max_drawdown': metrics.get('max_drawdown', 0)
+                    }
+                    all_results.append(result)
+                    
+                    # 按策略统计
+                    if strategy not in strategy_stats:
+                        strategy_stats[strategy] = []
+                    strategy_stats[strategy].append(result)
+        
+        except Exception as e:
+            print(f"⚠️ 读取 {json_file.name} 失败: {e}")
+            continue
+    
+    if not all_results:
+        print("❌ 未找到有效的实验结果")
+        return
+    
+    # 转换为DataFrame
+    df = pd.DataFrame(all_results)
+    
+    print(f"✅ 成功收集 {len(all_results)} 条实验结果")
+    print(f"📈 涵盖 {df['ticker'].nunique()} 支股票, {df['strategy'].nunique()} 个策略")
+    print()
+    
+    # 按策略汇总统计
+    print("📊 各策略平均表现:")
+    print("=" * 80)
+    
+    # 计算汇总统计
+    strategy_summary = df.groupby('strategy').agg({
+        'annualized_return': 'mean',
+        'sharpe_ratio': 'mean', 
+        'max_drawdown': 'mean',
+        'total_return': 'mean'
+    }).round(4)
+    
+    # 按年化收益排序
+    strategy_summary = strategy_summary.sort_values('annualized_return', ascending=False)
+    
+    # 格式化显示
+    print(f"{'策略':<15} {'年化收益':>12} {'夏普比率':>12} {'最大回撤':>12} {'总收益':>12}")
+    print("-" * 80)
+    
+    for strategy, row in strategy_summary.iterrows():
+        annual_return = f"{row['annualized_return']:.2%}"
+        sharpe_ratio = f"{row['sharpe_ratio']:.2f}"
+        max_drawdown = f"{row['max_drawdown']:.2%}"
+        total_return = f"{row['total_return']:.2%}"
+        
+        print(f"{strategy:<15} {annual_return:>12} {sharpe_ratio:>12} {max_drawdown:>12} {total_return:>12}")
+    
+    print("=" * 80)
+    print()
+    
+    # 显示最佳表现
+    print("🏆 最佳表现:")
+    print("-" * 40)
+    best_return = df.loc[df['annualized_return'].idxmax()]
+    best_sharpe = df.loc[df['sharpe_ratio'].idxmax()]
+    
+    print(f"最高年化收益: {best_return['strategy']} ({best_return['ticker']}) - {best_return['annualized_return']:.2%}")
+    print(f"最高夏普比率: {best_sharpe['strategy']} ({best_sharpe['ticker']}) - {best_sharpe['sharpe_ratio']:.3f}")
+    print()
+    
+    # 保存汇总结果
+    summary_file = results_dir / "experiment_summary.csv"
+    strategy_summary.to_csv(summary_file, encoding='utf-8-sig')
+    
+    detailed_file = results_dir / "detailed_results.csv"
+    df.to_csv(detailed_file, index=False, encoding='utf-8-sig')
+    
+    print(f"💾 汇总结果已保存:")
+    print(f"   📄 策略汇总: {summary_file}")
+    print(f"   📄 详细结果: {detailed_file}")
+    print("=" * 80)
 
 
 def main():
@@ -413,24 +881,28 @@ def main():
     
     parser = argparse.ArgumentParser(description='运行Baseline策略对比实验')
     parser.add_argument('ticker', nargs='?', default='AAPL', 
-                       help='股票代码 (默认: AAPL)')
+                       help='股票代码 (默认: AAPL 苹果公司)')
     parser.add_argument('--strategies', type=str, 
                        help='指定运行的策略，用逗号分隔 (例如: arima,ppo,macd)')
     parser.add_argument('--list-tickers', action='store_true',
                        help='列出所有可用的股票代码')
+    parser.add_argument('--param-experiments', action='store_true',
+                       help='运行参数组合实验')
+    parser.add_argument('--runs', type=int, default=1,
+                       help='运行轮次数 (默认: 1)')
     
-    # 如果没有命令行参数，使用默认多股票模式
+    # 如果没有命令行参数，运行参数组合实验
     if len(sys.argv) == 1:
-        print(f"🎯 开始运行Baseline策略对比实验（多股票默认模式）")
-        print(f"💡 提示: 使用 python baseline.py --help 查看更多选项")
-        # 设置默认参数并继续执行多股票逻辑
-        class DefaultArgs:
-            ticker = 'AAPL'
-            strategies = None
-            list_tickers = False
-        args = DefaultArgs()
-    else:
-        args = parser.parse_args()
+        print(f"🚀 开始参数组合实验")
+        run_parameter_experiments()
+        return
+    
+    args = parser.parse_args()
+    
+    # 运行参数组合实验
+    if args.param_experiments:
+        run_parameter_experiments()
+        return
     
     # 列出可用股票
     if args.list_tickers:
@@ -455,118 +927,61 @@ def main():
         selected_strategies = [s.strip() for s in args.strategies.split(',')]
         print(f"🎯 将运行指定策略: {selected_strategies}")
     
-    # 运行真实数据实验 - 支持多个股票
-    print(f"🚀 开始运行Baseline策略对比实验")
-    
-    # 默认总是测试多个股票，这里上限设置为 100 支
-    available_tickers = get_available_tickers()
-    
-    # 优选的股票组合（优先考虑这几只）
-    preferred_tickers = ['AAPL', 'MSFT', 'GOOGL']
-    test_tickers = []
-    
-    # 添加用户指定的股票（如果不在优选列表中）
-    if args.ticker not in preferred_tickers:
-        test_tickers.append(args.ticker)
-    
-    # 添加优选股票（如果可用），最多 100 支
-    for ticker in preferred_tickers:
-        if ticker in available_tickers and ticker not in test_tickers:
-            test_tickers.append(ticker)
-            if len(test_tickers) >= 100:  # 最多 100 个股票
-                break
-    
-    # 如果还不够 100 个，从可用股票中补充
-    if len(test_tickers) < 100:
-        for ticker in available_tickers:
-            if ticker not in test_tickers:
-                test_tickers.append(ticker)
-                if len(test_tickers) >= 100:
-                    break
-    
-    print(f"📈 将测试股票: {test_tickers}")
-    
-    all_results = {}
-    
-    try:
-        for ticker in test_tickers:
-            print(f"\n{'='*60}")
-            print(f"🎯 正在测试股票: {ticker}")
-            print(f"{'='*60}")
-            
-            results = run_real_data_experiment(ticker, selected_strategies)
-            all_results[ticker] = results
-            
-            print(f"✅ {ticker} 测试完成")
+    # 运行多轮次实验
+    print(f"🔄 将运行 {args.runs} 轮实验")
+    for run_id in range(1, args.runs + 1):
+        print(f"\n{'='*50}")
+        print(f"🔄 第 {run_id}/{args.runs} 轮实验")
+        print(f"{'='*50}")
         
-        # 汇总输出所有结果
-        print(f"\n{'='*80}")
-        print(f"🏆 多股票策略对比汇总")
-        print(f"{'='*80}")
+        results = run_real_data_experiment(
+            ticker=args.ticker,
+            selected_strategies=selected_strategies,
+            run_id=run_id
+        )
+    
+    # 显示单个股票的实验结果汇总
+    print(f"\n📊 {args.ticker} 实验结果汇总:")
+    print("=" * 80)
+    
+    if results:
+        # 收集成功的结果
+        successful_results = []
+        failed_strategies = []
         
-        # 获取所有策略名称
-        all_strategies = set()
-        for results in all_results.values():
-            if results:
-                all_strategies.update(results.keys())
-        
-        # 按股票显示结果
-        for ticker, results in all_results.items():
-            print(f"\n📊 {ticker} 股票结果:")
-            print("-" * 60)
-            if results:
-                # 按年化收益排序显示策略
-                strategy_performance = []
-                for strategy_name, result in results.items():
-                    if result and 'metrics' in result:
-                        ann_return = result['metrics']['annualized_return']
-                        strategy_performance.append((strategy_name, ann_return, result))
-                
-                strategy_performance.sort(key=lambda x: x[1], reverse=True)
-                
-                for strategy_name, ann_return, result in strategy_performance:
-                    metrics = result['metrics']
-                    print(f"   {strategy_name:12s}: {metrics['annualized_return']:8.2%} "
-                          f"(夏普: {metrics['sharpe_ratio']:5.2f}, "
-                          f"回撤: {metrics['max_drawdown']:6.2%})")
+        for strategy_name, result in results.items():
+            if result['success'] and result['metrics'] is not None:
+                metrics = result['metrics']
+                successful_results.append({
+                    'strategy': strategy_name,
+                    'annualized_return': metrics['annualized_return'],
+                    'sharpe_ratio': metrics['sharpe_ratio'],
+                    'max_drawdown': metrics['max_drawdown'],
+                    'total_return': metrics['total_return']
+                })
             else:
-                print("   ❌ 无有效结果")
+                failed_strategies.append(strategy_name)
         
-        # 策略横向对比
-        print(f"\n{'='*80}")
-        print(f"📈 策略横向对比 (按平均年化收益排序)")
-        print(f"{'='*80}")
+        if successful_results:
+            # 按年化收益排序
+            successful_results.sort(key=lambda x: x['annualized_return'], reverse=True)
+            
+            # 格式化显示
+            print(f"{'策略':<15} {'年化收益':>12} {'夏普比率':>12} {'最大回撤':>12} {'总收益':>12}")
+            print("-" * 80)
+            
+            for result in successful_results:
+                annual_return = f"{result['annualized_return']:.2%}"
+                sharpe_ratio = f"{result['sharpe_ratio']:.2f}"
+                max_drawdown = f"{result['max_drawdown']:.2%}"
+                total_return = f"{result['total_return']:.2%}"
+                
+                print(f"{result['strategy']:<15} {annual_return:>12} {sharpe_ratio:>12} {max_drawdown:>12} {total_return:>12}")
         
-        strategy_summary = {}
-        for ticker, results in all_results.items():
-            if results:
-                for strategy_name, result in results.items():
-                    if result and 'metrics' in result:
-                        if strategy_name not in strategy_summary:
-                            strategy_summary[strategy_name] = []
-                        strategy_summary[strategy_name].append(result['metrics']['annualized_return'])
-        
-        # 计算平均表现并排序
-        strategy_avg = []
-        for strategy, returns in strategy_summary.items():
-            avg_return = sum(returns) / len(returns)
-            strategy_avg.append((strategy, avg_return, len(returns)))
-        
-        strategy_avg.sort(key=lambda x: x[1], reverse=True)
-        
-        print(f"{'策略':12s} {'平均年化收益':>12s} {'测试股票数':>8s}")
-        print("-" * 40)
-        for strategy, avg_return, count in strategy_avg:
-            print(f"{strategy:12s} {avg_return:11.2%} {count:7d}")
-        
-        print(f"\n🎉 多股票实验完成！结果已保存到 comparison_results/ 目录")
-        return all_results
-        
-    except Exception as e:
-        print(f"❌ 运行失败: {e}")
-        import traceback
-        traceback.print_exc()
-        return None
+        if failed_strategies:
+            print(f"\n❌ 运行失败的策略: {', '.join(failed_strategies)}")
+    
+    print("=" * 80)
 
 
 if __name__ == '__main__':

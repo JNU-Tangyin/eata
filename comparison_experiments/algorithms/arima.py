@@ -30,6 +30,12 @@ except ImportError:
 warnings.filterwarnings("ignore", message=".*Maximum Likelihood optimization.*")
 warnings.filterwarnings("ignore", message=".*Check mle_retvals.*")
 
+# 禁用NumPy数值计算警告
+warnings.filterwarnings("ignore", message="divide by zero encountered in matmul", category=RuntimeWarning)
+warnings.filterwarnings("ignore", message="overflow encountered in matmul", category=RuntimeWarning) 
+warnings.filterwarnings("ignore", message="invalid value encountered in matmul", category=RuntimeWarning)
+warnings.filterwarnings("ignore", message=".*encountered in.*", category=RuntimeWarning)
+
 try:
     from .data_utils import run_vectorized_backtest
 except ImportError:
@@ -83,12 +89,27 @@ def run_arima_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: st
             category=UserWarning,
         )
         
-        # 1. 准备数据 - 按照ETS-SDA的方式
+        # 1. 准备数据 - 按照ETS-SDA的方式，添加数值稳定性处理
         train_df = train_df.dropna()
         test_df = test_df.dropna()
         
-        train_series = TimeSeries.from_dataframe(train_df, 'date', 'close', freq='B')
-        test_series = TimeSeries.from_dataframe(test_df, 'date', 'close', freq='B')
+        # 数值稳定性处理：使用对数变换减少数值范围
+        train_df_processed = train_df.copy()
+        test_df_processed = test_df.copy()
+        
+        # 确保价格为正数，避免对数变换出错
+        min_price = min(train_df_processed['close'].min(), test_df_processed['close'].min())
+        if min_price <= 0:
+            offset = abs(min_price) + 1
+            train_df_processed['close'] = train_df_processed['close'] + offset
+            test_df_processed['close'] = test_df_processed['close'] + offset
+        
+        # 使用对数变换提高数值稳定性
+        train_df_processed['close'] = np.log(train_df_processed['close'])
+        test_df_processed['close'] = np.log(test_df_processed['close'])
+        
+        train_series = TimeSeries.from_dataframe(train_df_processed, 'date', 'close', freq='B')
+        test_series = TimeSeries.from_dataframe(test_df_processed, 'date', 'close', freq='B')
         
         # 2. 训练ARIMA模型 - 改进参数
         print("   Training ARIMA model...")
@@ -129,11 +150,19 @@ def run_arima_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: st
         df_arima = test_df.copy()
         # 对齐预测值与测试集索引
         predicted_values = predictions.values().flatten()
-        df_arima['predicted_close'] = predicted_values[-len(test_df):]
+        
+        # 将对数变换的预测结果转换回原始价格
+        predicted_prices = np.exp(predicted_values[-len(test_df):])
+        
+        # 如果之前添加了offset，需要减去
+        if min_price <= 0:
+            predicted_prices = predicted_prices - offset
+            
+        df_arima['predicted_close'] = predicted_prices
         
         # 信号生成：如果预测价格高于当前价格则买入，否则卖出
         df_arima['signal'] = np.where(
-            df_arima['predicted_close'] > df_arima['close'].shift(-1), 1, -1
+            df_arima['predicted_close'] > df_arima['close'], 1, -1
         )
         df_arima['signal'] = df_arima['signal'].fillna(0)  # 最后一个信号填充为0（持有）
         
