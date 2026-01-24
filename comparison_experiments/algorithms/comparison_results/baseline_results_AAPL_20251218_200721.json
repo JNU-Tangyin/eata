@@ -1,0 +1,10 @@
+{
+  "finrl_ppo": {
+    "total_return": 0.059050194059360184,
+    "annualized_return": 0.10961530849732948,
+    "sharpe_ratio": 0.6817825424448168,
+    "max_drawdown": 0.1899905611280355,
+    "success": true,
+    "description": "FinRL PPO强化学习策略"
+  }
+}

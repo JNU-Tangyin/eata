@@ -15,19 +15,21 @@ except ImportError:
     from data_utils import run_vectorized_backtest
 
 
-def run_macd_strategy(df: pd.DataFrame):
+def run_macd_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     """
     MACD交叉策略
     
     Args:
-        df: 包含MACD指标的DataFrame
+        train_df: 训练数据
+        test_df: 测试数据
+        ticker: 股票代码
         
     Returns:
         tuple: (metrics, backtest_results)
     """
-    print("Running MACD Crossover strategy...")
+    print(f"Running MACD Crossover strategy for {ticker}...")
     
-    df_macd = df.copy()
+    df_macd = test_df.copy()
     
     # 确保MACD列存在
     if 'macd_12_26_9' not in df_macd.columns or 'macds_12_26_9' not in df_macd.columns:

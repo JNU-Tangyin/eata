@@ -8,77 +8,21 @@ from pathlib import Path
 # 确保DATA_DIR是相对于项目根目录的路径
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 DATA_DIR = PROJECT_ROOT / "data"
+
+# 统一时间配置
+def get_time_periods():
+    """获取统一的时间配置"""
+    return {
+        'train': {'start': '2010-01-01', 'end': '2017-12-31'},
+        'valid': {'start': '2018-01-01', 'end': '2019-12-31'},
+        'test': {'start': '2020-01-01', 'end': '2022-12-12'}
+    }
+
+# 保留旧配置作为备份（已弃用）
 TRAIN_START_DATE = "2009-01-01"
 TRAIN_END_DATE = "2020-12-31"
 TEST_START_DATE = "2021-01-01"
 TEST_END_DATE = "2023-12-31"
-
-def load_csv_stock_data(ticker: str, csv_dir: str = r"D:\下载\分散的20支股票\分散的20支股票", 
-                       start_date: str = None, end_date: str = None) -> pd.DataFrame:
-    """
-    从CSV文件加载股票数据
-    
-    Args:
-        ticker: 股票代码 (e.g., 'AAPL')
-        csv_dir: CSV文件目录路径
-        start_date: 开始日期，默认使用TRAIN_START_DATE
-        end_date: 结束日期，默认使用2024-06-30
-        
-    Returns:
-        pd.DataFrame: 包含股票数据的DataFrame
-    """
-    import os
-    
-    # 设置默认的时间范围
-    if start_date is None:
-        start_date = TRAIN_START_DATE  # "2009-01-01"
-    if end_date is None:
-        end_date = "2024-06-30"
-    
-    # 构建CSV文件路径
-    csv_file = os.path.join(csv_dir, f"{ticker}.csv")
-    
-    if not os.path.exists(csv_file):
-        raise FileNotFoundError(f"CSV file not found: {csv_file}")
-    
-    # 读取CSV文件
-    df = pd.read_csv(csv_file)
-    
-    # 确保有必要的列
-    required_columns = ['date', 'open', 'high', 'low', 'close', 'volume']
-    if not all(col in df.columns for col in required_columns):
-        # 尝试标准化列名
-        column_mapping = {
-            'Date': 'date', 'Open': 'open', 'High': 'high', 
-            'Low': 'low', 'Close': 'close', 'Volume': 'volume',
-            'Adj Close': 'adj_close'
-        }
-        df = df.rename(columns=column_mapping)
-    
-    # 转换日期格式 - 处理多种可能的日期格式
-    try:
-        df['date'] = pd.to_datetime(df['date'])
-    except ValueError:
-        # 尝试不同的日期格式
-        try:
-            df['date'] = pd.to_datetime(df['date'], format='%d-%m-%Y')
-        except ValueError:
-            try:
-                df['date'] = pd.to_datetime(df['date'], format='%m-%d-%Y')
-            except ValueError:
-                # 使用pandas的智能解析
-                df['date'] = pd.to_datetime(df['date'], infer_datetime_format=True)
-    
-    # 添加ticker列
-    df['ticker'] = ticker
-    
-    # 筛选日期范围
-    df = df[(df['date'] >= start_date) & (df['date'] <= end_date)]
-    
-    # 按日期排序
-    df = df.sort_values('date').reset_index(drop=True)
-    
-    return df
 
 def load_real_stock_data(ticker: str, db_path: str = "stock.db", 
                         start_date: str = None, end_date: str = None) -> pd.DataFrame:
@@ -366,4 +310,136 @@ if __name__ == '__main__':
 
     except Exception as e:
         print(f"An error occurred: {e}")
+
+
+def load_csv_stock_data(ticker: str):
+    """
+    从CSV文件加载股票数据
+    
+    Args:
+        ticker: 股票代码
+        
+    Returns:
+        pd.DataFrame: 包含股票数据的DataFrame
+    """
+    import os
+    from pathlib import Path
+    
+    # CSV文件路径
+    csv_path = Path(r"D:\下载\分散的20支股票\分散的20支股票") / f"{ticker}.csv"
+    
+    if not csv_path.exists():
+        raise FileNotFoundError(f"CSV文件不存在: {csv_path}")
+    
+    # 读取CSV文件
+    df = pd.read_csv(csv_path)
+    
+    # 标准化列名
+    column_mapping = {
+        'Date': 'date',
+        'Open': 'open',
+        'High': 'high',
+        'Low': 'low',
+        'Close': 'close',
+        'Volume': 'volume',
+        'Adj Close': 'adj_close'
+    }
+    
+    # 重命名列
+    df = df.rename(columns=column_mapping)
+    
+    # 确保date列是datetime类型，处理DD-MM-YYYY格式
+    df['date'] = pd.to_datetime(df['date'], format='%d-%m-%Y', errors='coerce')
+    
+    # 如果上面失败，尝试其他常见格式
+    if df['date'].isna().any():
+        df['date'] = pd.to_datetime(df['date'], dayfirst=True, errors='coerce')
+    
+    # 确保数值列是float类型
+    numeric_columns = ['open', 'high', 'low', 'close', 'volume']
+    if 'adj_close' in df.columns:
+        numeric_columns.append('adj_close')
+    
+    for col in numeric_columns:
+        if col in df.columns:
+            df[col] = pd.to_numeric(df[col], errors='coerce')
+    
+    # 删除包含NaN的行
+    df = df.dropna()
+    
+    # 按日期排序
+    df = df.sort_values('date').reset_index(drop=True)
+    
+    # 添加ticker列
+    df['ticker'] = ticker
+    
+    # 验证必要的列存在
+    required_columns = ['date', 'open', 'high', 'low', 'close', 'volume']
+    missing_columns = [col for col in required_columns if col not in df.columns]
+    if missing_columns:
+        raise ValueError(f"缺少必要的列: {missing_columns}")
+    
+    print(f"✅ CSV数据加载完成 - {ticker}: {len(df)} 条记录，时间范围: {df['date'].min()} 到 {df['date'].max()}")
+    
+    return df
+
+def load_data_with_unified_split(ticker: str, data_source='csv'):
+    """
+    使用统一时间配置加载和划分数据
+    
+    Args:
+        ticker: 股票代码
+        data_source: 数据源类型 ('csv' 或 'db')
+        
+    Returns:
+        tuple: (train_data, valid_data, test_data)
+    """
+    if data_source == 'csv':
+        df = load_csv_stock_data(ticker)
+    else:
+        df = load_real_stock_data(ticker)
+
+    # 添加技术指标
+    df = add_technical_indicators(df)
+
+    # 使用统一时间配置进行数据划分
+    time_config = get_time_periods()
+    df['date'] = pd.to_datetime(df['date'])
+    
+    train_data = df[(df['date'] >= time_config['train']['start']) & (df['date'] <= time_config['train']['end'])].copy()
+    valid_data = df[(df['date'] >= time_config['valid']['start']) & (df['date'] <= time_config['valid']['end'])].copy()
+    test_data = df[(df['date'] >= time_config['test']['start']) & (df['date'] <= time_config['test']['end'])].copy()
+
+    print(f"数据划分完成 - {ticker}:")
+    print(f"  训练集: {len(train_data)} 条记录 ({train_data['date'].min()} 到 {train_data['date'].max()})")
+    print(f"  验证集: {len(valid_data)} 条记录 ({valid_data['date'].min()} 到 {valid_data['date'].max()})")
+    print(f"  测试集: {len(test_data)} 条记录 ({test_data['date'].min()} 到 {test_data['date'].max()})")
+
+    return train_data, valid_data, test_data
+
+def get_unified_test_data(ticker: str, data_source='csv'):
+    """
+    获取统一测试期数据
+    
+    Args:
+        ticker: 股票代码
+        data_source: 数据源类型 ('csv' 或 'db')
+        
+    Returns:
+        pd.DataFrame: 测试期数据
+    """
+    if data_source == 'csv':
+        df = load_csv_stock_data(ticker)
+    else:
+        df = load_real_stock_data(ticker)
+    
+    # 添加技术指标
+    df = add_technical_indicators(df)
+    
+    # 获取测试期数据
+    test_data = get_test_data(df)
+    
+    print(f"✅ 统一测试数据加载完成: {len(test_data)} 条记录，时间范围: {test_data['date'].min()} 到 {test_data['date'].max()}")
+    
+    return test_data
 

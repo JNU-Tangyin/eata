@@ -1,0 +1,42 @@
+{
+  "finrl_ppo": {
+    "total_return": 0.22147490186045138,
+    "annualized_return": 0.43720033458555974,
+    "sharpe_ratio": 2.181784538363447,
+    "max_drawdown": 0.11744654784751335,
+    "success": true,
+    "description": "FinRL PPO强化学习策略"
+  },
+  "finrl_a2c": {
+    "total_return": 0.1653289033900769,
+    "annualized_return": 0.3196775156130651,
+    "sharpe_ratio": 1.3844296130483942,
+    "max_drawdown": 0.09725570335311107,
+    "success": true,
+    "description": "FinRL A2C强化学习策略"
+  },
+  "finrl_sac": {
+    "total_return": 0.273867505141425,
+    "annualized_return": 0.5509042578467902,
+    "sharpe_ratio": 2.24530433555461,
+    "max_drawdown": 0.09679381603158205,
+    "success": true,
+    "description": "FinRL SAC强化学习策略"
+  },
+  "finrl_td3": {
+    "total_return": 0.20220889974685963,
+    "annualized_return": 0.39636707820070916,
+    "sharpe_ratio": 1.7343664951772746,
+    "max_drawdown": 0.0740418685515141,
+    "success": true,
+    "description": "FinRL TD3强化学习策略"
+  },
+  "finrl_ddpg": {
+    "total_return": 0.15156843416515775,
+    "annualized_return": 0.2915619248683323,
+    "sharpe_ratio": 1.4641083285413246,
+    "max_drawdown": 0.10807546865875942,
+    "success": true,
+    "description": "FinRL DDPG强化学习策略"
+  }
+}

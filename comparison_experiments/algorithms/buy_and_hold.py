@@ -15,19 +15,21 @@ except ImportError:
     from data_utils import run_vectorized_backtest
 
 
-def run_buy_and_hold(df: pd.DataFrame):
+def run_buy_hold_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     """
     买入持有策略
     
     Args:
-        df: 包含价格数据的DataFrame
+        train_df: 训练数据
+        test_df: 测试数据
+        ticker: 股票代码
         
     Returns:
         tuple: (metrics, backtest_results)
     """
-    print("Running Buy and Hold strategy...")
+    print(f"Running Buy and Hold strategy for {ticker}...")
     
-    df_bh = df.copy()
+    df_bh = test_df.copy()
     df_bh['signal'] = 1  # 始终持有
     
     metrics, backtest_results = run_vectorized_backtest(df_bh, signal_col='signal')

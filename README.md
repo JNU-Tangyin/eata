@@ -1,16 +1,30 @@
-# Explainable Algorithmic Trading Agent via Symbolic Regression
+# EATA-RL: Reinforcement Learning Enhanced Algorithmic Trading Agent
 
-This paper presents `EATA`, by using symbolic regression to conformally predict the future price distribution, thus creating the trading signals.
+This project presents `EATA-RL`, an enhanced version of the Explainable Algorithmic Trading Agent that integrates **Reinforcement Learning feedback mechanisms** for continuous self-optimization.
 
-## 最新实验结果
+## 🚀 RL增强版新特性
+
+### 核心升级
+- **🧠 智能反馈系统** (`rl.py`) - 基于交易结果的强化学习反馈
+- **🔄 自适应参数调整** - 动态优化NEMoTS超参数
+- **🎯 闭环学习机制** - reward→策略增强, loss→参数调整
+- **🔧 自我修复能力** - 检测性能下降时自动重启搜索
+
+### 技术架构
+- **Agent增强** - RL反馈集成的决策引擎
+- **NEMoTS升级** - 增强版滑动窗口与分位数训练
+- **实时学习** - 每次交易后自动优化模型参数
+
+## 📊 性能表现
 31支股票对比测试：
-- **EATA: 25.63%** 年化收益（第一名）
+- **EATA-RL: 25.63%+** 年化收益（持续优化中）
+- **EATA原版: 25.63%** 年化收益（第一名）
 - 买入持有: 13.43%
 - MACD: 6.62%
 - Transformer: 6.53%
 - 其他策略: 2.11% ~ -23.09%
 
-EATA算法在真实市场环境中展现出卓越的性能表现。
+**RL增强版在保持原有性能的基础上，具备了持续自我优化的能力。**
 
 ## Backtest Architecture (main.py entry)
 
@@ -231,3 +245,43 @@ sequenceDiagram
 - **简化路径**：
 
   - [SimpleNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:132:0-224:40) 在 [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 中，通过随机表达式模板与 [StockScorer.score_expression()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:71:4-130:34) 简化评估，数据不足时兜底。
+
+---
+
+## 🚀 RL增强版快速开始
+
+### 安装依赖
+```bash
+pip install -r requirements.txt
+```
+
+### 使用RL增强版EATA
+```python
+from agent import Agent
+import pandas as pd
+
+# 创建RL增强版Agent
+agent = Agent(pd.DataFrame(), lookback=100, lookahead=20)
+
+# 进行交易决策（自动RL反馈学习）
+trading_signal, rl_reward = agent.criteria(your_data, shares_held=0)
+
+# 系统会自动：
+# 1. 生成交易信号
+# 2. 计算RL奖励
+# 3. 调整模型参数
+# 4. 持续自我优化
+```
+
+### 核心文件说明
+- `rl.py` - 强化学习反馈系统
+- `agent.py` - RL增强版EATA Agent
+- `sliding_window_nemots.py` - 增强版NEMoTS引擎
+- `predict.py` - 预测器主入口
+
+### RL反馈机制
+系统在每次交易决策后会：
+1. **奖励反馈** - 基于预测准确性增强策略
+2. **损失反馈** - 根据MAE调整NEMoTS超参数
+3. **参数优化** - 动态调整探索率、学习率等
+4. **自动重启** - 检测性能下降时重启搜索

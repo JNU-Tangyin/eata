@@ -8,6 +8,9 @@ from scipy.stats import wasserstein_distance
 from eata_agent.engine import Engine
 from eata_agent.args import Args
 
+# 导入RL反馈系统
+from rl import IntegratedRLFeedbackSystem
+
 class Agent:
     def __init__(self, df: pd.DataFrame, lookback: int = 100, lookahead: int = 20, stride: int = 1, depth: int = 300):
         self.stock_list = df
@@ -21,12 +24,23 @@ class Agent:
         self.previous_best_expression = None
         self.is_trained = False
         self.training_history = []
-        self.__name__ = 'EATA_Agent_v3.1_fixed_strategy'
+        self.__name__ = 'EATA_Agent_v3.1_RL_Enhanced'
+        
+        # 初始化RL反馈系统
+        self.rl_feedback_system = IntegratedRLFeedbackSystem()
+        
+        # RL相关状态追踪
+        self.episode_count = 0
+        self.last_market_state = None
+        self.last_action = None
+        self.last_reward = None
+        self.last_loss = None
 
-        print("EATA Agent (固定策略模式) 初始化完成")
+        print("EATA Agent (RL增强模式) 初始化完成")
         print(f"   - Lookback={self.lookback}, Lookahead={self.lookahead}")
         print(f"   - Stride={self.stride}, Depth={self.depth}")
-        print("   - 决策规则: 固定 Q25/Q75 共识规则")
+        print("   - 决策规则: 固定 Q25/Q75 共识规则 + RL反馈增强")
+        print("   - RL反馈系统: 已激活")
 
     def _create_hyperparams(self) -> Args:
         """创建超参数配置 - 增强版"""
@@ -120,14 +134,12 @@ class Agent:
         """
         try:
             if prediction_distribution.size == 0:
-                # 如果没有预测，则奖励为0，动作为持有
                 return 0.0, 0
 
-            # --- 交易信号决策 (添加调试信息) ---
+            # 交易信号决策
             strategy = [25, 75]
             q_low, q_high = np.percentile(prediction_distribution, strategy)
             
-            # 临时调试：打印预测分布的详细信息
             print(f"  [调试] 预测分布: min={prediction_distribution.min():.6f}, max={prediction_distribution.max():.6f}")
             print(f"  [调试] Q25={q_low:.6f}, Q75={q_high:.6f}, median={np.median(prediction_distribution):.6f}")
             
@@ -139,11 +151,8 @@ class Agent:
                 intended_signal = -1
                 print(f"  [决策] 预测分布的 75% 分位数 < 0，生成意图信号: 卖出")
             else:
-                # 检查是否全为非负值（常见情况）
                 if prediction_distribution.min() >= 0:
                     median_val = np.median(prediction_distribution)
-                    mean_val = np.mean(prediction_distribution)
-                    # 使用相对阈值：如果中位数显著大于最小值
                     threshold = (prediction_distribution.max() - prediction_distribution.min()) * 0.3
                     if median_val > threshold:
                         intended_signal = 1
@@ -153,19 +162,11 @@ class Agent:
                 else:
                     print("  [决策] 预测分布跨越零点，信号不明确，生成意图信号: 持有")
 
-            # --- RL奖励计算 (新逻辑: 瓦瑟斯坦距离) ---
-            # 1. 提取真实的日收益率 (lookahead期间的收盘价变化率)
+            # RL奖励计算
             actual_returns = lookahead_ground_truth.T[3, :] 
-
-            # 2. 计算预测分布与真实分布之间的瓦瑟斯坦距离
-            #    注意：scipy的实现可以处理两个样本数量不同的分布
             distance = wasserstein_distance(prediction_distribution, actual_returns)
-
-            # 3. 将距离转换为奖励 (距离越小，奖励越高)
-            #    加1是为了防止距离为0时出现除零错误
             rl_reward = 1 / (1 + distance)
             
-            # 返回rl_reward用于学习, intended_signal用于回测框架执行交易
             return rl_reward, intended_signal
         except Exception as e:
             print(f"--- 🚨 在 _calculate_rl_reward_and_signal 中捕获到致命错误 🚨 ---")
@@ -174,18 +175,98 @@ class Agent:
             traceback.print_exc()
             return 0.0, 0
 
-    def criteria(self, d: pd.DataFrame, shares_held: int) -> int:
+    def _process_rl_feedback(self, rl_reward: float, mae: float, trading_signal: int, lookback_data: np.ndarray):
+        """
+        处理RL反馈 - 师弟建议的闭环机制
+        """
+        try:
+            # 更新episode计数
+            self.episode_count += 1
+            
+            # 准备市场状态特征（简化版，10维）
+            market_state = np.zeros(10)
+            if lookback_data.size > 0:
+                # 使用最近的价格变化作为市场状态特征
+                recent_data = lookback_data[-10:] if len(lookback_data) >= 10 else lookback_data
+                market_state[:len(recent_data.flatten()[:10])] = recent_data.flatten()[:10]
+            
+            # 准备上下文信息
+            context = {
+                'mae': mae,
+                'episode_count': self.episode_count,
+                'market_volatility': np.std(lookback_data) if lookback_data.size > 0 else 0.0,
+                'prediction_confidence': 1.0 / (1.0 + mae) if mae > 0 else 1.0
+            }
+            
+            # 处理RL反馈
+            feedback_result = self.rl_feedback_system.process_episode_feedback(
+                code=f"EATA_Episode_{self.episode_count}",
+                reward=rl_reward,
+                loss=mae,  # 使用MAE作为loss
+                market_state=market_state,
+                action=trading_signal,
+                context=context
+            )
+            
+            # 应用反馈到NEMoTS超参数（师弟建议的核心功能）
+            if 'loss_processing' in feedback_result and 'nemots' in feedback_result['loss_processing']:
+                nemots_updates = feedback_result['loss_processing']['nemots']
+                self._apply_nemots_feedback(nemots_updates)
+            
+            print(f"🔧 RL反馈处理完成 - Episode {self.episode_count}")
+            print(f"   净收益: {feedback_result.get('net_outcome', 0):.4f}")
+            print(f"   适应类型: {feedback_result.get('system_adaptation', {}).get('type', 'unknown')}")
+            
+        except Exception as e:
+            print(f"⚠️ RL反馈处理失败: {e}")
+
+    def _apply_nemots_feedback(self, nemots_updates: Dict[str, Any]):
+        """
+        应用RL反馈到NEMoTS超参数 - 师弟建议的核心功能
+        """
+        try:
+            print(f"🎯 应用NEMoTS参数调整...")
+            
+            # 应用探索率调整
+            if 'exploration_rate_multiplier' in nemots_updates:
+                old_rate = self.hyperparams.exploration_rate
+                self.hyperparams.exploration_rate *= nemots_updates['exploration_rate_multiplier']
+                self.hyperparams.exploration_rate = np.clip(self.hyperparams.exploration_rate, 0.1, 2.0)
+                print(f"   探索率: {old_rate:.3f} -> {self.hyperparams.exploration_rate:.3f}")
+            
+            # 应用学习率调整
+            if 'learning_rate_multiplier' in nemots_updates:
+                old_lr = self.hyperparams.lr
+                self.hyperparams.lr *= nemots_updates['learning_rate_multiplier']
+                self.hyperparams.lr = np.clip(self.hyperparams.lr, 1e-6, 1e-3)
+                print(f"   学习率: {old_lr:.6f} -> {self.hyperparams.lr:.6f}")
+            
+            # 应用运行次数调整
+            if 'num_runs_multiplier' in nemots_updates:
+                old_runs = self.hyperparams.num_runs
+                self.hyperparams.num_runs = int(self.hyperparams.num_runs * nemots_updates['num_runs_multiplier'])
+                self.hyperparams.num_runs = np.clip(self.hyperparams.num_runs, 1, 10)
+                print(f"   运行次数: {old_runs} -> {self.hyperparams.num_runs}")
+            
+            # 更新引擎参数
+            if hasattr(self.engine, 'model'):
+                self.engine.model.exploration_rate = self.hyperparams.exploration_rate
+                self.engine.model.num_runs = self.hyperparams.num_runs
+                
+        except Exception as e:
+            print(f"⚠️ NEMoTS参数调整失败: {e}")
+
+    def criteria(self, d: pd.DataFrame, shares_held: int) -> Tuple[int, float]:
         """核心决策函数，集成策略学习流程"""
         try:
             if self.previous_best_tree is not None:
                 print("检测到已有语法树，切换到热启动参数 (num_runs=1)...")
-                self.engine.model.num_runs = 1 # 核心优化：热启动时，只运行1次MCTS
+                self.engine.model.num_runs = 1
                 self.engine.model.num_transplant = 5
                 self.engine.model.transplant_step = 300
                 self.engine.model.num_aug = 3
             else:
                 print("首次运行，使用重量级参数...")
-                # 使用更强的冷启动参数
                 self.engine.model.num_runs = 5
                 self.engine.model.max_len = 35
 
@@ -214,16 +295,18 @@ class Agent:
             )
             print(f"RL奖励 (基于真实信号): {rl_reward:.4f}, 意图交易信号: {trading_signal}")
 
-            # “盖戳”流程：将最终的rl_reward附加到本次窗口产生的所有经验上
+            # "盖戳"流程：将最终的rl_reward附加到本次窗口产生的所有经验上
             stamped_experiences = []
             for experience in mcts_records:
-                # experience 是一个元组 (state, seq, policy, value)
                 stamped_experience = experience + (rl_reward,)
                 stamped_experiences.append(stamped_experience)
             
-            # 将“盖戳”后的经验数据存入引擎，并由引擎决定是否触发训练
+            # 将"盖戳"后的经验数据存入引擎，并由引擎决定是否触发训练
             if stamped_experiences:
                 self.engine.store_experiences(stamped_experiences)
+
+            # RL反馈处理 - 师弟建议的闭环机制
+            self._process_rl_feedback(rl_reward, mae, trading_signal, lookback_data)
 
             return trading_signal, rl_reward
 
@@ -239,9 +322,7 @@ class Agent:
         try:
             _, s1, _, _ = s
             temp_agent = Agent(pd.DataFrame())
-            # 注意：这里的静态调用无法知道持仓状态，这是一个简化处理。
-            # 在真实的多股票场景中，需要为每个股票维护一个Agent实例。
-            action, _ = temp_agent.criteria(s1, shares_held=0) # 假设默认是空仓
+            action, _ = temp_agent.criteria(s1, shares_held=0)
             return action
         except Exception as e:
             print(f"动作选择失败: {e}")

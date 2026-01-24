@@ -30,10 +30,9 @@ python baseline.py AAPL --strategies "eata,buy_and_hold,macd"
 ### 死锁问题
 如果遇到死锁，请设置环境变量：
 ```bash
-export OMP_NUM_THREADS=2
-export MKL_NUM_THREADS=2
+export OMP_NUM_THREADS=1
+export MKL_NUM_THREADS=1
 ```
-注意：线程数设置为2可以平衡性能和稳定性。如果仍有问题，可以设置为1。
 
 ### GPU支持
 - macOS: 自动使用MPS (Apple Silicon)

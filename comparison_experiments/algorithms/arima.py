@@ -69,8 +69,8 @@ def run_arima_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: st
         sys.stdout = StringIO()
         
         try:
-            from darts import TimeSeries
-            from darts.models import ARIMA
+            from statsmodels.tsa.arima.model import ARIMA
+            from statsmodels.tsa.stattools import adfuller
         finally:
             # 恢复stdout
             sys.stdout = old_stdout
@@ -89,73 +89,70 @@ def run_arima_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: st
             category=UserWarning,
         )
         
-        # 1. 准备数据 - 按照ETS-SDA的方式，添加数值稳定性处理
+        # 1. 准备数据 - 使用纯statsmodels实现
+        print("   Preparing data for statsmodels ARIMA...")
         train_df = train_df.dropna()
         test_df = test_df.dropna()
         
-        # 数值稳定性处理：使用对数变换减少数值范围
-        train_df_processed = train_df.copy()
-        test_df_processed = test_df.copy()
+        # 提取价格序列
+        train_prices = train_df['close'].values
+        test_prices = test_df['close'].values
         
-        # 确保价格为正数，避免对数变换出错
-        min_price = min(train_df_processed['close'].min(), test_df_processed['close'].min())
-        if min_price <= 0:
-            offset = abs(min_price) + 1
-            train_df_processed['close'] = train_df_processed['close'] + offset
-            test_df_processed['close'] = test_df_processed['close'] + offset
+        # 数值稳定性处理：使用对数变换
+        if np.any(train_prices <= 0):
+            offset = abs(np.min(train_prices)) + 1
+            train_prices = train_prices + offset
+            test_prices = test_prices + offset
         
-        # 使用对数变换提高数值稳定性
-        train_df_processed['close'] = np.log(train_df_processed['close'])
-        test_df_processed['close'] = np.log(test_df_processed['close'])
+        train_log_prices = np.log(train_prices)
         
-        train_series = TimeSeries.from_dataframe(train_df_processed, 'date', 'close', freq='B')
-        test_series = TimeSeries.from_dataframe(test_df_processed, 'date', 'close', freq='B')
-        
-        # 2. 训练ARIMA模型 - 改进参数
-        print("   Training ARIMA model...")
+        # 2. 训练ARIMA模型
+        print("   Training statsmodels ARIMA model...")
         
         # 尝试多个ARIMA参数组合，选择最佳的
         best_model = None
         best_aic = float('inf')
+        best_params = None
         
         param_combinations = [
-            (1, 1, 1), (2, 1, 2), (3, 1, 3), (5, 1, 0),  # 包含原始参数
-            (1, 1, 0), (0, 1, 1), (2, 1, 1), (1, 1, 2)
+            (1, 1, 1), (2, 1, 2), (1, 1, 0), (0, 1, 1), 
+            (2, 1, 1), (1, 1, 2), (3, 1, 1), (1, 1, 3)
         ]
         
         for p, d, q in param_combinations:
             try:
-                temp_model = ARIMA(p=p, d=d, q=q)
-                temp_model.fit(train_series)
-                aic = temp_model.model.aic
+                model = ARIMA(train_log_prices, order=(p, d, q))
+                fitted_model = model.fit()
+                aic = fitted_model.aic
                 if aic < best_aic:
                     best_aic = aic
-                    best_model = temp_model
-                    print(f"   Better model found: ARIMA({p},{d},{q}) with AIC={aic:.2f}")
-            except:
+                    best_model = fitted_model
+                    best_params = (p, d, q)
+                    print(f"   Better model found: ARIMA{best_params} with AIC={aic:.2f}")
+            except Exception as e:
                 continue
         
         if best_model is None:
             # 如果所有参数都失败，使用简单的(1,1,1)
-            best_model = ARIMA(p=1, d=1, q=1)
-            best_model.fit(train_series)
+            print("   Using fallback ARIMA(1,1,1)...")
+            model = ARIMA(train_log_prices, order=(1, 1, 1))
+            best_model = model.fit()
+            best_params = (1, 1, 1)
         
-        model = best_model
-        
-        # 3. 预测 - 按照ETS-SDA的方式
+        # 3. 预测
         print("   Making predictions...")
-        predictions = model.predict(n=len(test_series), series=train_series)
+        n_periods = len(test_df)
+        forecast = best_model.forecast(steps=n_periods)
         
-        # 4. 生成信号 - 按照ETS-SDA的逻辑
+        # 4. 生成信号
         df_arima = test_df.copy()
-        # 对齐预测值与测试集索引
-        predicted_values = predictions.values().flatten()
         
         # 将对数变换的预测结果转换回原始价格
-        predicted_prices = np.exp(predicted_values[-len(test_df):])
+        predicted_log_prices = forecast
+        predicted_prices = np.exp(predicted_log_prices)
         
         # 如果之前添加了offset，需要减去
-        if min_price <= 0:
+        if np.any(train_prices <= 0):
             predicted_prices = predicted_prices - offset
             
         df_arima['predicted_close'] = predicted_prices

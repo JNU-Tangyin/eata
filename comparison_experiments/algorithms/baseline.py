@@ -97,11 +97,11 @@ STRATEGY_CONFIGS = {
         'requires_training': True,
         'description': '遗传编程策略'
     },
-    'lightgbm': {
-        'module': 'lgb_strategy',
-        'function': 'run_lightgbm_strategy',
+    'gbdt': {
+        'module': 'gbdt_strategy',
+        'function': 'run_gbdt_strategy',
         'requires_training': True,
-        'description': 'LightGBM机器学习策略'
+        'description': 'GBDT梯度提升决策树策略'
     },
     'lstm': {
         'module': 'lstm',
@@ -619,7 +619,7 @@ class BaselineRunner:
 
 def run_real_data_experiment(ticker: str, selected_strategies=None, params=None, run_id=1):
     """使用真实股票数据运行baseline策略对比"""
-    from data_utils import load_csv_stock_data, add_technical_indicators
+    from data_utils import load_real_stock_data, add_technical_indicators
     
     # 默认参数
     if params is None:
@@ -635,7 +635,7 @@ def run_real_data_experiment(ticker: str, selected_strategies=None, params=None,
     print(f"🔧 实验参数: {params}")
     print(f"🔄 运行轮次: {run_id}")
     
-    df = load_csv_stock_data(ticker)
+    df = load_real_stock_data(ticker)
     print(f"✅ 数据加载完成: {len(df)} 条记录，时间范围: {df['date'].min()} 到 {df['date'].max()}")
     
     # 添加技术指标
@@ -690,12 +690,35 @@ def run_parameter_experiments():
         {'lookback': 50, 'lookahead': 10, 'stride': 1, 'depth': 300},
     ]
     
-    # 测试股票 - 使用用户指定的分散20支股票列表
-    test_tickers = [
-        'AAPL', 'AMD', 'AMT', 'BA', 'BAC', 'BHP', 'CAT', 'COST', 'DE', 'EQIX',
-        'GE', 'GOOG', 'JNJ', 'JPM', 'KO', 'MSFT', 'NFLX', 'NVDA', 'SCHW', 'XOM'
-    ]
-    print(f"📊 使用用户指定的分散20支股票列表 {len(test_tickers)} 支股票")
+    # 测试股票 - 从数据库动态获取100支美股
+    import sqlite3
+    import os
+    
+    # 数据库路径 - 使用绝对路径确保可靠性
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    db_path = os.path.join(current_dir, '..', '..', 'stock.db')
+    if os.path.exists(db_path):
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('SELECT DISTINCT ticker FROM stock_data ORDER BY ticker')
+        test_tickers = [row[0] for row in cursor.fetchall()]
+        conn.close()
+        print(f"📊 从数据库加载 {len(test_tickers)} 支股票")
+    else:
+        # 备用股票列表（数据库中实际存在的100支股票）
+        test_tickers = [
+            'AAPL', 'ABBV', 'ABT', 'ADBE', 'AJG', 'AMD', 'AMGN', 'AMZN', 'AON', 'AVGO',
+            'AXP', 'BA', 'BABA', 'BAC', 'BIIB', 'BLK', 'BMY', 'C', 'CAT', 'CME',
+            'COF', 'COP', 'COST', 'CRM', 'CSCO', 'CVX', 'DE', 'DHR', 'DIS', 'EBAY',
+            'EMR', 'EOG', 'ETSY', 'FDX', 'GE', 'GILD', 'GOOGL', 'GS', 'HAL', 'HD',
+            'HON', 'IBM', 'ICE', 'ILMN', 'INTC', 'ITW', 'JNJ', 'JPM', 'KO', 'LMT',
+            'LOW', 'LYFT', 'MA', 'MCD', 'MCO', 'META', 'MMC', 'MMM', 'MPC', 'MRK',
+            'MS', 'MSFT', 'NFLX', 'NKE', 'NOC', 'NVDA', 'ORCL', 'OXY', 'PEP', 'PFE',
+            'PH', 'PNC', 'PSX', 'PYPL', 'QCOM', 'REGN', 'ROK', 'RTX', 'SBUX', 'SCHW',
+            'SHOP', 'SLB', 'SPGI', 'SQ', 'TFC', 'TGT', 'TMO', 'TSLA', 'TXN', 'UBER',
+            'UNH', 'UPS', 'USB', 'V', 'VLO', 'VRTX', 'W', 'WFC', 'WMT', 'XOM'
+        ]
+        print(f"📊 使用备用股票列表 {len(test_tickers)} 支股票")
     
     # 测试策略
     test_strategies = list(STRATEGY_CONFIGS.keys())

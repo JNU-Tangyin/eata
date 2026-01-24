@@ -44,9 +44,11 @@ def run_lstm_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str
     print(f"Running LSTM strategy for {ticker}...")
     
     try:
-        # 延迟导入避免死锁
-        from darts import TimeSeries
-        from darts.models import RNNModel
+        # 使用纯PyTorch实现，避免darts库的pandas兼容性问题
+        import torch
+        import torch.nn as nn
+        from torch.utils.data import DataLoader, TensorDataset
+        from sklearn.preprocessing import MinMaxScaler
         import numpy as np
         
         # 1. 数据预处理 - 按照ETS-SDA的方式
@@ -63,280 +65,145 @@ def run_lstm_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str
         train_df['close'] = train_df['close'].astype('float32')
         test_df['close'] = test_df['close'].astype('float32')
 
-        # 2. 数据预处理 - 使用收益率而不是价格
-        print("   Preprocessing data for LSTM...")
+        # 2. 定义PyTorch LSTM模型
+        class LSTMModel(nn.Module):
+            def __init__(self, input_size, hidden_size, num_layers, output_size):
+                super(LSTMModel, self).__init__()
+                self.hidden_size = hidden_size
+                self.num_layers = num_layers
+                self.lstm = nn.LSTM(input_size, hidden_size, num_layers, batch_first=True)
+                self.fc = nn.Linear(hidden_size, output_size)
+                
+            def forward(self, x):
+                h0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+                c0 = torch.zeros(self.num_layers, x.size(0), self.hidden_size)
+                out, _ = self.lstm(x, (h0, c0))
+                out = self.fc(out[:, -1, :])
+                return out
         
-        # 计算收益率序列
-        train_returns = train_df['close'].pct_change().dropna()
-        test_returns = test_df['close'].pct_change().dropna()
+        # 3. 数据预处理
+        print("   Preprocessing data for PyTorch LSTM...")
         
-        # 归一化收益率
-        from sklearn.preprocessing import StandardScaler
-        scaler = StandardScaler()
-        train_returns_scaled = scaler.fit_transform(train_returns.values.reshape(-1, 1)).flatten()
-        test_returns_scaled = scaler.transform(test_returns.values.reshape(-1, 1)).flatten()
+        # 准备特征数据
+        if len(feature_cols) == 0:
+            # 如果没有技术指标，使用基本价格特征
+            feature_cols = ['close']
         
-        # 创建时间序列
-        combined_returns = np.concatenate([train_returns_scaled, test_returns_scaled])
-        dates_combined = pd.concat([train_df['date'].iloc[1:], test_df['date'].iloc[1:]])  # 去掉第一个日期因为pct_change
+        # 合并训练和测试数据
+        combined_df = pd.concat([train_df, test_df]).reset_index(drop=True)
         
-        returns_df = pd.DataFrame({
-            'date': dates_combined,
-            'returns': combined_returns
-        })
+        # 准备序列数据
+        sequence_length = 20  # 使用20天的历史数据预测下一天
+        scaler = MinMaxScaler()
         
-        combined_series = TimeSeries.from_dataframe(
-            returns_df,
-            'date',
-            'returns',
-            freq='B',
-            fill_missing_dates=True,
-            fillna_value=0
-        )
-
-        # 分割数据 - 修正索引
-        split_idx = len(train_returns_scaled)  # 使用收益率数据的长度
-        train_series = combined_series[:split_idx]
-        test_series = combined_series[split_idx:]
-
-        # 3. 创建特征序列 - 使用与收益率对应的数据
-        # 去掉第一行以匹配收益率数据
-        combined_features_df = pd.concat([train_df.iloc[1:], test_df.iloc[1:]])[feature_cols]
-        combined_features_df['date'] = dates_combined
+        # 标准化特征
+        features = combined_df[feature_cols].values
+        features_scaled = scaler.fit_transform(features)
         
-        combined_covariates = TimeSeries.from_dataframe(
-            combined_features_df,
-            'date',
-            feature_cols,
-            freq='B',
-            fill_missing_dates=True,
-            fillna_value=0
-        )
-
-        train_covariates = combined_covariates[:split_idx]
-        test_covariates = combined_covariates[split_idx:]
-
-        # 4. 训练LSTM模型 - 使用ETS-SDA的参数
-        print("   Training LSTM model...")
-        model = RNNModel(
-            model='LSTM',
-            hidden_dim=64,  # 增加隐藏层维度
-            n_rnn_layers=2,
-            input_chunk_length=20,  # 适当的输入序列长度
-            output_chunk_length=1,
-            n_epochs=20,  # 减少训练轮数以加快测试
-            dropout=0.1,
-            batch_size=32,
-            random_state=42,
-            # verbose=False,  # 移除不支持的参数
-            optimizer_kwargs={'lr': 1e-3}
-        )
-
-        # 训练模型（使用协变量提高预测质量）
-        try:
-            model.fit(train_series, past_covariates=train_covariates)
-            use_covariates = True
-        except Exception as cov_error:
-            print(f"   Failed to use covariates: {cov_error}")
-            print("   Training without covariates...")
-            model.fit(train_series)
-            use_covariates = False
-
-        # 5. 预测
+        # 创建序列数据
+        def create_sequences(data, seq_length):
+            X, y = [], []
+            for i in range(seq_length, len(data)):
+                X.append(data[i-seq_length:i])
+                y.append(data[i, 0])  # 预测close价格
+            return np.array(X), np.array(y)
+        
+        X, y = create_sequences(features_scaled, sequence_length)
+        
+        # 分割训练和测试数据
+        train_size = len(train_df) - sequence_length
+        X_train, X_test = X[:train_size], X[train_size:]
+        y_train, y_test = y[:train_size], y[train_size:]
+        
+        # 4. 转换为PyTorch张量
+        X_train_tensor = torch.FloatTensor(X_train)
+        y_train_tensor = torch.FloatTensor(y_train)
+        X_test_tensor = torch.FloatTensor(X_test)
+        
+        # 5. 训练LSTM模型
+        print("   Training PyTorch LSTM model...")
+        input_size = len(feature_cols)
+        hidden_size = 64
+        num_layers = 2
+        output_size = 1
+        
+        model = LSTMModel(input_size, hidden_size, num_layers, output_size)
+        criterion = nn.MSELoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+        
+        # 训练循环
+        num_epochs = 50
+        for epoch in range(num_epochs):
+            model.train()
+            optimizer.zero_grad()
+            outputs = model(X_train_tensor)
+            loss = criterion(outputs.squeeze(), y_train_tensor)
+            loss.backward()
+            optimizer.step()
+            
+            if (epoch + 1) % 10 == 0:
+                print(f"   Epoch [{epoch+1}/{num_epochs}], Loss: {loss.item():.4f}")
+        
+        # 6. 预测
         print("   Making predictions...")
-        try:
-            # 尝试使用历史数据进行预测
-            if use_covariates:
-                predictions = model.predict(
-                    n=len(test_series), 
-                    series=train_series,
-                    past_covariates=combined_covariates
-                )
-            else:
-                predictions = model.predict(n=len(test_series), series=train_series)
-            predictions_array = predictions.values().flatten()
-        except Exception as pred_error:
-            print(f"   Prediction failed, using fallback method: {pred_error}")
-            # 备用方法：逐步预测
-            predictions_list = []
-            current_series = train_series
-            
-            for i in range(len(test_series)):
-                try:
-                    pred = model.predict(n=1, series=current_series)
-                    pred_value = pred.values()[0][0]
-                    predictions_list.append(pred_value)
-                    
-                    # 更新序列以包含新的预测值
-                    new_point = test_series[i:i+1]
-                    current_series = current_series.append(new_point)
-                except:
-                    # 如果预测失败，使用最后一个已知值
-                    if predictions_list:
-                        predictions_list.append(predictions_list[-1])
-                    else:
-                        predictions_list.append(train_series.values()[-1][0])
-            
-            predictions_array = np.array(predictions_list)
-
-        # 6. 生成信号 - 基于收益率预测
+        model.eval()
+        with torch.no_grad():
+            predictions = model(X_test_tensor).squeeze().numpy()
+        
+        # 反归一化预测结果 - 只对第一列（close价格）进行反归一化
+        # 创建与原始特征相同维度的数组，只填充第一列
+        predictions_full = np.zeros((len(predictions), len(feature_cols)))
+        predictions_full[:, 0] = predictions
+        predictions_rescaled = scaler.inverse_transform(predictions_full)[:, 0]
+        
+        # 7. 生成交易信号
         df_lstm = test_df.copy()
         
-        # 预测的是收益率，需要转换回价格变化信号
-        predicted_returns = predictions_array[:len(test_df)]
+        # 基于预测价格生成信号
+        current_prices = test_df['close'].values[sequence_length:]
+        predicted_prices = predictions_rescaled[:len(current_prices)]
         
-        # 反归一化预测的收益率
-        predicted_returns_original = scaler.inverse_transform(predicted_returns.reshape(-1, 1)).flatten()
+        # 计算预测收益率
+        predicted_returns = (predicted_prices - current_prices) / current_prices
         
-        # 合理的信号生成逻辑 - 基于金融理论的阈值设定
-        df_lstm['predicted_return'] = predicted_returns_original
-        
-        # 使用分位数方法确保在不同市场环境下都有信号（合理的技术改进）
-        upper_quantile = np.percentile(predicted_returns_original, 75)  # 上25%
-        lower_quantile = np.percentile(predicted_returns_original, 25)  # 下25%
-        
-        # 基于金融理论的合理阈值：至少要超过交易成本
-        pred_std = np.std(predicted_returns_original)
-        # 设置阈值为预测标准差的0.5倍，最小为0.1%（典型交易成本）
-        abs_threshold = max(0.001, pred_std * 0.5)  # 恢复合理的阈值
-        
-        # 生成信号：必须同时满足相对强度和绝对强度
+        # 生成信号
         signals = []
-        for ret in predicted_returns_original:
-            if ret > upper_quantile and ret > abs_threshold:
-                signals.append(1)  # 买入：预测收益在前25%且超过阈值
-            elif ret < lower_quantile and ret < -abs_threshold:
-                signals.append(-1)  # 卖出：预测损失在后25%且超过阈值
-            else:
-                signals.append(0)  # 持有：信号不够强
+        threshold = 0.01  # 1%的阈值
         
-        df_lstm['signal'] = signals
+        for ret in predicted_returns:
+            if ret > threshold:
+                signals.append(1)  # 买入
+            elif ret < -threshold:
+                signals.append(-1)  # 卖出
+            else:
+                signals.append(0)  # 持有
+        
+        # 确保信号长度与测试数据匹配
+        if len(signals) < len(test_df):
+            signals = [0] * (len(test_df) - len(signals)) + signals
+        
+        df_lstm['signal'] = signals[:len(test_df)]
         df_lstm['signal'] = df_lstm['signal'].fillna(0)
 
-        # 7. 回测
+        # 8. 回测
         metrics, backtest_results = run_vectorized_backtest(df_lstm, signal_col='signal')
         
-        print(f"✅ LSTM strategy completed for {ticker}")
+        print(f"✅ PyTorch LSTM strategy completed for {ticker}")
         print(f"   Total Return: {metrics['total_return']:.2%}")
         print(f"   Annualized Return: {metrics['annualized_return']:.2%}")
         print(f"   Sharpe Ratio: {metrics['sharpe_ratio']:.2f}")
         print(f"   Max Drawdown: {metrics['max_drawdown']:.2%}")
         
         # 诊断信息
-        signal_counts = df_lstm['signal'].value_counts()
+        signal_counts = pd.Series(signals).value_counts()
         print(f"   Signal distribution: Buy={signal_counts.get(1, 0)}, "
               f"Sell={signal_counts.get(-1, 0)}, Hold={signal_counts.get(0, 0)}")
-        
-        # 预测质量诊断
-        actual_returns = test_df['close'].pct_change().dropna()
-        predicted_returns_for_corr = predicted_returns_original[:len(actual_returns)]
-        correlation = 0
-        if len(actual_returns) > 0 and len(predicted_returns_for_corr) > 0:
-            correlation = np.corrcoef(actual_returns, predicted_returns_for_corr)[0,1]
-            print(f"   Return prediction correlation: {correlation:.3f}")
-            
-        return_stats = pd.Series(predicted_returns_original).describe()
-        print(f"   Predicted return range: [{return_stats['min']:.3f}, {return_stats['max']:.3f}]")
-        
-        # 检查信号质量，但不强制使用备用策略
-        signal_counts = df_lstm['signal'].value_counts()
-        buy_signals = signal_counts.get(1, 0)
-        sell_signals = signal_counts.get(-1, 0)
-        
-        print(f"   Signal quality: correlation={correlation:.3f}, buy={buy_signals}, sell={sell_signals}")
-        
-        # 只有在极端情况下才使用备用策略
-        if abs(correlation) < 0.01 and (buy_signals == 0 and sell_signals == 0):
-            print("   ⚠️  Extremely poor prediction quality detected, switching to fallback strategy...")
-            raise Exception("Extremely poor LSTM prediction quality")
         
         return metrics, backtest_results
         
     except Exception as e:
         print(f"❌ LSTM strategy failed for {ticker}: {e}")
-        print("   Using technical indicator fallback strategy...")
-        
-        # 备用策略：基于技术指标的简单LSTM风格策略
-        try:
-            df_fallback = test_df.copy()
-            
-            # 使用多个技术指标组合生成信号
-            signals = []
-            for i in range(len(test_df)):
-                current_data = test_df.iloc[i]
-                
-                # 获取技术指标
-                rsi = current_data.get('rsi_14', 50)
-                macd = current_data.get('macd_12_26_9', 0)
-                macds = current_data.get('macds_12_26_9', 0)
-                bb_upper = current_data.get('bb_upper_20_2', current_data['close'] * 1.02)
-                bb_lower = current_data.get('bb_lower_20_2', current_data['close'] * 0.98)
-                
-                # 动量指标
-                if i >= 5:
-                    momentum = (current_data['close'] - test_df.iloc[i-5]['close']) / test_df.iloc[i-5]['close']
-                else:
-                    momentum = 0
-                
-                # 综合信号生成（模拟LSTM的多因子分析）
-                score = 0
-                
-                # RSI 信号
-                if rsi < 30:
-                    score += 1.5
-                elif rsi < 40:
-                    score += 0.5
-                elif rsi > 70:
-                    score -= 1.5
-                elif rsi > 60:
-                    score -= 0.5
-                
-                # MACD 信号
-                if macd > macds:
-                    score += 1.0
-                else:
-                    score -= 1.0
-                
-                # 布林带信号
-                if current_data['close'] < bb_lower:
-                    score += 1.0  # 超卖
-                elif current_data['close'] > bb_upper:
-                    score -= 1.0  # 超买
-                
-                # 动量信号
-                if momentum > 0.02:
-                    score += 0.8
-                elif momentum < -0.02:
-                    score -= 0.8
-                
-                # 生成最终信号 - 基于合理的技术分析阈值
-                if score >= 1.2:  # 适度降低以确保有足够信号，但不过度
-                    signal = 1
-                elif score <= -1.2:  # 适度降低以确保有足够信号，但不过度
-                    signal = -1
-                else:
-                    signal = 0
-                
-                signals.append(signal)
-            
-            df_fallback['signal'] = signals
-            metrics, backtest_results = run_vectorized_backtest(df_fallback, signal_col='signal')
-            
-            print(f"✅ LSTM fallback strategy completed for {ticker}")
-            print(f"   Total Return: {metrics['total_return']:.2%}")
-            print(f"   Annualized Return: {metrics['annualized_return']:.2%}")
-            print(f"   Sharpe Ratio: {metrics['sharpe_ratio']:.2f}")
-            print(f"   Max Drawdown: {metrics['max_drawdown']:.2%}")
-            
-            signal_counts = pd.Series(signals).value_counts()
-            print(f"   Signal distribution: Buy={signal_counts.get(1, 0)}, "
-                  f"Sell={signal_counts.get(-1, 0)}, Hold={signal_counts.get(0, 0)}")
-            
-            return metrics, backtest_results
-            
-        except Exception as fallback_error:
-            print(f"❌ LSTM fallback strategy also failed: {fallback_error}")
-            # 返回默认结果
+        # 不使用备用策略，直接返回失败结果
         performance_metrics = pd.Series({
             'annualized_return': 0,
             'sharpe_ratio': 0,

@@ -1,0 +1,106 @@
+{
+  "buy_and_hold": {
+    "total_return": 1.4566324182229917,
+    "annualized_return": 0.3569641139760549,
+    "sharpe_ratio": 1.000740166525532,
+    "max_drawdown": 0.37415541832192134,
+    "success": true,
+    "description": "买入持有策略"
+  },
+  "macd": {
+    "total_return": 0.5697733007753703,
+    "annualized_return": 0.1654956535345231,
+    "sharpe_ratio": 0.7940648587465065,
+    "max_drawdown": 0.33446960302689166,
+    "success": true,
+    "description": "MACD交叉策略"
+  },
+  "arima": {
+    "total_return": -0.6471062843824966,
+    "annualized_return": -0.29794742803955854,
+    "sharpe_ratio": -0.749751178551743,
+    "max_drawdown": 0.6945595573299489,
+    "success": true,
+    "description": "ARIMA时间序列预测"
+  },
+  "gp": {
+    "total_return": 1.4566324182229917,
+    "annualized_return": 0.3569641139760549,
+    "sharpe_ratio": 1.000740166525532,
+    "max_drawdown": 0.37415541832192134,
+    "success": true,
+    "description": "遗传编程策略"
+  },
+  "lightgbm": {
+    "total_return": -0.6474428361884954,
+    "annualized_return": -0.3046749258546685,
+    "sharpe_ratio": -0.7955894690939438,
+    "max_drawdown": 0.6909207293593357,
+    "success": true,
+    "description": "LightGBM机器学习策略"
+  },
+  "lstm": {
+    "total_return": -0.6661262415087311,
+    "annualized_return": -0.3110340519621919,
+    "sharpe_ratio": -0.8317969401849374,
+    "max_drawdown": 0.731810407276031,
+    "success": true,
+    "description": "LSTM神经网络策略"
+  },
+  "transformer": {
+    "total_return": 0.03314886786569837,
+    "annualized_return": 0.011137093884109106,
+    "sharpe_ratio": 0.15783948667893624,
+    "max_drawdown": 0.2975938072457505,
+    "success": true,
+    "description": "Transformer模型策略"
+  },
+  "eata": {
+    "total_return": 2.420111384719849,
+    "annualized_return": 0.3603248902452725,
+    "sharpe_ratio": 1.04624306307379,
+    "max_drawdown": 0.3161938062128825,
+    "success": true,
+    "description": "EATA强化学习策略"
+  },
+  "finrl_ppo": {
+    "total_return": 1.7556289043136752,
+    "annualized_return": 0.41028765514630483,
+    "sharpe_ratio": 1.296080616979605,
+    "max_drawdown": 0.34052133894915104,
+    "success": true,
+    "description": "FinRL PPO强化学习策略"
+  },
+  "finrl_a2c": {
+    "total_return": 0.0,
+    "annualized_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "success": true,
+    "description": "FinRL A2C强化学习策略"
+  },
+  "finrl_sac": {
+    "total_return": 0.0,
+    "annualized_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "success": true,
+    "description": "FinRL SAC强化学习策略"
+  },
+  "finrl_td3": {
+    "total_return": 0.0,
+    "annualized_return": 0.0,
+    "sharpe_ratio": 0.0,
+    "max_drawdown": 0.0,
+    "success": true,
+    "description": "FinRL TD3强化学习策略"
+  },
+  "finrl_ddpg": {
+    "total_return": 1.7524445824938968,
+    "annualized_return": 0.40973471063750755,
+    "sharpe_ratio": 1.1468448420941901,
+    "max_drawdown": 0.3405388442534784,
+    "success": true,
+    "description": "FinRL DDPG强化学习策略"
+  }
+}

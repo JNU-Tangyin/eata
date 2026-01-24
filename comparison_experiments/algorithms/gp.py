@@ -19,33 +19,6 @@ except ImportError:
     sys.path.append(os.path.dirname(__file__))
     from data_utils import run_vectorized_backtest
 
-# 修复gplearn与sklearn 1.7.0的兼容性问题，确保真正的GP算法能运行
-def _fix_gplearn_compatibility():
-    """修复gplearn与新版sklearn的兼容性问题，保持GP算法的完整性"""
-    try:
-        from gplearn.genetic import SymbolicRegressor
-        from sklearn.utils.validation import check_X_y
-        
-        # 只在需要时添加缺失的方法，不改变GP算法本身的逻辑
-        if not hasattr(SymbolicRegressor, '_validate_data'):
-            def _validate_data(self, X, y=None, **kwargs):
-                if y is not None:
-                    X, y = check_X_y(X, y, **kwargs)
-                    self.n_features_in_ = X.shape[1]
-                    return X, y
-                else:
-                    from sklearn.utils.validation import check_array
-                    X = check_array(X, **kwargs)
-                    self.n_features_in_ = X.shape[1]
-                    return X
-            
-            SymbolicRegressor._validate_data = _validate_data
-    except ImportError:
-        pass
-
-# 执行兼容性修复，确保真正的GP算法能运行
-_fix_gplearn_compatibility()
-
 
 def run_gp_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     """

@@ -1,0 +1,2 @@
+﻿timestamp,ticker,strategy,run_id,success,description,lookback,lookahead,stride,depth,total_return,annualized_return,sharpe_ratio,max_drawdown,volatility,algorithm
+20251217_165651,AAPL,finrl_ppo,1,True,FinRL PPO强化学习策略,30,10,1,200,-0.3221356961659808,-0.5058368736204497,-2.5157870711618306,0.32213569616598076,0.29365655343627795,PPO
