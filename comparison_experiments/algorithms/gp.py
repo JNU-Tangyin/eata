@@ -22,7 +22,7 @@ except ImportError:
 
 def run_gp_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     """
-    遗传编程策略 - 基于ETS-SDA原始实现
+    遗传编程策略 - 使用gplearn实现真正的遗传编程
     
     Args:
         train_df: 训练数据
@@ -35,9 +35,42 @@ def run_gp_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     print(f"Running Genetic Programming strategy for {ticker}...")
     
     try:
-        # 延迟导入避免死锁
+        # 修复gplearn与sklearn 1.6.1的兼容性问题
+        import sklearn.utils.validation
+        import sklearn.base
+        
+        # 为gplearn添加缺失的_validate_data方法
+        if not hasattr(sklearn.base.BaseEstimator, '_validate_data'):
+            def _validate_data(self, X, y=None, reset=True, validate_separately=False, **check_params):
+                from sklearn.utils.validation import check_X_y, check_array
+                if y is not None:
+                    X, y = check_X_y(X, y, **check_params)
+                    return X, y
+                else:
+                    X = check_array(X, **check_params)
+                    return X
+            
+            # 动态添加方法到sklearn.base.BaseEstimator
+            sklearn.base.BaseEstimator._validate_data = _validate_data
+        
+        # 修复n_features_in_属性问题
+        def patched_fit(original_fit):
+            def wrapper(self, X, y, sample_weight=None):
+                result = original_fit(self, X, y, sample_weight)
+                # 添加缺失的属性
+                if not hasattr(self, 'n_features_in_'):
+                    self.n_features_in_ = X.shape[1]
+                return result
+            return wrapper
+        
+        # 现在可以安全导入gplearn
         from gplearn.genetic import SymbolicRegressor
         import numpy as np
+        
+        # 应用补丁到SymbolicRegressor
+        if hasattr(SymbolicRegressor, 'fit') and not hasattr(SymbolicRegressor, '_original_fit'):
+            SymbolicRegressor._original_fit = SymbolicRegressor.fit
+            SymbolicRegressor.fit = patched_fit(SymbolicRegressor._original_fit)
         
         # 1. 准备数据 - 按照ETS-SDA的方式
         # 删除技术指标引入的NaN值

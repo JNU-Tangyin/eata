@@ -76,13 +76,13 @@ STRATEGY_CONFIGS = {
     'buy_and_hold': {
         'module': 'buy_and_hold',
         'function': 'run_buy_and_hold',
-        'requires_training': False,
+        'requires_training': True,
         'description': '买入持有策略'
     },
     'macd': {
         'module': 'macd',
         'function': 'run_macd_strategy', 
-        'requires_training': False,
+        'requires_training': True,
         'description': 'MACD交叉策略'
     },
     'arima': {

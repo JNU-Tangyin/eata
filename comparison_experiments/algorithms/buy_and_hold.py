@@ -15,7 +15,7 @@ except ImportError:
     from data_utils import run_vectorized_backtest
 
 
-def run_buy_hold_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
+def run_buy_and_hold(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
     """
     买入持有策略
     
