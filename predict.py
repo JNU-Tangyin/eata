@@ -20,9 +20,7 @@ logging.getLogger('matplotlib.font_manager').setLevel(logging.ERROR)
 from agent import Agent
 from data import DataStorage # 导入数据存储类
 from performance_metrics import TradingMetrics # 导入我们新增的指标计算模块
-
-# 核心改动：直接导入我们改造后的Agent
-from agent import Agent
+from rl import IntegratedRLFeedbackSystem # 导入强化学习反馈系统
 
 class Predictor:
     def __init__(self, lookback=100, lookahead=20, stride=2, depth=200):
@@ -34,7 +32,125 @@ class Predictor:
         self.stride = stride
         self.depth = depth
         self.agent = Agent(df=pd.DataFrame(), lookback=lookback, lookahead=lookahead, stride=stride, depth=depth)
+        self.feedback_system = IntegratedRLFeedbackSystem() # 初始化反馈系统
         print(f"🤖 新版 Predictor 初始化完成，参数: lookback={lookback}, lookahead={lookahead}, stride={stride}, depth={depth}")
+
+    def extract_market_state(self, data: pd.DataFrame) -> np.ndarray:
+        """
+        从滑动窗口数据中提取10维市场状态特征向量，用于RL反馈
+        """
+        if len(data) == 0:
+            return np.zeros(10)
+        
+        features = []
+        # 1. 价格变化率
+        price_change = (data['close'].iloc[-1] - data['close'].iloc[0]) / data['close'].iloc[0]
+        features.append(np.clip(price_change, -0.1, 0.1))
+        
+        # 2. 价格波动率
+        price_volatility = data['close'].pct_change().std()
+        features.append(np.clip(price_volatility, 0, 0.1))
+        
+        # 3. 成交量变化
+        if data['volume'].iloc[0] != 0:
+            volume_change = (data['volume'].iloc[-1] - data['volume'].iloc[0]) / data['volume'].iloc[0]
+        else:
+            volume_change = 0
+        features.append(np.clip(volume_change, -1, 1))
+        
+        # 4. 最高价相对位置
+        low_min = data['low'].min()
+        high_max = data['high'].max()
+        if high_max != low_min:
+            high_position = (data['close'].iloc[-1] - low_min) / (high_max - low_min)
+        else:
+            high_position = 0.5
+        features.append(np.clip(high_position, 0, 1))
+        
+        # 5-7. 移动平均线相对位置
+        for window in [3, 5, 10]:
+            if len(data) >= window:
+                ma = data['close'].rolling(window).mean().iloc[-1]
+                if ma != 0:
+                    ma_position = (data['close'].iloc[-1] - ma) / ma
+                else:
+                    ma_position = 0
+                features.append(np.clip(ma_position, -0.1, 0.1))
+            else:
+                features.append(0.0)
+        
+        # 8. RSI简易特征
+        price_diff = data['close'].diff()
+        gain = price_diff.clip(lower=0).mean()
+        loss = (-price_diff.clip(upper=0)).mean()
+        if (gain + loss) != 0:
+            rsi = gain / (gain + loss)
+        else:
+            rsi = 0.5
+        features.append(rsi)
+        
+        # 9. 成交量相对强度
+        vol_mean = data['volume'].mean()
+        if vol_mean != 0:
+            volume_strength = data['volume'].iloc[-1] / vol_mean
+        else:
+            volume_strength = 1.0
+        features.append(np.clip(volume_strength, 0, 3))
+        
+        # 10. 趋势强度
+        if len(data) > 1:
+            trend = np.polyfit(range(len(data)), data['close'], 1)[0]
+            if data['close'].mean() != 0:
+                trend_strength = trend / data['close'].mean()
+            else:
+                trend_strength = 0
+        else:
+            trend_strength = 0
+        features.append(np.clip(trend_strength, -0.01, 0.01))
+        
+        return np.array(features[:10])
+
+    def update_feedback(self, ticker: str, reward: float, loss: float, action: int, window_df: pd.DataFrame):
+        """
+        处理反馈并更新Agent参数
+        """
+        market_state = self.extract_market_state(window_df)
+        
+        context = {
+            'ticker': ticker,
+            'prediction_confidence': 0.8 # 暂时固定，未来可从Agent获取
+        }
+        
+        # 处理反馈
+        result = self.feedback_system.process_episode_feedback(
+            code=ticker,
+            reward=reward,
+            loss=loss,
+            market_state=market_state,
+            action=action,
+            context=context
+        )
+        
+        # 应用反馈到NEMoTS模型
+        if 'loss_processing' in result and 'nemots' in result['loss_processing']:
+            nemots_feedback = result['loss_processing']['nemots']
+            
+            # 访问Agent内部的engine和model
+            if hasattr(self.agent, 'engine') and hasattr(self.agent.engine, 'model'):
+                # 调整学习率
+                if 'learning_rate_multiplier' in nemots_feedback:
+                    lr_mult = nemots_feedback['learning_rate_multiplier']
+                    # 注意：Agent.engine.model.args 保存了超参数
+                    if hasattr(self.agent.engine.model, 'args'):
+                         self.agent.engine.model.args.lr *= lr_mult
+                         print(f"   📉 [RL反馈] 调整NEMoTS学习率: ×{lr_mult:.3f}")
+                
+                # 调整探索率
+                if 'exploration_rate_multiplier' in nemots_feedback:
+                    exp_mult = nemots_feedback['exploration_rate_multiplier']
+                    if hasattr(self.agent.engine.model, 'args'):
+                        self.agent.engine.model.args.exploration_rate *= exp_mult
+                        print(f"   🔍 [RL反馈] 调整NEMoTS探索率: ×{exp_mult:.3f}")
 
     def predict(self, df: pd.DataFrame, shares_held: int) -> tuple[int, float]:
         """
@@ -101,6 +217,39 @@ def run_eata_core_backtest(
 
         # 调用 Agent 决策
         action, rl_reward = predictor.predict(df=window_df, shares_held=shares)
+
+        # --- 新增：RL 反馈闭环 ---
+        # 1. 提取市场状态
+        market_state = predictor.extract_market_state(window_df)
+        
+        # 2. 定义 Loss (简化逻辑：若RL Reward较低，视为产生了Loss)
+        loss = max(0, 0.5 - rl_reward)
+        
+        # 3. 调用反馈系统
+        feedback_result = predictor.feedback_system.process_episode_feedback(
+            code=ticker,
+            reward=rl_reward,
+            loss=loss,
+            market_state=market_state,
+            action={-1: 0, 0: 1, 1: 2}.get(action, 1),
+            context={'ticker': ticker}
+        )
+        
+        # 4. 应用反馈到 Agent 参数
+        if 'loss_processing' in feedback_result and 'nemots' in feedback_result['loss_processing']:
+            nemots_feedback = feedback_result['loss_processing']['nemots']
+            # 直接更新 Agent 的超参数
+            if hasattr(predictor.agent, 'hyperparams'):
+                if 'learning_rate_multiplier' in nemots_feedback:
+                    lr_mult = nemots_feedback['learning_rate_multiplier']
+                    predictor.agent.hyperparams.lr *= lr_mult
+                    print(f"   📉 [RL反馈] 调整学习率: ×{lr_mult:.3f}")
+                
+                if 'exploration_rate_multiplier' in nemots_feedback:
+                    exp_mult = nemots_feedback['exploration_rate_multiplier']
+                    predictor.agent.hyperparams.exploration_rate *= exp_mult
+                    print(f"   🔍 [RL反馈] 调整探索率: ×{exp_mult:.3f}")
+        # --- 闭环结束 ---
 
         # 交易发生在 lookback 之后的第一天
         trade_day_index = predictor.agent.lookback
@@ -171,14 +320,14 @@ if __name__ == "__main__":
     print("=======================================================")
 
     try:
-        # 1. 从 stock.db 加载所有数据（使用与对比实验相同的数据源）
-        print("\n[Main] 从 stock.db 的 downloaded 表加载所有数据...")
+        # 1. 从 stock.db 加载所有数据
+        print("\n[Main] 从 stock.db 的 raw_data 表加载所有数据...")
         import sqlite3
         
         conn = sqlite3.connect('stock.db')
         query = """
         SELECT code, date, open, high, low, close, volume, amount 
-        FROM downloaded 
+        FROM raw_data 
         ORDER BY code, date
         """
         all_data = pd.read_sql_query(query, conn)
@@ -265,6 +414,38 @@ if __name__ == "__main__":
                 # 获取Agent的交易决策，并传入当前持仓状态
                 action, rl_reward = predictor.predict(df=window_df, shares_held=shares)
                 rl_rewards_history.append(rl_reward)
+
+                # --- 新增：RL 反馈闭环 (针对 standalone 模式) ---
+                # 1. 提取市场状态
+                market_state = predictor.extract_market_state(window_df)
+                
+                # 2. 定义 Loss
+                loss = max(0, 0.5 - rl_reward)
+                
+                # 3. 调用反馈系统
+                feedback_result = predictor.feedback_system.process_episode_feedback(
+                    code=ticker,
+                    reward=rl_reward,
+                    loss=loss,
+                    market_state=market_state,
+                    action={-1: 0, 0: 1, 1: 2}.get(action, 1),
+                    context={'ticker': ticker, 'mode': 'standalone'}
+                )
+                
+                # 4. 应用反馈到 Agent 参数
+                if 'loss_processing' in feedback_result and 'nemots' in feedback_result['loss_processing']:
+                    nemots_feedback = feedback_result['loss_processing']['nemots']
+                    if hasattr(predictor.agent, 'hyperparams'):
+                        if 'learning_rate_multiplier' in nemots_feedback:
+                            lr_mult = nemots_feedback['learning_rate_multiplier']
+                            predictor.agent.hyperparams.lr *= lr_mult
+                            print(f"   📉 [RL反馈] 独立运行模式 - 调整学习率: ×{lr_mult:.3f}")
+                        
+                        if 'exploration_rate_multiplier' in nemots_feedback:
+                            exp_mult = nemots_feedback['exploration_rate_multiplier']
+                            predictor.agent.hyperparams.exploration_rate *= exp_mult
+                            print(f"   🔍 [RL反馈] 独立运行模式 - 调整探索率: ×{exp_mult:.3f}")
+                # --- 闭环结束 ---
 
                 # --- 新增：记录动作区间 ---
                 lookahead_period_df_for_span = window_df.iloc[predictor.agent.lookback : predictor.agent.lookback + predictor.agent.lookahead]
