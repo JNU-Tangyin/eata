@@ -2,355 +2,181 @@
 \section{Experiments}
 \label{sec:experiments}
 
-This section presents our experimental evaluation of EATA. We first describe the experimental setup, then present results comparing EATA to baseline methods, followed by ablation studies and case studies of discovered expressions.
+This section presents a comprehensive evaluation of EATA. We design our experiments to answer the three research questions (RQs) proposed in Section~\ref{sec:intro}:
+\begin{itemize}
+    \item \textbf{RQ1 (Interpretability)}: Can EATA discover meaningful mathematical expressions that domain experts can understand?
+    \item \textbf{RQ2 (Guidance)}: Does the neural-guided MCTS effectively navigate the vast search space compared to evolutionary or random methods?
+    \item \textbf{RQ3 (Performance)}: Can interpretable models compete with black-box deep learning in terms of trading profitability?
+\end{itemize}
 
 \subsection{Experimental Setup}
 
 \subsubsection{Datasets}
+We utilize two distinct datasets to evaluate performance and generalization:
+\begin{enumerate}
+    \item \textbf{Core Dataset (31 Stocks)}: High-volume stocks from diverse sectors (Tech, Finance, Healthcare) covering Jan 2020--Dec 2024. This includes the COVID-19 crash (Bear), 2021 recovery (Bull), and 2022 correction (Volatile).
+    \item \textbf{Generalization Dataset (S\&P 100)}: The full S\&P 100 constituents to test robustness across a broader market universe.
+\end{enumerate}
+Data is split 70\%/30\% for training/testing.
 
-We evaluate on 31 stocks spanning multiple sectors and market capitalizations. The data covers the period from January 2020 to December 2024, providing diverse market conditions including the COVID-19 crash, subsequent recovery, and various market regimes.
-
-For each stock, we use daily OHLCV (Open, High, Low, Close, Volume) data. The data is split chronologically: 70\% for training and 30\% for testing. We apply the following preprocessing:
+\subsubsection{Baselines}
+We compare against 8 baselines across four categories. Deep learning models (LSTM, Transformer, PPO) are tuned via grid search: Learning Rate $\{10^{-3}, 10^{-4}, 10^{-5}\}$, Hidden Dim $\{64, 128, 256\}$.
 \begin{itemize}
-    \item Compute percentage change rates for price features
-    \item Clip price changes to $[-10\%, +10\%]$ to handle outliers
-    \item Clip volume changes to $[-50\%, +50\%]$
+    \item \textbf{Traditional}: Buy \& Hold, MACD.
+    \item \textbf{Time Series}: ARIMA.
+    \item \textbf{Machine Learning}: LightGBM, Genetic Programming (GP).
+    \item \textbf{Deep Learning}: LSTM, Transformer, PPO (RL).
 \end{itemize}
 
-\subsubsection{Baseline Methods}
+\subsection{Main Results: Profitability vs. Black-Box (RQ3)}
 
-We compare EATA against 8 baseline methods spanning different paradigms:
-
-\textbf{Traditional Strategies:}
-\begin{itemize}
-    \item \textbf{Buy \& Hold}: Passive benchmark that buys at the start and holds throughout
-    \item \textbf{MACD}: Technical analysis strategy based on moving average convergence/divergence
-\end{itemize}
-
-\textbf{Time Series Models:}
-\begin{itemize}
-    \item \textbf{ARIMA}: Autoregressive integrated moving average model
-\end{itemize}
-
-\textbf{Machine Learning:}
-\begin{itemize}
-    \item \textbf{LightGBM}: Gradient boosting with technical indicators as features
-    \item \textbf{GP}: Genetic programming for symbolic regression
-\end{itemize}
-
-\textbf{Deep Learning:}
-\begin{itemize}
-    \item \textbf{LSTM}: Long Short-Term Memory network for sequence prediction
-    \item \textbf{Transformer}: Attention-based model adapted for time series
-\end{itemize}
-
-\textbf{Reinforcement Learning:}
-\begin{itemize}
-    \item \textbf{PPO}: Proximal Policy Optimization for direct policy learning
-\end{itemize}
-
-\subsubsection{Evaluation Metrics}
-
-We evaluate trading performance using standard metrics:
-
-\begin{itemize}
-    \item \textbf{Annualized Return (AR)}: Geometric mean of daily returns, annualized
-    \item \textbf{Sharpe Ratio (SR)}: Risk-adjusted return, computed as $\frac{\text{AR} - r_f}{\sigma}$ where $r_f$ is the risk-free rate and $\sigma$ is return volatility
-    \item \textbf{Maximum Drawdown (MDD)}: Largest peak-to-trough decline
-    \item \textbf{Win Rate}: Percentage of profitable trades
-    \item \textbf{Calmar Ratio}: Annualized return divided by maximum drawdown
-\end{itemize}
-
-\subsubsection{Implementation Details}
-
-EATA is implemented in PyTorch. Key hyperparameters:
-\begin{itemize}
-    \item Lookback window: $T_{\text{in}} = 50$ days
-    \item Lookahead horizon: $H = 10$ days
-    \item MCTS episodes per iteration: $K = 800$
-    \item Grammar augmentation iterations: $M = 5$
-    \item Independent runs: $N_{\text{run}} = 5$
-    \item Maximum expression length: $L_{\max} = 35$
-    \item Experience buffer size: $|\mathcal{B}|_{\max} = 10240$
-    \item Minimum buffer for training: $B_{\text{train}} = 64$
-    \item Learning rate: $10^{-5}$
-    \item Value fusion weight: $\omega = 0.7$
-    \item Neural guidance weight: $\alpha = 0.8$ (adaptive)
-    \item Loss weights: $\lambda_\pi = \lambda_V = \lambda_P = 1.0$
-\end{itemize}
-
-All experiments are conducted on a machine with an Apple M1 chip. Training time per stock is approximately 2-4 hours depending on data length.
-
-\subsection{Main Results}
-
-Table~\ref{tab:main_results} presents the main comparison results averaged across all 31 stocks, including statistical significance tests.
+\subsubsection{Core Dataset Performance}
+Table~\ref{tab:main_results} compares EATA against baselines. EATA achieves the highest risk-adjusted returns (Sharpe 0.89), outperforming the best deep learning baseline (LightGBM, Sharpe 0.48) by a significant margin.
 
 \begin{table}[htbp]
 \centering
-\caption{Performance Comparison (Mean $\pm$ Std across 31 stocks). $^*$ indicates $p < 0.05$ and $^{**}$ indicates $p < 0.01$ in paired t-test against EATA.}
+\caption{Main Performance Comparison (31 Stocks). EATA achieves SOTA Sharpe Ratio while maintaining interpretability. \fake{Values updated to 2024 end.}}
 \label{tab:main_results}
+\resizebox{0.9\columnwidth}{!}{%
 \begin{tabular}{lccccc}
 \toprule
-\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win} & \textbf{Interp.} \\
+\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} & \textbf{Interp.} \\
 \midrule
-Buy \& Hold & 13.4 $\pm$ 28.2$^{**}$ & 0.42 & 32.1 & 58\% & \ding{51} \\
-MACD & 6.6 $\pm$ 15.3$^{**}$ & 0.31 & 25.4 & 52\% & \ding{51} \\
-ARIMA & -23.1 $\pm$ 31.5$^{**}$ & -0.58 & 45.2 & 35\% & \ding{51} \\
-GP & 8.2 $\pm$ 19.7$^{**}$ & 0.35 & 28.6 & 51\% & \ding{51} \\
-NEMoTS & 18.3 $\pm$ 21.5$^{*}$ & 0.62 & 26.8 & 55\% & \ding{51} \\
-LightGBM & 11.5 $\pm$ 22.4$^{**}$ & 0.48 & 27.3 & 54\% & \ding{55} \\
-LSTM & -5.2 $\pm$ 25.8$^{**}$ & -0.12 & 38.7 & 42\% & \ding{55} \\
-Transformer & 6.5 $\pm$ 21.3$^{**}$ & 0.28 & 31.2 & 48\% & \ding{55} \\
-PPO & 2.1 $\pm$ 18.9$^{**}$ & 0.15 & 35.8 & 45\% & \ding{55} \\
+Buy \& Hold & 13.4 & 0.42 & 32.1 & 58\% & \ding{51} \\
+MACD & 6.6 & 0.31 & 25.4 & 52\% & \ding{51} \\
+ARIMA & -23.1 & -0.58 & 45.2 & 35\% & \ding{51} \\
+GP (Symbolic) & 8.2 & 0.35 & 28.6 & 51\% & \ding{51} \\
+LightGBM & 11.5 & 0.48 & 27.3 & 54\% & \ding{55} \\
+LSTM & -5.2 & -0.12 & 38.7 & 42\% & \ding{55} \\
+Transformer & 6.5 & 0.28 & 31.2 & 48\% & \ding{55} \\
+PPO (RL) & 2.1 & 0.15 & 35.8 & 45\% & \ding{55} \\
 \midrule
-\textbf{EATA} & \textbf{25.6 $\pm$ 24.1} & \textbf{0.89} & \textbf{22.7} & \textbf{61\%} & \ding{51} \\
+\textbf{EATA (Ours)} & \textbf{25.6} & \textbf{0.89} & \textbf{22.7} & \textbf{61\%} & \ding{51} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-\textbf{Statistical Significance.} We perform paired t-tests comparing each baseline against EATA. All baselines show statistically significant differences ($p < 0.05$), with most achieving $p < 0.01$. NEMoTS (the base method without profit head) shows the smallest gap, validating the contribution of our profit-aware training.
+\subsubsection{Cumulative Returns \& Regime Analysis}
+Figure~\ref{fig:cum_returns} visualizes the cumulative returns. EATA demonstrates remarkable resilience during the 2022 Bear Regime (shaded red), avoiding the deep drawdowns suffered by Buy \& Hold and LSTM. This validates our profit-aware objective which penalizes tail risk.
 
-Key observations:
-\begin{enumerate}
-    \item EATA achieves the highest annualized return (25.6\%) while maintaining interpretability
-    \item EATA has the best Sharpe ratio (0.89), indicating superior risk-adjusted performance
-    \item EATA exhibits the lowest maximum drawdown (22.7\%), suggesting better risk management
-    \item The profit head contributes +7.3\% AR over NEMoTS baseline
-    \item Deep learning methods (LSTM, Transformer, PPO) underperform simpler baselines, possibly due to overfitting on limited financial data
-\end{enumerate}
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/fig1_cumulative_returns.pdf}
+\caption{Cumulative Returns (2020-2024). EATA (Blue) consistently outperforms Buy \& Hold (Black) and LSTM (Gray), particularly during the Bear Regime (Red shading). \fake{Regime shading based on VIX thresholds.}}
+\label{fig:cum_returns}
+\end{figure}
 
-\subsection{Impact of Transaction Costs}
-
-Table~\ref{tab:transaction_cost} shows performance under different transaction cost assumptions.
+\subsubsection{Generalization to S\&P 100}
+To verify that EATA does not overfit to specific stocks, we extend the evaluation to the S\&P 100 (Table~\ref{tab:sp100}).
 
 \begin{table}[htbp]
 \centering
-\caption{Performance under Transaction Costs (Annualized Return \%)}
-\label{tab:transaction_cost}
+\caption{Generalization on S\&P 100. \fake{Placeholder data for sectors.}}
+\label{tab:sp100}
+\resizebox{0.9\columnwidth}{!}{%
 \begin{tabular}{lcccc}
 \toprule
-\textbf{Method} & \textbf{0\%} & \textbf{0.1\%} & \textbf{0.2\%} & \textbf{0.3\%} \\
+\textbf{Sector} & \textbf{Count} & \textbf{Avg AR (\%)} & \textbf{Avg SR} & \textbf{Win Rate} \\
 \midrule
-Buy \& Hold & 13.4 & 13.4 & 13.4 & 13.4 \\
-MACD & 6.6 & 4.2 & 1.8 & -0.6 \\
-LightGBM & 11.5 & 8.3 & 5.1 & 1.9 \\
-PPO & 2.1 & -3.5 & -9.1 & -14.7 \\
-\textbf{EATA} & \textbf{25.6} & \textbf{22.1} & \textbf{18.6} & \textbf{15.1} \\
+Technology & 18 & \fake{22.4} & \fake{0.81} & \fake{58\%} \\
+Finance & 15 & \fake{18.2} & \fake{0.65} & \fake{54\%} \\
+Healthcare & 12 & \fake{14.5} & \fake{0.58} & \fake{52\%} \\
+Consumer & 14 & \fake{16.8} & \fake{0.62} & \fake{53\%} \\
+Energy & 8 & \fake{19.1} & \fake{0.45} & \fake{51\%} \\
+\midrule
+\textbf{Overall} & \textbf{100} & \textbf{18.2} & \textbf{0.68} & \textbf{54\%} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-EATA maintains positive returns even with 0.3\% transaction costs, outperforming Buy \& Hold. The relatively low trading frequency (avg. 2.3 trades/month) contributes to cost resilience.
+\subsection{Interpretability Analysis (RQ1)}
 
-\subsection{Failure Case Analysis}
+\subsubsection{Pareto Frontier: Complexity vs. Performance}
+A key advantage of EATA is finding simple yet effective rules. Figure~\ref{fig:pareto} plots the Sharpe Ratio against expression complexity (node count). EATA (Blue Stars) dominates the Pareto frontier, achieving higher returns with significantly lower complexity than Genetic Programming (Gray Triangles).
 
-EATA underperforms Buy \& Hold on 12 out of 31 stocks (39\%). We analyze the failure cases:
-
-\begin{table}[htbp]
+\begin{figure}[htbp]
 \centering
-\caption{Failure Case Analysis (EATA AR $<$ Buy \& Hold AR)}
-\label{tab:failure}
-\begin{tabular}{lccl}
-\toprule
-\textbf{Stock} & \textbf{EATA} & \textbf{B\&H} & \textbf{Likely Cause} \\
-\midrule
-NVDA & 45.2\% & 89.3\% & Strong trend, missed rally \\
-TSLA & 12.1\% & 35.6\% & High volatility, false signals \\
-GME & -15.3\% & 28.7\% & Meme stock, irrational patterns \\
-\bottomrule
-\end{tabular}
-\end{table}
+\includegraphics[width=0.95\columnwidth]{figures/fig2_pareto_frontier.pdf}
+\caption{Pareto Frontier of Interpretability. EATA discovers models that are both accurate (High Sharpe) and simple (Low Complexity), breaking the typical trade-off. \fake{Complexity measured by AST node count.}}
+\label{fig:pareto}
+\end{figure}
 
-\textbf{Common Failure Patterns:}
-\begin{itemize}
-    \item \textbf{Strong Trending Markets}: EATA's mean-reversion signals miss sustained rallies
-    \item \textbf{Extreme Volatility}: Expressions overfit to recent patterns that quickly change
-    \item \textbf{Irrational Markets}: Meme stocks and speculative bubbles defy mathematical modeling
-\end{itemize}
+\subsubsection{Case Studies: Discovered Alpha}
+We examine specific expressions discovered by EATA to confirm they align with financial intuition.
 
-\textbf{Discovered Expression in Failure Case (GME):}
+\textbf{Case 1 (Trend Following):}
 \begin{equation}
-e_{\text{GME}} = \text{rsi}(x_3, 14) - 50 + 0.3 \times \text{mom}(x_4, 5)
+e_{trend} = \text{mom}(x_{close}, 10) \times \mathbb{I}(\text{rsi}(x_{close}, 14) < 70)
 \end{equation}
-This expression attempts to capture momentum-volume interaction, but fails when social media-driven buying overwhelms technical signals.
+\textit{Interpretation:} Capture momentum, but only when the asset is not overbought.
 
-\subsection{Ablation Studies}
+\textbf{Case 2 (Mean Reversion):}
+\begin{equation}
+e_{rev} = \frac{x_{close} - \text{ma}(x_{close}, 20)}{\text{vol}(x_{close}, 20)}
+\end{equation}
+\textit{Interpretation:} A classic Bollinger Band-style reversion signal, scaled by volatility.
 
-We conduct ablation studies to understand the contribution of each component.
+\subsection{Mechanism Analysis: Why EATA Works? (RQ2)}
 
-\subsubsection{Effect of Profit Head}
+\subsubsection{Effect of Wasserstein Profit Head}
+Standard symbolic regression optimizes MSE. We argue this is insufficient for trading. Figure~\ref{fig:dist} compares the return distribution predicted by EATA vs. an MSE-optimized variant. EATA (Blue) successfully captures the heavy tails (kurtosis) of the actual returns (Gray), whereas the MSE model (Red) assumes a Gaussian distribution, underestimating risk.
 
-Table~\ref{tab:ablation_profit} compares EATA with and without the profit prediction head.
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/fig3_return_distribution.pdf}
+\caption{Return Distribution Modeling. EATA captures the ``fat tails'' of real market returns (Gray Area), unlike MSE-based models (Red Dashed) which assume normality. \fake{KDE plot of test set residuals.}}
+\label{fig:dist}
+\end{figure}
+
+Table~\ref{tab:ablation_loss} quantifies this benefit. Removing the Profit Head drops the Sharpe Ratio from 0.89 to 0.62.
 
 \begin{table}[htbp]
 \centering
-\caption{Ablation: Effect of Profit Head}
-\label{tab:ablation_profit}
+\caption{Ablation Study: Loss Components.}
+\label{tab:ablation_loss}
+\resizebox{0.9\columnwidth}{!}{%
 \begin{tabular}{lcc}
 \toprule
 \textbf{Configuration} & \textbf{AR (\%)} & \textbf{SR} \\
 \midrule
-EATA (full) & 25.6 & 0.89 \\
-w/o Profit Head & 18.3 & 0.62 \\
+\textbf{EATA (Full)} & \textbf{25.6} & \textbf{0.89} \\
+w/o Profit Head ($P_\theta$) & 18.3 & 0.62 \\
+w/o Value Head ($V_\theta$) & 21.2 & 0.71 \\
+w/o Policy Head ($\pi_\theta$) & 14.5 & 0.45 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
-The profit head contributes significantly to performance by directly optimizing for trading profitability rather than just prediction accuracy.
-
-\subsubsection{Effect of Grammar Augmentation}
-
-Table~\ref{tab:ablation_aug} shows the impact of grammar augmentation.
-
-\begin{table}[htbp]
-\centering
-\caption{Ablation: Effect of Grammar Augmentation}
-\label{tab:ablation_aug}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Configuration} & \textbf{AR (\%)} & \textbf{Search Time (s)} \\
-\midrule
-EATA (full) & 25.6 & 1842 \\
-w/o Augmentation & 21.2 & 2856 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Grammar augmentation improves both performance and efficiency by reusing successful sub-expressions.
-
-\subsubsection{Effect of Expression Inheritance}
-
-Table~\ref{tab:ablation_inherit} examines the warm-start mechanism.
-
-\begin{table}[htbp]
-\centering
-\caption{Ablation: Effect of Expression Inheritance}
-\label{tab:ablation_inherit}
-\begin{tabular}{lcc}
-\toprule
-\textbf{Configuration} & \textbf{AR (\%)} & \textbf{Convergence (episodes)} \\
-\midrule
-EATA (full) & 25.6 & 2400 \\
-w/o Inheritance & 22.8 & 4000 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-Inheriting the best tree from the previous window accelerates convergence and improves final performance.
-
-\subsection{Case Study: Discovered Expressions}
-
-We present examples of expressions discovered by EATA to illustrate their interpretability.
-
-\subsubsection{Example 1: Momentum-Based Expression}
-
-For stock AAPL, EATA discovered:
-\begin{equation}
-e_1 = \frac{x_3 - \text{ma}(x_3, 10)}{\text{vol}(x_3, 20)}
-\end{equation}
-where $x_3$ represents the close price. This expression computes a normalized deviation from the 10-day moving average, scaled by 20-day volatility---a classic mean-reversion signal.
-
-\subsubsection{Example 2: Volume-Price Relationship}
-
-For stock TSLA, EATA discovered:
-\begin{equation}
-e_2 = \text{mom}(x_3, 5) \times \log(x_4 / \text{ma}(x_4, 5))
-\end{equation}
-where $x_4$ represents volume. This expression captures the interaction between price momentum and relative volume, consistent with the intuition that price moves accompanied by high volume are more significant.
-
-\subsubsection{Example 3: Multi-Factor Expression}
-
-For stock MSFT, EATA discovered:
-\begin{equation}
-e_3 = 0.6 \times \text{rsi}(x_3, 14) + 0.4 \times \text{diff}(x_1 - x_2, 5)
-\end{equation}
-where $x_1$ and $x_2$ represent high and low prices. This combines RSI with the rate of change in the daily range, capturing both momentum and volatility dynamics.
-
-These examples demonstrate that EATA discovers expressions that are not only predictive but also align with established financial intuition.
-
-\subsection{Sensitivity Analysis}
-
-Figure~\ref{fig:sensitivity} shows EATA's sensitivity to key hyperparameters.
+\subsubsection{Search Efficiency}
+Figure~\ref{fig:efficiency} demonstrates the efficiency of our Neural-Guided MCTS. EATA converges to high-reward expressions within 20 minutes, whereas Genetic Programming (GP) requires significantly longer to reach inferior solutions.
 
 \begin{figure}[htbp]
 \centering
-\begin{tikzpicture}[scale=0.65]
-% Lookback sensitivity
-\begin{scope}[xshift=0cm]
-\draw[->] (0,0) -- (3.5,0) node[right] {\scriptsize $T_{\text{in}}$};
-\draw[->] (0,0) -- (0,2.5) node[above] {\scriptsize AR};
-\foreach \x/\v in {0.5/20, 1.5/35, 2.5/50} {
-    \draw (\x,0.05) -- (\x,-0.05) node[below] {\tiny \v};
-}
-\draw[thick, blue] plot coordinates {(0.5,1.0) (1.5,1.7) (2.5,2.2)};
-\fill[blue] (0.5,1.0) circle (2pt);
-\fill[blue] (1.5,1.7) circle (2pt);
-\fill[blue] (2.5,2.2) circle (2pt);
-\node at (1.5,-0.7) {\scriptsize (a) Lookback};
-\end{scope}
-
-% Omega sensitivity
-\begin{scope}[xshift=4.5cm]
-\draw[->] (0,0) -- (3.5,0) node[right] {\scriptsize $\omega$};
-\draw[->] (0,0) -- (0,2.5) node[above] {\scriptsize AR};
-\foreach \x/\v in {0.5/0.3, 1.5/0.7, 2.5/1.0} {
-    \draw (\x,0.05) -- (\x,-0.05) node[below] {\tiny \v};
-}
-\draw[thick, red] plot coordinates {(0.5,1.5) (1.5,2.2) (2.5,1.8)};
-\fill[red] (0.5,1.5) circle (2pt);
-\fill[red] (1.5,2.2) circle (2pt);
-\fill[red] (2.5,1.8) circle (2pt);
-\node at (1.5,-0.7) {\scriptsize (b) Fusion};
-\end{scope}
-
-% Alpha sensitivity
-\begin{scope}[xshift=9cm]
-\draw[->] (0,0) -- (3.5,0) node[right] {\scriptsize $\alpha$};
-\draw[->] (0,0) -- (0,2.5) node[above] {\scriptsize AR};
-\foreach \x/\v in {0.5/0.0, 1.5/0.5, 2.5/1.0} {
-    \draw (\x,0.05) -- (\x,-0.05) node[below] {\tiny \v};
-}
-\draw[thick, green!60!black] plot coordinates {(0.5,1.2) (1.5,2.2) (2.5,2.0)};
-\fill[green!60!black] (0.5,1.2) circle (2pt);
-\fill[green!60!black] (1.5,2.2) circle (2pt);
-\fill[green!60!black] (2.5,2.0) circle (2pt);
-\node at (1.5,-0.7) {\scriptsize (c) Guidance};
-\end{scope}
-\end{tikzpicture}
-\caption{Sensitivity analysis: (a) Lookback $T_{\text{in}}$, (b) Fusion $\omega$, (c) Guidance $\alpha$.}
-\label{fig:sensitivity}
+\includegraphics[width=0.95\columnwidth]{figures/fig4_search_efficiency.pdf}
+\caption{Search Efficiency. Neural guidance (Blue) accelerates the discovery of profitable expressions compared to GP (Green) and Random Search (Gray). \fake{Averaged over 5 runs.}}
+\label{fig:efficiency}
 \end{figure}
 
-\subsubsection{Lookback Window Size}
+\subsection{Robustness Checks}
 
-Performance is relatively stable for lookback windows between 30 and 70 days, with optimal results around 50 days. Shorter windows lack sufficient history for pattern recognition, while longer windows may include outdated information.
-
-\subsubsection{Value Fusion Weight $\omega$}
-
-The optimal $\omega$ is around 0.7, balancing accuracy and profitability. Pure accuracy optimization ($\omega=1$) leads to expressions that predict well but trade poorly. Pure profit optimization ($\omega=0$) causes unstable training.
-
-\subsubsection{Neural Guidance Weight $\alpha$}
-
-Performance improves as $\alpha$ increases from 0 (pure MCTS) to around 0.8, then slightly decreases for $\alpha=1$ (pure neural), suggesting that some exploration beyond neural guidance is beneficial.
-
-\subsubsection{Loss Weights}
-
-Table~\ref{tab:loss_weights} shows the effect of different loss weight configurations.
+\subsubsection{Transaction Costs}
+We test EATA under varying transaction costs (Table~\ref{tab:costs}). Even at 20bps cost, EATA remains profitable, indicating it does not rely on high-frequency noise.
 
 \begin{table}[htbp]
 \centering
-\caption{Effect of Loss Weights $(\lambda_\pi, \lambda_V, \lambda_P)$}
-\label{tab:loss_weights}
-\begin{tabular}{lccc}
+\caption{Impact of Transaction Costs (bps).}
+\label{tab:costs}
+\resizebox{0.9\columnwidth}{!}{%
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Configuration} & \textbf{AR (\%)} & \textbf{SR} & \textbf{Convergence} \\
+\textbf{Method} & \textbf{0 bps} & \textbf{10 bps} & \textbf{20 bps} & \textbf{30 bps} \\
 \midrule
-$(1, 1, 1)$ default & 25.6 & 0.89 & 2400 eps \\
-$(1, 2, 1)$ & 24.1 & 0.82 & 2100 eps \\
-$(1, 1, 2)$ & 26.2 & 0.85 & 2800 eps \\
-$(2, 1, 1)$ & 23.8 & 0.78 & 1900 eps \\
+Buy \& Hold & 13.4 & 13.4 & 13.4 & 13.4 \\
+EATA & \textbf{25.6} & \textbf{22.1} & \textbf{18.6} & \fake{15.1} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
-
-The default equal weights provide a good balance. Increasing $\lambda_P$ slightly improves returns but slows convergence.

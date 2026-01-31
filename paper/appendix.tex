@@ -1,0 +1,67 @@
+% appendix.tex - Appendix
+\appendix
+
+\section{Notation and Terminology}
+\label{app:notation}
+
+Table~\ref{tab:notation} summarizes the notation used throughout this paper, following standard mathematical conventions: scalar variables in italic, vectors in bold lowercase, matrices in bold uppercase, and sets in calligraphic font.
+
+\begin{table*}[htbp]
+\centering
+\caption{Notation and Terminology}
+\label{tab:notation}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{clp{8cm}}
+\toprule
+\textbf{Category} & \textbf{Symbol} & \textbf{Description} \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering Data and Time Series}}
+& $\mathbf{X} \in \mathbb{R}^{T \times d}$ & Input time series with $T$ timesteps and $d$ features \\
+& $\mathbf{x}_t \in \mathbb{R}^{d}$ & Feature vector at time $t$ \\
+& $\mathbf{y} \in \mathbb{R}^{H}$ & Target sequence (lookahead horizon $H$) \\
+& $T^{\text{in}}$ & Lookback window size (input sequence length) \\
+& $H$ & Lookahead horizon (prediction length) \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering Grammar}}
+& $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, \mathit{S})$ & Context-free grammar \\
+& $\mathcal{V}$ & Set of non-terminal symbols \\
+& $\Sigma$ & Set of terminal symbols \\
+& $\mathcal{R}$ & Set of production rules \\
+& $\mathit{S}$ & Start symbol \\
+\midrule
+\multirow{4}{*}{\parbox{2cm}{\centering Expressions}}
+& $e$ & A symbolic expression (equation string) \\
+& $\tau$ & A derivation tree \\
+& $\mathcal{M}$ & Module library (high-quality sub-expressions) \\
+& $L^{\max}$ & Maximum expression length \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering MCTS}}
+& $\mathit{s}$ & State in MCTS (partial derivation) \\
+& $\mathit{a}$ & Action (production rule index) \\
+& $Q(\mathit{s}, \mathit{a})$ & Action-value estimate \\
+& $N(\mathit{s}, \mathit{a})$ & Visit count \\
+& $C$ & Exploration constant \\
+\midrule
+\multirow{6}{*}{\parbox{2cm}{\centering Neural Network}}
+& $f_{\theta}$ & PVNet with parameters $\theta$ \\
+& $\boldsymbol{\pi}_{\theta}(\mathit{s})$ & Policy head output \\
+& $V_{\theta}(\mathit{s})$ & Value head output \\
+& $P_{\theta}(\mathit{s})$ & Profit head output \\
+& $\alpha$ & Neural guidance weight \\
+& $\omega$ & Value-profit fusion weight \\
+\midrule
+\multirow{4}{*}{\parbox{2cm}{\centering Training}}
+& $\mathcal{B}$ & Experience replay buffer \\
+& $B^{\max}$ & Maximum buffer size \\
+& $B^{\min}$ & Minimum buffer size for training \\
+& $r^{\text{rl}}$ & RL reward from Wasserstein distance \\
+\midrule
+\multirow{4}{*}{\parbox{2cm}{\centering Hyperparameters}}
+& $K$ & MCTS episodes per iteration \\
+& $M$ & Grammar augmentation iterations \\
+& $N^{\text{run}}$ & Independent MCTS runs \\
+& $n^{\text{play}}$ & Rollout simulations \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}
