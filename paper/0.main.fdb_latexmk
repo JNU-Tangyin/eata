@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex 0.main"] 1769945886.50965 "0.main.aux" "0.main.bbl" "0.main" 1769946088.50972 0
-  "./references.bib" 1769943361.83832 23986 f0babcda9c25e217cacccdcef2b5ae3f ""
+["bibtex 0.main"] 0 "0.main.aux" "0.main.bbl" "0.main" 0 -1
+  "./references.bib" 1769946116.14928 23986 f0babcda9c25e217cacccdcef2b5ae3f ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/elsarticle/elsarticle-num.bst" 1736456871 29462 3b2a1af2ce1e224a3b46ee048ffd4b98 ""
-  "0.main.aux" 1769946088.18718 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
+  "0.main.aux" 1769946120.42788 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
   (generated)
   "0.main.bbl"
   "0.main.blg"
   (rewritten before read)
-["pdflatex"] 1769946085.04101 "/Users/yin/Desktop/doing/eata/paper/0.main.tex" "0.main.pdf" "0.main" 1769946088.5099 2
+["pdflatex"] 1769946117.03355 "/Users/yin/Desktop/doing/eata/paper/0.main.tex" "0.main.pdf" "0.main" 1769946120.80608 2
   "../tables/sp500_full_table.tex" 1769932994.35212 482 abe03a0a269f5eb306b1cc2ebfa2d9f4 ""
   "/Users/yin/Desktop/doing/eata/paper/0.main.tex" 1769938545.94583 4776 b9a788d4012e06b161933656460aa89f ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
@@ -237,14 +237,14 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1758509612 5528139 daf1353d2d3d7fed9df2ebbf1b26218e ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1758509781 3621557 167bfc5b4373711c8aabb7a7f74f02e3 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "0.main.aux" 1769946088.18718 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
-  "0.main.bbl" 1769945886.64298 14673 3a4eeee615d8efa5640bea5a6ce345d4 "bibtex 0.main"
-  "0.main.out" 1769946088.18859 10544 1915d391713e08fc5be15016de91791f "pdflatex"
-  "0.main.spl" 1769946085.20499 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "0.main.aux" 1769946120.42788 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
+  "0.main.bbl" 1769946116.11198 14673 3a4eeee615d8efa5640bea5a6ce345d4 "bibtex 0.main"
+  "0.main.out" 1769946120.42921 10544 1915d391713e08fc5be15016de91791f "pdflatex"
+  "0.main.spl" 1769946117.28204 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
   "0.main.tex" 1769938545.94583 4776 b9a788d4012e06b161933656460aa89f ""
   "1.intro.tex" 1769929040.32853 5524 cdf8121d9b435eba5909567c6ade77ac ""
-  "2.related.tex" 1769943377.52387 20920 5cc5c9de00300eed13645a37c462f8c2 ""
-  "3.method.tex" 1769946081.04748 26830 f2cb97be8785f2caee0fc32fb2d40a45 ""
+  "2.related.tex" 1769946116.14574 20920 5cc5c9de00300eed13645a37c462f8c2 ""
+  "3.method.tex" 1769946116.14744 26830 f2cb97be8785f2caee0fc32fb2d40a45 ""
   "4.experiments.tex" 1769934387.60914 19501 f2502cc1e786d63d1703b83f1902eae6 ""
   "5.conclusion.tex" 1769929563.32034 3465 233d2020d90e509780d5dc5b24d04aa4 ""
   "appendix.tex" 1769938183.76426 8362 d8d2be162b177f9994a927aeabcf4af0 ""
