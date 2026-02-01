@@ -41,59 +41,112 @@ def _protected_log(x1):
 # 定义金融指标函数 - 引入默认常数值
 
 def _protected_delay(x1, x2):
-    """延迟函数 - 安全实现版本，如5天滞后"""
-    # 使用固定延迟而不是可变参数，因为gplearn会将一个算式作为这个参数
-    delay_days = 5  # 固定值
-    return np.roll(x1, delay_days)
+    """延迟函数 - 安全实现版本"""
+    try:
+        # 尝试将x2转换为整数 (可能是数组、标量或字符串)
+        lag = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        lag = 1
+    
+    if lag == 0: return x1
+    return np.roll(x1, lag)
 
 def _protected_ma(x1, x2):
-    """移动平均 - 安全实现版本，默认10日移动平均"""
-    # 固定窗口大小
-    window_size = 10
-    result = np.zeros_like(x1)
-    for i in range(len(x1)):
-        if i < window_size-1:
-            result[i] = np.mean(x1[:i+1])
-        else:
-            result[i] = np.mean(x1[i-window_size+1:i+1])
-    return result
+    """移动平均 - 安全实现版本"""
+    try:
+        window_size = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        window_size = 10
+
+    if window_size < 2: return x1
+    
+    # 简单的卷积实现移动平均，比循环快
+    kernel = np.ones(window_size) / window_size
+    # 使用 'valid' 模式卷积，然后填充前缀以保持长度一致
+    # 注意：这里使用简单的全均值填充前缀，或者用cumulative mean
+    
+    # 为了保持与原逻辑一致（前缀用expanding mean），我们使用pandas rolling如果可能，或者优化循环
+    # 这里为了不引入pandas依赖，使用cumsum优化
+    
+    cumsum = np.cumsum(np.insert(x1, 0, 0)) 
+    result = (cumsum[window_size:] - cumsum[:-window_size]) / window_size
+    
+    # 前缀处理：使用expanding mean
+    prefix = np.cumsum(x1[:window_size-1]) / np.arange(1, window_size)
+    
+    return np.concatenate([prefix, result])
 
 def _protected_diff(x1, x2):
-    """差分函数 - 安全实现版本，默认1日差分"""
-    return np.concatenate([[0], x1[1:] - x1[:-1]])
+    """差分函数 - 安全实现版本"""
+    try:
+        lag = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        lag = 1
+        
+    if lag < 1: return np.zeros_like(x1)
+    if lag >= len(x1): return np.zeros_like(x1)
+    
+    return np.concatenate([np.zeros(lag), x1[lag:] - x1[:-lag]])
 
 def _protected_max_n(x1, x2):
-    """最大值函数 - 安全实现版本，默认5日最大值"""
-    window_size = 5
+    """最大值函数 - 安全实现版本"""
+    try:
+        window_size = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        window_size = 5
+        
+    if window_size < 2: return x1
+
+    from scipy.ndimage import maximum_filter1d
+    # maximum_filter1d 是中心化的，我们需要因果的（只看过去）
+    # origin 参数控制偏移。 origin = -(window_size // 2) ?
+    # 简单的实现：stride_tricks 或 循环
+    # 为了效率和简单，这里保留循环但稍微优化，或使用 sliding window view
+    
     result = np.zeros_like(x1)
     for i in range(len(x1)):
-        if i < window_size-1:
-            result[i] = np.max(x1[:i+1])
-        else:
-            result[i] = np.max(x1[i-window_size+1:i+1])
+        start_idx = max(0, i - window_size + 1)
+        result[i] = np.max(x1[start_idx:i+1])
     return result
 
 def _protected_min_n(x1, x2):
-    """最小值函数 - 安全实现版本，默认5日最小值"""
-    window_size = 5
+    """最小值函数 - 安全实现版本"""
+    try:
+        window_size = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        window_size = 5
+
+    if window_size < 2: return x1
+
     result = np.zeros_like(x1)
     for i in range(len(x1)):
-        if i < window_size-1:
-            result[i] = np.min(x1[:i+1])
-        else:
-            result[i] = np.min(x1[i-window_size+1:i+1])
+        start_idx = max(0, i - window_size + 1)
+        result[i] = np.min(x1[start_idx:i+1])
     return result
 
 def _protected_mom(x1, x2):
-    """动量函数 - 安全实现版本，默认5日动量"""
-    lag = 5
+    """动量函数 - 安全实现版本"""
+    try:
+        lag = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        lag = 5
+
+    if lag < 1: return np.zeros_like(x1)
+    
     result = np.zeros_like(x1)
-    result[lag:] = x1[lag:] / np.where(np.abs(x1[:-lag]) > 0.001, x1[:-lag], 0.001) - 1
+    denom = np.where(np.abs(x1[:-lag]) > 0.001, x1[:-lag], 0.001)
+    result[lag:] = x1[lag:] / denom - 1
     return result
 
 def _protected_rsi(x1, x2):
-    """相对强弱指标 - 安全实现版本，默认14日RSI"""
-    period = 14
+    """相对强弱指标 - 安全实现版本"""
+    try:
+        period = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        period = 14
+        
+    if period < 2: return np.zeros_like(x1) # RSI meaningless for period < 2
+
     # 计算变化的差分
     delta = np.zeros_like(x1)
     delta[1:] = x1[1:] - x1[:-1]
@@ -102,14 +155,14 @@ def _protected_rsi(x1, x2):
     gain = np.maximum(delta, 0)
     loss = -np.minimum(delta, 0)
     
-    # 预填充结果数组
     result = np.zeros_like(x1)
     
     # 使用简化的版本: 平均上涨除以平均下跌
     avg_gain = np.zeros_like(x1)
     avg_loss = np.zeros_like(x1)
     
-    # 使用滚动窗口计算
+    # 为了效率，可以优化循环
+    # 简单实现
     for i in range(period, len(x1)):
         avg_gain[i] = np.mean(gain[i-period+1:i+1])
         avg_loss[i] = np.mean(loss[i-period+1:i+1])
@@ -123,15 +176,22 @@ def _protected_rsi(x1, x2):
     return result
 
 def _protected_volatility(x1, x2):
-    """波动率函数 - 安全实现版本，默认20日波动率"""
-    window_size = 20
+    """波动率函数 - 安全实现版本"""
+    try:
+        window_size = int(float(np.mean(x2))) if isinstance(x2, np.ndarray) else int(float(x2))
+    except:
+        window_size = 20
+        
+    if window_size < 2: return np.zeros_like(x1)
+
     result = np.zeros_like(x1)
     for i in range(len(x1)):
-        if i < window_size-1:
-            segment = x1[:i+1]
-        else:
-            segment = x1[i-window_size+1:i+1]
-        result[i] = np.std(segment) / np.maximum(np.mean(segment), 0.001)
+        start_idx = max(0, i - window_size + 1)
+        segment = x1[start_idx:i+1]
+        mean_val = np.mean(segment)
+        if abs(mean_val) < 0.001:
+            mean_val = 0.001
+        result[i] = np.std(segment) / mean_val
     return result
 
 def _protected_ite(x1, x2, x3):
@@ -140,7 +200,7 @@ def _protected_ite(x1, x2, x3):
 
 ## 加强版金融时间序列文法
 def gen_enhanced_finance_grammar(n, lookBACK):
-    """结合基础数学运算和金融专用函数的增强算子集"""
+    """结合基础数学运算和金融专用函数的增强算子集 - 参数解耦版"""
     # 原始变量映射
     terminals = [f'A->x{i}' for i in range(n*lookBACK)]
     
@@ -156,37 +216,39 @@ def gen_enhanced_finance_grammar(n, lookBACK):
         'A->abs(A)', 'A->A**2', 'A->A**3', 'A->A**0.5',  # 幂运算和绝对值
     ]
     
-    # 金融专用时间序列函数（核心部分）
+    # 金融专用时间序列函数（解耦参数）
     finance_funcs = [
-        # 时间滞后项 - 捕捉历史信息
-        'A->delay(A,1)',   # t-1时刻的值
-        'A->delay(A,5)',   # t-5时刻的值
+        # 时间滞后项
+        'A->delay(A,L)',   
         
-        # 移动平均 - 平滑趋势
-        'A->ma(A,5)',      # 5日移动平均
-        'A->ma(A,10)',     # 10日移动平均
-        'A->ma(A,20)',     # 20日移动平均
+        # 移动平均
+        'A->ma(A,W)',     
         
-        # 差分和变化率 - 捕捉变化
-        'A->diff(A,1)',    # 一阶差分 (t值-t-1值)
-        'A->diff(A,5)',    # 五日差分
-        'A->mom(A,10)',    # 动量 (当前值/10天前值)
+        # 差分和变化率
+        'A->diff(A,L)',    
+        'A->mom(A,L)',    
         
-        # 极值函数 - 捕捉波动边界
-        'A->max_n(A,5)',   # 5日最大值
-        'A->min_n(A,5)',   # 5日最小值
-        'A->min(A,B)',     # 取两值最小值
-        'A->max(A,B)',     # 取两值最大值
+        # 极值函数
+        'A->max_n(A,W)',   
+        'A->min_n(A,W)',   
+        'A->min(A,B)',     
+        'A->max(A,B)',     
         
-        # 技术指标 - 股票特有指标
-        'A->rsi(A,14)',    # 相对强弱指标
-        'A->volatility(A,20)',  # 波动率
+        # 技术指标
+        'A->rsi(A,W)',    
+        'A->volatility(A,W)',
+    ]
+    
+    # 参数规则
+    param_rules = [
+        'W->5', 'W->10', 'W->20', 'W->30', 'W->60',
+        'L->1', 'L->5', 'L->10', 'L->20'
     ]
     
     # 辅助非终结符和条件操作
     helper_rules = [
         'B->B+B', 'B->B-B', 'B->A', 'B->abs(A)', 'B->1', 'B->2', 
-        'B->ma(A,10)', 'B->A**2', 'B->max(A,0)', 'B->min(A,1)'
+        'B->ma(A,W)', 'B->A**2', 'B->max(A,0)', 'B->min(A,1)'
     ]
     
     # 简单的逻辑操作
@@ -195,7 +257,7 @@ def gen_enhanced_finance_grammar(n, lookBACK):
         'D->A>B', 'D->A<B'  # 简单比较
     ]
     
-    return basic_ops + math_funcs + finance_funcs + helper_rules + logic_ops + terminals
+    return basic_ops + math_funcs + finance_funcs + param_rules + helper_rules + logic_ops + terminals
 
 ## production rules for each benchmark for SPL
 rule_map = {
@@ -294,28 +356,6 @@ rule_map = {
                      'A->x', 'A->y', 'A->z']),
 
     'NEMoTS': [], # 动态生成，由model.py负责
-
-    # 'NEMoTS': [
-    #     'A->A+A', 'A->A-A', 'A->A*A', 'A->A/A',  # 基本算术运算
-    #     'A->x', 'A->cos(A)', 'A->sin(A)', 'A->exp(A)', 'A->A*C',  # 常见函数和操作
-    #     'A->log(A)', 'A->sqrt(A)',
-    #     'A->tan(A)',  # 正切函数
-    #     'A->cot(A)',  # 余切函数
-    #     'A->sec(A)',  # 正割函数
-    #     'A->csc(A)',  # 余割函数
-    #     'A->A^2',  # 平方
-    #     'A->A^3',  # 立方
-    #     'A->A^n',  # 幂运算
-    #     'A->|A|',  # 绝对值
-    #     'A->asin(A)',  # 反正弦函数
-    #     'A->acos(A)',  # 反余弦函数
-    #     'A->atan(A)',  # 反正切函数
-    #     'A->acot(A)',  # 反余切函数
-    #     'A->ln(A)',  # 自然对数
-    #     'A->log10(A)',  # 以10为底的对数
-    #     'A->logb(A, B)',  # 以B为底A的对数
-    #     'A->e^A',  # e的A次幂
-    # ]
 }
 
 ## non-terminal nodes for each task for SPL
@@ -342,7 +382,8 @@ ntn_map = {
     **dict.fromkeys(['dp_f1', 'dp_f2'], ['A', 'W', 'T', 'S']),
     **dict.fromkeys(['lorenz_x', 'lorenz_y', 'lorenz_z'], ['A']),
 
-    'NEMoTS': ['A']
+    'NEMoTS': ['A'],
+    'finance': ['A', 'W', 'L', 'B', 'D'] # 新增finance任务的非终结符 (单字符以兼容MCTS解析)
 }
 
 

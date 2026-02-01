@@ -108,31 +108,57 @@ class Model:
 
              ##这里主要是对数据的处理 展平输入 到162行
         # 自动推断n和lookBACK
-        if self.symbolic_lib == 'NEMoTS':
+        if self.symbolic_lib == 'NEMoTS' or self.symbolic_lib == 'finance':
             # X shape: [1, lookBACK, n] or [1, n, lookBACK]
             X_ = X.squeeze(0)
+            
+            # For 'finance', we rely on arguments or infer n
+            if self.symbolic_lib == 'finance' and self.n is None:
+                 if X_.ndim == 2:
+                    # Assume [Time, Features] which is standard for our benchmark data generation
+                    # But wait, symbolics.gen_enhanced_finance_grammar uses n*lookBACK
+                    # Our benchmark generates [1, 100, 5] -> squeeze -> [100, 5]
+                    self.n = X_.shape[1]
+            
             if (self.base_grammar is None or len(self.base_grammar) == 0) and X_.ndim == 2:
-                if X_.shape[0] == self.lookBACK:
-                    n = X_.shape[1]
-                else:
-                    n = X_.shape[0]
-                self.n = n
-                def gen_multivar_grammar(n, lookBACK):
-                    terminals = [f'A->x{i}' for i in range(n*lookBACK)]
-                    ops = ['A->A+A', 'A->A-A', 'A->A*A', 'A->A/A', 'A->cos(A)', 'A->sin(A)', 'A->exp(A)', 'A->A*C', 'A->log(A)', 'A->sqrt(A)']
-                    return ops + terminals
-                self.base_grammar = gen_multivar_grammar(self.n, self.lookBACK)
+                if self.symbolic_lib == 'NEMoTS':
+                    if X_.shape[0] == self.lookBACK:
+                        n = X_.shape[1]
+                    else:
+                        n = X_.shape[0]
+                    self.n = n
+                    def gen_multivar_grammar(n, lookBACK):
+                        terminals = [f'A->x{i}' for i in range(n*lookBACK)]
+                        ops = ['A->A+A', 'A->A-A', 'A->A*A', 'A->A/A', 'A->cos(A)', 'A->sin(A)', 'A->exp(A)', 'A->A*C', 'A->log(A)', 'A->sqrt(A)']
+                        return ops + terminals
+                    self.base_grammar = gen_multivar_grammar(self.n, self.lookBACK)
+            
+            # Force regeneration for finance to match data dimensions
+            if self.symbolic_lib == 'finance':
+                 # Regenerate grammar with correct n and lookBACK
+                 self.base_grammar = symbolics.gen_enhanced_finance_grammar(self.n, self.lookBACK)
+                 # Re-initialize the network context with the newly generated base_grammar
+                 self.p_v_net_ctx = PVNetCtx(self.base_grammar, self.num_transplant, self.device)
+                 print(f"DEBUG MODEL: Regenerated finance grammar with n={self.n}, lookBACK={self.lookBACK}, size={len(self.base_grammar)}")
 
             # --- Data Preparation for Scoring and Network Input ---
-            X_np = X.cpu().numpy()
-            y_np = y.cpu().numpy() # This is the lookahead y, not used for MCTS scoring
+            X_np = X.squeeze(0).cpu().numpy()
+            y_np = y.squeeze(0).cpu().numpy() if y is not None else None
 
             # The `y_np` (lookahead) is for final evaluation, not for building the scoring data for MCTS.
             # We create a target from the input data `X_np` itself for MCTS to learn the underlying dynamics.
             # We'll create a 1-step-ahead prediction task for the first feature (index 0).
             X_for_scoring = X_np[:-1]  # Use first N-1 steps of X as input features
             y_for_scoring = X_np[1:, 0]   # Use the next step's value of the first feature as the target
-
+            
+            # Use actual y if provided and aligned (Benchmark case)
+            if y_np is not None:
+                 if y_np.shape[0] == X_np.shape[0]:
+                     # Assume y matches X in time dimension
+                     # X: [Time, Features], y: [Time]
+                     X_for_scoring = X_np
+                     y_for_scoring = y_np
+            
             # Transpose X to be (n_features, n_timesteps)
             X_transposed = X_for_scoring.T
             # Reshape y to be (1, n_timesteps)
@@ -140,6 +166,17 @@ class Model:
 
             # Create supervision_data for the scoring function. Now dimensions match.
             supervision_data = np.vstack([X_transposed, y_reshaped])
+            
+            # DEBUG: Data Check
+            print(f"DEBUG MODEL: Supervision Data Shape: {supervision_data.shape}")
+            y_real = supervision_data[-1]
+            x1_real = supervision_data[1]
+            x0_real = supervision_data[0]
+            mse_x1 = np.mean((y_real - x1_real)**2)
+            mse_x0 = np.mean((y_real - x0_real)**2)
+            print(f"DEBUG MODEL: y mean={np.mean(y_real):.4f}, std={np.std(y_real):.4f}")
+            print(f"DEBUG MODEL: MSE(y, x1)={mse_x1:.4f} -> Exp Reward={1/(1+mse_x1):.4f}")
+            print(f"DEBUG MODEL: MSE(y, x0)={mse_x0:.4f} -> Exp Reward={1/(1+mse_x0):.4f}")
 
             # For network input, it expects a flattened sequence
             X_flat = X_np.reshape(-1)
@@ -207,7 +244,7 @@ class Model:
                     input_data,
                     self.transplant_step,
                     network=self.p_v_net_ctx,
-                    num_play=10,
+                    num_play=200, # Increased from 10 to 200 for better exploration
                     print_flag=True,
                     use_network=True,
                     alpha=alpha,

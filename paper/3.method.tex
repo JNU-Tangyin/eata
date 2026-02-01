@@ -44,10 +44,11 @@ We employ a context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R
 \mathit{A} &\rightarrow \cos(\mathit{A}) \mid \sin(\mathit{A}) \mid \exp(\mathit{A}) \mid \log(\mathit{B}) \mid \sqrt{\mathit{B}} \mid |\mathit{A}| \mid \mathit{A}^{2}
 \end{align}
 
-\textit{Financial Operators (Fixed-Window):}
+\textit{Financial Operators (Decoupled Parameters):}
 \begin{align}
-\mathit{A} &\rightarrow \text{delay}(\mathit{A}, 1) \mid \text{delay}(\mathit{A}, 5) \mid \text{ma}(\mathit{A}, 5) \mid \text{ma}(\mathit{A}, 10) \mid \text{ma}(\mathit{A}, 20) \mid \text{diff}(\mathit{A}, 1) \mid \text{diff}(\mathit{A}, 5) \nonumber \\
-&\quad \mid \text{mom}(\mathit{A}, 10) \mid \text{max\_n}(\mathit{A}, 5) \mid \text{min\_n}(\mathit{A}, 5) \mid \text{rsi}(\mathit{A}, 14) \mid \text{vol}(\mathit{A}, 20)
+\mathit{A} &\rightarrow \text{delay}(\mathit{A}, \mathit{L}) \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{diff}(\mathit{A}, \mathit{L}) \mid \text{mom}(\mathit{A}, \mathit{L}) \nonumber \\
+&\quad \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}) \mid \text{rsi}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \\
+\mathit{W} &\rightarrow 5 \mid 10 \mid 20 \mid 30 \mid 60, \quad \mathit{L} \rightarrow 1 \mid 5 \mid 10 \mid 20
 \end{align}
 
 \textit{Conditional Logic:}
@@ -55,7 +56,7 @@ We employ a context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R
 \mathit{A} &\rightarrow \text{ite}(\mathit{D}, \mathit{A}, \mathit{A}), \quad \mathit{D} \rightarrow \mathit{A} > \mathit{B} \mid \mathit{A} < \mathit{B}
 \end{align}
 
-\textbf{Design Rationale.} Fixed-window operators (e.g., $\text{ma}(\cdot, 10)$) rather than parameterized variants reduce the search space while preserving expressiveness. Predefined windows ($5, 10, 14, 20$) align with standard technical analysis horizons. The conditional operator $\text{ite}$ enables piecewise expressions for regime-switching strategies.
+\textbf{Design Rationale.} We adopt a decoupled grammar design inspired by AlphaCFG~\cite{yang2026alpha}, separating operators from their parameters. This introduces parameter non-terminals ($\mathit{W}$ for windows, $\mathit{L}$ for lags) that resolve to a discrete set of valid values. This compositional structure reduces the number of unique production rules while maintaining expressiveness, and prevents the generation of semantically invalid parameter combinations (e.g., negative windows). The conditional operator $\text{ite}$ enables piecewise expressions for regime-switching strategies.
 
 \textbf{Rationale and Alternatives.} In finance, unconstrained operator sets often lead to expressions that are either uninterpretable (deeply nested non-linearities) or non-robust (operators effectively ``search'' over hyperparameters via continuous constants). Fixed-window operators serve two purposes: they encode domain priors and mitigate multiple-testing effects by limiting degrees of freedom. In contrast, allowing arbitrary window lengths would significantly inflate the hypothesis space and increase the risk of data snooping~\cite{white2000reality_check,bailey2014deflated_sharpe}. Grammar constraints can be viewed as a structural regularizer that improves both interpretability and generalization.
 
@@ -225,12 +226,11 @@ The PVNet architecture (Algorithm~\ref{alg:pvnet}) processes both the derivation
 \caption{PVNet Forward Pass}
 \label{alg:pvnet}
 \begin{algorithmic}[1]
-\Require State sequence $\boldsymbol{\sigma} = [r_1, \ldots, r_l]$, time series $\mathbf{X} \in \mathbb{R}^{T \times d}$
+\Require Derivation tree $\tau$ (or rule sequence $\boldsymbol{\sigma}$), time series $\mathbf{X} \in \mathbb{R}^{T \times d}$
 \Ensure Policy $\boldsymbol{\pi}$, value $V$, profit $P$
-\State $\mathbf{E} \leftarrow \textsc{Embedding}(\boldsymbol{\sigma})$ \Comment{Rule embeddings}
-\State $\mathbf{h}^{\text{state}} \leftarrow \textsc{LSTM}_{\text{state}}(\mathbf{E})$ \Comment{State encoder}
+\State $\mathbf{h}^{\text{tree}} \leftarrow \textsc{TreeLSTM}(\tau)$ \Comment{Structure-aware encoder}
 \State $\mathbf{h}^{\text{seq}} \leftarrow \textsc{LSTM}_{\text{seq}}(\mathbf{X})$ \Comment{Sequence encoder}
-\State $\mathbf{h} \leftarrow [\mathbf{h}^{\text{state}}; \mathbf{h}^{\text{seq}}]$ \Comment{Concatenate}
+\State $\mathbf{h} \leftarrow [\mathbf{h}^{\text{tree}}; \mathbf{h}^{\text{seq}}]$ \Comment{Concatenate}
 \State $\mathbf{h} \leftarrow \textsc{MLP}(\mathbf{h})$ \Comment{Hidden representation}
 \State $\boldsymbol{\pi} \leftarrow \textsc{Softmax}(\mathbf{W}^{\pi}\mathbf{h} + \mathbf{b}^{\pi})$
 \State $V \leftarrow \mathbf{w}^{V \top}\mathbf{h} + b^{V}$
@@ -251,7 +251,7 @@ where the components are:
 \mathcal{L}^{P} &= \left(P_{\theta} - r^{\text{rl}}\right)^{2} \label{eq:loss_profit}
 \end{align}
 
-\textbf{Design Rationale.} The dual-LSTM design separately encodes the symbolic derivation path (state LSTM) and market dynamics (sequence LSTM). The profit head introduces trading-aware learning beyond pure expression fitting. Both value and profit heads use MSE loss against respective rewards, with $r^{\text{acc}} = 1/(1+\text{MSE})$ for accuracy and $r^{\text{rl}}$ derived from Wasserstein distance for profit.
+\textbf{Design Rationale.} We employ a \textbf{Tree-LSTM} encoder~\cite{tai2015improved} to capture the hierarchical structure of the symbolic expression, rather than treating it as a flat sequence. This allows the network to better generalize to nested mathematical compositions. The market dynamics are encoded via a standard LSTM. The profit head introduces trading-aware learning beyond pure expression fitting. Both value and profit heads use MSE loss against respective rewards.
 
 %==============================================================================
 \subsection{Overall Training Pipeline}

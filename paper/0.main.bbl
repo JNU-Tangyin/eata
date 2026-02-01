@@ -6,353 +6,238 @@
   \def\href#1#2{#2} \def\path#1{#1}\fi
 
 \bibitem{fischer2018deep}
-T.~Fischer, C.~Krauss, Deep learning with long short-term memory networks for
-  financial market predictions, European Journal of Operational Research
-  270~(2) (2018) 654--669.
+T.~Fischer, C.~Krauss, Deep learning with long short-term memory networks for financial market predictions, European Journal of Operational Research 270~(2) (2018) 654--669.
 
 \bibitem{zhang2020deep}
-Z.~Zhang, S.~Zohren, S.~Roberts, Deep learning for portfolio optimization, The
-  Journal of Financial Data Science 2~(4) (2020) 8--20.
+Z.~Zhang, S.~Zohren, S.~Roberts, Deep learning for portfolio optimization, The Journal of Financial Data Science 2~(4) (2020) 8--20.
 
 \bibitem{eu2014mifid}
-{European Union}, Markets in financial instruments directive ii (mifid ii),
-  Directive 2014/65/EU (2014).
+{European Union}, Markets in financial instruments directive ii (mifid ii), Directive 2014/65/EU (2014).
 
 \bibitem{rudin2019stop}
-C.~Rudin, Stop explaining black box machine learning models for high stakes
-  decisions and use interpretable models instead, Nature Machine Intelligence
-  1~(5) (2019) 206--215.
+C.~Rudin, Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead, Nature Machine Intelligence 1~(5) (2019) 206--215.
 
 \bibitem{weber2024comprehensive}
-P.~Weber, K.~V. Carl, O.~Hinz, A comprehensive review on financial explainable
-  ai, Artificial Intelligence Review 57 (2024) 1--40.
+P.~Weber, K.~V. Carl, O.~Hinz, A comprehensive review on financial explainable ai, Artificial Intelligence Review 57 (2024) 1--40.
 
 \bibitem{cao2022ai}
-L.~Cao, Ai in finance: challenges, techniques, and opportunities, ACM Computing
-  Surveys 55~(3) (2022) 1--38.
+L.~Cao, Ai in finance: challenges, techniques, and opportunities, ACM Computing Surveys 55~(3) (2022) 1--38.
 
 \bibitem{koza1994genetic}
-J.~R. Koza, Genetic programming II: Automatic discovery of reusable programs,
-  MIT Press, 1994.
+J.~R. Koza, Genetic programming II: Automatic discovery of reusable programs, MIT Press, 1994.
 
 \bibitem{schmidt2009distilling}
-M.~Schmidt, H.~Lipson, Distilling free-form natural laws from experimental
-  data, Science 324~(5923) (2009) 81--85.
+M.~Schmidt, H.~Lipson, Distilling free-form natural laws from experimental data, Science 324~(5923) (2009) 81--85.
 
 \bibitem{cont2001empirical}
-R.~Cont, Empirical properties of asset returns: stylized facts and statistical
-  issues, Quantitative Finance 1~(2) (2001) 223--236.
+R.~Cont, Empirical properties of asset returns: stylized facts and statistical issues, Quantitative Finance 1~(2) (2001) 223--236.
 
 \bibitem{villani2009optimal}
-C.~Villani, Optimal Transport: Old and New, Vol. 338 of Grundlehren der
-  mathematischen Wissenschaften, Springer, 2009.
+C.~Villani, Optimal Transport: Old and New, Vol. 338 of Grundlehren der mathematischen Wissenschaften, Springer, 2009.
 
 \bibitem{peyre2019computational}
-G.~Peyr{\'e}, M.~Cuturi, \href{https://arxiv.org/abs/1803.00567}{Computational
-  optimal transport}, Foundations and Trends{\textregistered} in Machine
-  Learning 11~(5-6) (2019) 355--607.
+G.~Peyr{\'e}, M.~Cuturi, \href{https://arxiv.org/abs/1803.00567}{Computational optimal transport}, Foundations and Trends{\textregistered} in Machine Learning 11~(5-6) (2019) 355--607.
 \newline\urlprefix\url{https://arxiv.org/abs/1803.00567}
 
 \bibitem{xie2024nemots}
-Y.~Xie, T.~Qiu, Y.~Xiong, X.~Huang, X.~Gao, C.~Chen,
-  \href{https://arxiv.org/abs/2409.03986}{An efficient and generalizable
-  symbolic regression method for time series analysis}, arXiv preprint
-  arXiv:2409.03986 (2024).
-\newblock \href {https://doi.org/10.48550/arXiv.2409.03986}
-  {\path{doi:10.48550/arXiv.2409.03986}}.
+Y.~Xie, T.~Qiu, Y.~Xiong, X.~Huang, X.~Gao, C.~Chen, \href{https://arxiv.org/abs/2409.03986}{An efficient and generalizable symbolic regression method for time series analysis}, arXiv preprint arXiv:2409.03986 (2024).
+\newblock \href {https://doi.org/10.48550/arXiv.2409.03986} {\path{doi:10.48550/arXiv.2409.03986}}.
 \newline\urlprefix\url{https://arxiv.org/abs/2409.03986}
 
 \bibitem{markowitz1952portfolio}
-H.~Markowitz,
-  \href{https://doi.org/10.1111/j.1540-6261.1952.tb01525.x}{Portfolio
-  selection}, The Journal of Finance 7~(1) (1952) 77--91.
-\newblock \href {https://doi.org/10.1111/j.1540-6261.1952.tb01525.x}
-  {\path{doi:10.1111/j.1540-6261.1952.tb01525.x}}.
+H.~Markowitz, \href{https://doi.org/10.1111/j.1540-6261.1952.tb01525.x}{Portfolio selection}, The Journal of Finance 7~(1) (1952) 77--91.
+\newblock \href {https://doi.org/10.1111/j.1540-6261.1952.tb01525.x} {\path{doi:10.1111/j.1540-6261.1952.tb01525.x}}.
 \newline\urlprefix\url{https://doi.org/10.1111/j.1540-6261.1952.tb01525.x}
 
 \bibitem{sharpe1966mutual}
-W.~F. Sharpe, \href{https://doi.org/10.1086/294846}{Mutual fund performance},
-  The Journal of Business 39~(S1) (1966) 119.
+W.~F. Sharpe, \href{https://doi.org/10.1086/294846}{Mutual fund performance}, The Journal of Business 39~(S1) (1966) 119.
 \newblock \href {https://doi.org/10.1086/294846} {\path{doi:10.1086/294846}}.
 \newline\urlprefix\url{https://doi.org/10.1086/294846}
 
 \bibitem{lo2002sharpe_stats}
-A.~W. Lo, \href{https://doi.org/10.2469/faj.v58.n4.2453}{The statistics of
-  sharpe ratios}, Financial Analysts Journal 58~(4) (2002) 36--52.
-\newblock \href {https://doi.org/10.2469/faj.v58.n4.2453}
-  {\path{doi:10.2469/faj.v58.n4.2453}}.
+A.~W. Lo, \href{https://doi.org/10.2469/faj.v58.n4.2453}{The statistics of sharpe ratios}, Financial Analysts Journal 58~(4) (2002) 36--52.
+\newblock \href {https://doi.org/10.2469/faj.v58.n4.2453} {\path{doi:10.2469/faj.v58.n4.2453}}.
 \newline\urlprefix\url{https://doi.org/10.2469/faj.v58.n4.2453}
 
 \bibitem{ledoit2008sharpe}
-O.~Ledoit, M.~Wolf, Robust performance hypothesis testing with the sharpe
-  ratio, Journal of Empirical Finance 15~(5) (2008) 850--859.
-\newblock \href {https://doi.org/10.1016/j.jempfin.2008.05.002}
-  {\path{doi:10.1016/j.jempfin.2008.05.002}}.
+O.~Ledoit, M.~Wolf, Robust performance hypothesis testing with the sharpe ratio, Journal of Empirical Finance 15~(5) (2008) 850--859.
+\newblock \href {https://doi.org/10.1016/j.jempfin.2008.05.002} {\path{doi:10.1016/j.jempfin.2008.05.002}}.
 
 \bibitem{white2000reality_check}
-H.~White, \href{https://doi.org/10.1111/1468-0262.00152}{A reality check for
-  data snooping}, Econometrica 68~(5) (2000) 1097--1126.
-\newblock \href {https://doi.org/10.1111/1468-0262.00152}
-  {\path{doi:10.1111/1468-0262.00152}}.
+H.~White, \href{https://doi.org/10.1111/1468-0262.00152}{A reality check for data snooping}, Econometrica 68~(5) (2000) 1097--1126.
+\newblock \href {https://doi.org/10.1111/1468-0262.00152} {\path{doi:10.1111/1468-0262.00152}}.
 \newline\urlprefix\url{https://doi.org/10.1111/1468-0262.00152}
 
 \bibitem{hansen2005spa}
-P.~R. Hansen, \href{https://doi.org/10.1198/073500105000000063}{A test for
-  superior predictive ability}, Journal of Business \& Economic Statistics
-  23~(4) (2005) 365--380.
-\newblock \href {https://doi.org/10.1198/073500105000000063}
-  {\path{doi:10.1198/073500105000000063}}.
+P.~R. Hansen, \href{https://doi.org/10.1198/073500105000000063}{A test for superior predictive ability}, Journal of Business \& Economic Statistics 23~(4) (2005) 365--380.
+\newblock \href {https://doi.org/10.1198/073500105000000063} {\path{doi:10.1198/073500105000000063}}.
 \newline\urlprefix\url{https://doi.org/10.1198/073500105000000063}
 
 \bibitem{bailey2014deflated_sharpe}
-D.~H. Bailey, M.~Lopez~de Prado,
-  \href{https://doi.org/10.2139/ssrn.2460551}{The deflated sharpe ratio:
-  Correcting for selection bias, backtest overfitting and non-normality}, SSRN
-  Electronic Journal (2014).
-\newblock \href {https://doi.org/10.2139/ssrn.2460551}
-  {\path{doi:10.2139/ssrn.2460551}}.
+D.~H. Bailey, M.~Lopez~de Prado, \href{https://doi.org/10.2139/ssrn.2460551}{The deflated sharpe ratio: Correcting for selection bias, backtest overfitting and non-normality}, SSRN Electronic Journal (2014).
+\newblock \href {https://doi.org/10.2139/ssrn.2460551} {\path{doi:10.2139/ssrn.2460551}}.
 \newline\urlprefix\url{https://doi.org/10.2139/ssrn.2460551}
 
 \bibitem{bailey2017pbo}
-D.~H. Bailey, J.~Borwein, M.~Lopez~de Prado, Q.~J. Zhu, The probability of
-  backtest overfitting, Journal of Computational Finance 20~(4) (2017) 39--69.
-\newblock \href {https://doi.org/10.21314/JCF.2017.361}
-  {\path{doi:10.21314/JCF.2017.361}}.
+D.~H. Bailey, J.~Borwein, M.~Lopez~de Prado, Q.~J. Zhu, The probability of backtest overfitting, Journal of Computational Finance 20~(4) (2017) 39--69.
+\newblock \href {https://doi.org/10.21314/JCF.2017.361} {\path{doi:10.21314/JCF.2017.361}}.
 
 \bibitem{harvey2016multiple_testing}
-C.~R. Harvey, Y.~Liu, H.~Zhu,
-  \href{https://doi.org/10.1093/rfs/hhv059}{{\ldots} and the cross-section of
-  expected returns}, The Review of Financial Studies 29~(1) (2016) 5--68.
-\newblock \href {https://doi.org/10.1093/rfs/hhv059}
-  {\path{doi:10.1093/rfs/hhv059}}.
+C.~R. Harvey, Y.~Liu, H.~Zhu, \href{https://doi.org/10.1093/rfs/hhv059}{{\ldots} and the cross-section of expected returns}, The Review of Financial Studies 29~(1) (2016) 5--68.
+\newblock \href {https://doi.org/10.1093/rfs/hhv059} {\path{doi:10.1093/rfs/hhv059}}.
 \newline\urlprefix\url{https://doi.org/10.1093/rfs/hhv059}
 
 \bibitem{keim1997transaction_costs}
-D.~B. Keim, A.~Madhavan,
-  \href{https://doi.org/10.1016/S0304-405X(97)00031-7}{Transactions costs and
-  investment style: an inter-exchange analysis of institutional equity trades},
-  Journal of Financial Economics 46~(3) (1997) 265--292.
-\newblock \href {https://doi.org/10.1016/S0304-405X(97)00031-7}
-  {\path{doi:10.1016/S0304-405X(97)00031-7}}.
+D.~B. Keim, A.~Madhavan, \href{https://doi.org/10.1016/S0304-405X(97)00031-7}{Transactions costs and investment style: an inter-exchange analysis of institutional equity trades}, Journal of Financial Economics 46~(3) (1997) 265--292.
+\newblock \href {https://doi.org/10.1016/S0304-405X(97)00031-7} {\path{doi:10.1016/S0304-405X(97)00031-7}}.
 \newline\urlprefix\url{https://doi.org/10.1016/S0304-405X(97)00031-7}
 
 \bibitem{hendershott2011does}
-T.~Hendershott, C.~M. Jones, A.~J. Menkveld, Does algorithmic trading improve
-  liquidity?, The Journal of Finance 66~(1) (2011) 1--33.
+T.~Hendershott, C.~M. Jones, A.~J. Menkveld, Does algorithmic trading improve liquidity?, The Journal of Finance 66~(1) (2011) 1--33.
 
 \bibitem{park2007we}
-C.-H. Park, S.~H. Irwin, What do we know about the profitability of technical
-  analysis?, Journal of Economic Surveys 21~(4) (2007) 786--826.
+C.-H. Park, S.~H. Irwin, What do we know about the profitability of technical analysis?, Journal of Economic Surveys 21~(4) (2007) 786--826.
 
 \bibitem{chen2020alpha}
-T.~Chen, Y.~Gao, J.~Wang, Alpha discovery via genetic programming, arXiv
-  preprint arXiv:2004.02311 (2020).
+T.~Chen, Y.~Gao, J.~Wang, Alpha discovery via genetic programming, arXiv preprint arXiv:2004.02311 (2020).
 
 \bibitem{ren2024alpha}
-W.~Ren, et~al., Alpha mining and enhancing via warm start genetic programming
-  for quantitative investment, arXiv preprint arXiv:2412.00896 (2024).
+W.~Ren, et~al., Alpha mining and enhancing via warm start genetic programming for quantitative investment, arXiv preprint arXiv:2412.00896 (2024).
 
 \bibitem{yu2023alphagen}
-S.~Yu, et~al., Alphagen: Automate alpha factor generation with reinforcement
-  learning, arXiv preprint arXiv:2306.12964 (2023).
+S.~Yu, et~al., Alphagen: Automate alpha factor generation with reinforcement learning, arXiv preprint arXiv:2306.12964 (2023).
 
 \bibitem{zhao2024alpha}
-Q.~Zhao, et~al., Alpha-gpt: Human-ai interactive alpha mining for quantitative
-  investment, arXiv preprint arXiv:2308.00016 (2024).
+Q.~Zhao, et~al., Alpha-gpt: Human-ai interactive alpha mining for quantitative investment, arXiv preprint arXiv:2308.00016 (2024).
 
 \bibitem{xu2024alphaforge}
-H.~Xu, et~al., Alphaforge: A framework to mine and dynamically combine
-  formulaic alpha factors, arXiv preprint arXiv:2406.18394 (2024).
+H.~Xu, et~al., Alphaforge: A framework to mine and dynamically combine formulaic alpha factors, arXiv preprint arXiv:2406.18394 (2024).
 
 \bibitem{chen2015gru}
-Z.~Chen, et~al., Gated recurrent unit based recurrent neural network for
-  remaining useful life prediction of nonlinear deterioration process,
-  Reliability Engineering \& System Safety 185 (2019) 372--382.
+Z.~Chen, et~al., Gated recurrent unit based recurrent neural network for remaining useful life prediction of nonlinear deterioration process, Reliability Engineering \& System Safety 185 (2019) 372--382.
 
 \bibitem{ding2020hierarchical}
-Q.~Ding, S.~Wu, H.~Sun, J.~Guo, J.~Guo, Hierarchical multi-scale gaussian
-  transformer for stock movement prediction, in: IJCAI, 2020, pp. 4640--4646.
+Q.~Ding, S.~Wu, H.~Sun, J.~Guo, J.~Guo, Hierarchical multi-scale gaussian transformer for stock movement prediction, in: IJCAI, 2020, pp. 4640--4646.
 
 \bibitem{vaswani2017attention}
-A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez,
-  {\L}.~Kaiser, I.~Polosukhin, Attention is all you need, in: NeurIPS, 2017,
-  pp. 5998--6008.
+A.~Vaswani, N.~Shazeer, N.~Parmar, J.~Uszkoreit, L.~Jones, A.~N. Gomez, {\L}.~Kaiser, I.~Polosukhin, Attention is all you need, in: NeurIPS, 2017, pp. 5998--6008.
 
 \bibitem{deng2016deep}
-Y.~Deng, F.~Bao, Y.~Kong, Z.~Ren, Q.~Dai, Deep direct reinforcement learning
-  for financial signal representation and trading, IEEE Transactions on Neural
-  Networks and Learning Systems 28~(3) (2016) 653--664.
+Y.~Deng, F.~Bao, Y.~Kong, Z.~Ren, Q.~Dai, Deep direct reinforcement learning for financial signal representation and trading, IEEE Transactions on Neural Networks and Learning Systems 28~(3) (2016) 653--664.
 
 \bibitem{liu2020finrl}
-X.-Y. Liu, H.~Yang, Q.~Chen, R.~Zhang, L.~Yang, B.~Xiao, C.~D. Wang, Finrl: A
-  deep reinforcement learning library for automated stock trading in
-  quantitative finance, arXiv preprint arXiv:2011.09607 (2020).
+X.-Y. Liu, H.~Yang, Q.~Chen, R.~Zhang, L.~Yang, B.~Xiao, C.~D. Wang, Finrl: A deep reinforcement learning library for automated stock trading in quantitative finance, arXiv preprint arXiv:2011.09607 (2020).
 
 \bibitem{chen2016xgboost}
-T.~Chen, C.~Guestrin, Xgboost: A scalable tree boosting system, in: KDD, 2016,
-  pp. 785--794.
+T.~Chen, C.~Guestrin, Xgboost: A scalable tree boosting system, in: KDD, 2016, pp. 785--794.
 
 \bibitem{ke2017lightgbm}
-G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, T.-Y. Liu, Lightgbm:
-  A highly efficient gradient boosting decision tree, in: NeurIPS, 2017, pp.
-  3146--3154.
+G.~Ke, Q.~Meng, T.~Finley, T.~Wang, W.~Chen, W.~Ma, Q.~Ye, T.-Y. Liu, Lightgbm: A highly efficient gradient boosting decision tree, in: NeurIPS, 2017, pp. 3146--3154.
 
 \bibitem{deng2019interpreting}
-H.~Deng, Interpreting tree ensembles with intrees, Vol.~7, Springer, 2019, pp.
-  277--287.
+H.~Deng, Interpreting tree ensembles with intrees, Vol.~7, Springer, 2019, pp. 277--287.
 
 \bibitem{ribeiro2016should}
-M.~T. Ribeiro, S.~Singh, C.~Guestrin, ``why should i trust you?'': Explaining
-  the predictions of any classifier, in: KDD, 2016, pp. 1135--1144.
+M.~T. Ribeiro, S.~Singh, C.~Guestrin, ``why should i trust you?'': Explaining the predictions of any classifier, in: KDD, 2016, pp. 1135--1144.
 
 \bibitem{lundberg2017unified}
-S.~M. Lundberg, S.-I. Lee, A unified approach to interpreting model
-  predictions, in: NeurIPS, 2017, pp. 4765--4774.
+S.~M. Lundberg, S.-I. Lee, A unified approach to interpreting model predictions, in: NeurIPS, 2017, pp. 4765--4774.
 
 \bibitem{slack2020fooling}
-D.~Slack, S.~Hilgard, E.~Jia, S.~Singh, H.~Lakkaraju, Fooling lime and shap:
-  Adversarial attacks on post hoc explanation methods, in: AIES, 2020, pp.
-  180--186.
+D.~Slack, S.~Hilgard, E.~Jia, S.~Singh, H.~Lakkaraju, Fooling lime and shap: Adversarial attacks on post hoc explanation methods, in: AIES, 2020, pp. 180--186.
 
 \bibitem{poli2008field}
-R.~Poli, W.~B. Langdon, N.~F. McPhee, J.~R. Koza, A field guide to genetic
-  programming, Lulu.com, 2008.
+R.~Poli, W.~B. Langdon, N.~F. McPhee, J.~R. Koza, A field guide to genetic programming, Lulu.com, 2008.
 
 \bibitem{mckay2010grammar}
-R.~I. McKay, N.~X. Hoai, P.~A. Whigham, Y.~Shan, M.~O'Neill, Grammar-based
-  genetic programming: a survey, in: Genetic Programming and Evolvable
-  Machines, Vol.~11, Springer, 2010, pp. 365--396.
+R.~I. McKay, N.~X. Hoai, P.~A. Whigham, Y.~Shan, M.~O'Neill, Grammar-based genetic programming: a survey, in: Genetic Programming and Evolvable Machines, Vol.~11, Springer, 2010, pp. 365--396.
 
 \bibitem{stephens2016gplearn}
-T.~Stephens, gplearn: Genetic programming in python,
-  \url{https://github.com/trevorstephens/gplearn} (2016).
+T.~Stephens, gplearn: Genetic programming in python, \url{https://github.com/trevorstephens/gplearn} (2016).
 
 \bibitem{burlacu2020operon}
-B.~Burlacu, G.~Kronberger, M.~Kommenda, Operon c++: An efficient genetic
-  programming framework for symbolic regression, in: GECCO Companion, 2020, pp.
-  1562--1570.
+B.~Burlacu, G.~Kronberger, M.~Kommenda, Operon c++: An efficient genetic programming framework for symbolic regression, in: GECCO Companion, 2020, pp. 1562--1570.
 
 \bibitem{chen2002genetic}
-S.-H. Chen, Genetic algorithms and genetic programming in computational
-  finance, Springer Science \& Business Media (2002).
+S.-H. Chen, Genetic algorithms and genetic programming in computational finance, Springer Science \& Business Media (2002).
 
 \bibitem{petersen2021deep}
-B.~K. Petersen, M.~L. Larma, T.~N. Mundhenk, C.~P. Santiago, S.~K. Kim, J.~T.
-  Kim, Deep symbolic regression: Recovering mathematical expressions from data
-  via risk-seeking policy gradients, in: ICLR, 2021.
+B.~K. Petersen, M.~L. Larma, T.~N. Mundhenk, C.~P. Santiago, S.~K. Kim, J.~T. Kim, Deep symbolic regression: Recovering mathematical expressions from data via risk-seeking policy gradients, in: ICLR, 2021.
 
 \bibitem{biggio2021neural}
-L.~Biggio, T.~Bendinelli, A.~Neitz, A.~Lucchi, G.~Parascandolo, Neural symbolic
-  regression that scales, in: ICML, 2021, pp. 936--945.
+L.~Biggio, T.~Bendinelli, A.~Neitz, A.~Lucchi, G.~Parascandolo, Neural symbolic regression that scales, in: ICML, 2021, pp. 936--945.
 
 \bibitem{kamienny2022end}
-P.-A. Kamienny, S.~d'Ascoli, G.~Lample, F.~Charton, End-to-end symbolic
-  regression with transformers, in: NeurIPS, 2022, pp. 10269--10281.
+P.-A. Kamienny, S.~d'Ascoli, G.~Lample, F.~Charton, End-to-end symbolic regression with transformers, in: NeurIPS, 2022, pp. 10269--10281.
 
 \bibitem{valipour2021symbolicgpt}
-M.~Valipour, B.~You, M.~Panju, A.~Ghodsi, Symbolicgpt: A generative transformer
-  model for symbolic regression, in: NeurIPS 2021 AI for Science Workshop,
-  2021.
+M.~Valipour, B.~You, M.~Panju, A.~Ghodsi, Symbolicgpt: A generative transformer model for symbolic regression, in: NeurIPS 2021 AI for Science Workshop, 2021.
 
 \bibitem{makke2024interpretable}
-N.~Makke, S.~Chawla, Interpretable scientific discovery with symbolic
-  regression: a review, Artificial Intelligence Review 57~(2) (2024) 1--50.
+N.~Makke, S.~Chawla, Interpretable scientific discovery with symbolic regression: a review, Artificial Intelligence Review 57~(2) (2024) 1--50.
 
 \bibitem{kusner2017grammar}
-M.~J. Kusner, B.~Paige, J.~M. Hern{\'a}ndez-Lobato, Grammar variational
-  autoencoder, in: ICML, 2017, pp. 1945--1954.
+M.~J. Kusner, B.~Paige, J.~M. Hern{\'a}ndez-Lobato, Grammar variational autoencoder, in: ICML, 2017, pp. 1945--1954.
 
 \bibitem{ellis2021dreamcoder}
-K.~Ellis, C.~Wong, M.~Nye, M.~Sable-Meyer, L.~Morales, L.~Hewitt, L.~Cary,
-  A.~Solar-Lezama, J.~B. Tenenbaum, Dreamcoder: Bootstrapping inductive program
-  synthesis with wake-sleep library learning, PLDI (2021) 835--850.
+K.~Ellis, C.~Wong, M.~Nye, M.~Sable-Meyer, L.~Morales, L.~Hewitt, L.~Cary, A.~Solar-Lezama, J.~B. Tenenbaum, Dreamcoder: Bootstrapping inductive program synthesis with wake-sleep library learning, PLDI (2021) 835--850.
 
 \bibitem{coulom2006efficient}
-R.~Coulom, Efficient selectivity and backup operators in monte-carlo tree
-  search, in: International Conference on Computers and Games, Springer, 2006,
-  pp. 72--83.
+R.~Coulom, Efficient selectivity and backup operators in monte-carlo tree search, in: International Conference on Computers and Games, Springer, 2006, pp. 72--83.
 
 \bibitem{kocsis2006bandit}
-L.~Kocsis, C.~Szepesv{\'a}ri, Bandit based monte-carlo planning, in: ECML,
-  Springer, 2006, pp. 282--293.
+L.~Kocsis, C.~Szepesv{\'a}ri, Bandit based monte-carlo planning, in: ECML, Springer, 2006, pp. 282--293.
 
 \bibitem{silver2016mastering}
-D.~Silver, A.~Huang, C.~J. Maddison, A.~Guez, L.~Sifre, G.~Van Den~Driessche,
-  J.~Schrittwieser, I.~Antonoglou, V.~Panneershelvam, M.~Lanctot, et~al.,
-  Mastering the game of go with deep neural networks and tree search, Nature
-  529~(7587) (2016) 484--489.
+D.~Silver, A.~Huang, C.~J. Maddison, A.~Guez, L.~Sifre, G.~Van Den~Driessche, J.~Schrittwieser, I.~Antonoglou, V.~Panneershelvam, M.~Lanctot, et~al., Mastering the game of go with deep neural networks and tree search, Nature 529~(7587) (2016) 484--489.
 
 \bibitem{silver2017mastering}
-D.~Silver, J.~Schrittwieser, K.~Simonyan, I.~Antonoglou, A.~Huang, A.~Guez,
-  T.~Hubert, L.~Baker, M.~Lai, A.~Bolton, et~al., Mastering the game of go
-  without human knowledge, Nature 550~(7676) (2017) 354--359.
+D.~Silver, J.~Schrittwieser, K.~Simonyan, I.~Antonoglou, A.~Huang, A.~Guez, T.~Hubert, L.~Baker, M.~Lai, A.~Bolton, et~al., Mastering the game of go without human knowledge, Nature 550~(7676) (2017) 354--359.
 
 \bibitem{white2015programming}
-D.~R. White, S.~Yoo, J.~Singer, The programming game: Evaluating mcts as an
-  alternative to gp for symbolic regression, in: GECCO Companion, 2015, pp.
-  1521--1522.
+D.~R. White, S.~Yoo, J.~Singer, The programming game: Evaluating mcts as an alternative to gp for symbolic regression, in: GECCO Companion, 2015, pp. 1521--1522.
 
 \bibitem{cazenave2013monte}
-T.~Cazenave, Monte-carlo expression discovery, International Journal on
-  Artificial Intelligence Tools 22~(01) (2013) 1250035.
+T.~Cazenave, Monte-carlo expression discovery, International Journal on Artificial Intelligence Tools 22~(01) (2013) 1250035.
 
 \bibitem{lu2021incorporating}
-Q.~Lu, F.~Tao, S.~Zhou, et~al., Incorporating actor-critic in monte carlo tree
-  search for symbolic regression, Neural Computing and Applications 33 (2021)
-  8495--8511.
+Q.~Lu, F.~Tao, S.~Zhou, et~al., Incorporating actor-critic in monte carlo tree search for symbolic regression, Neural Computing and Applications 33 (2021) 8495--8511.
 
 \bibitem{sun2022symbolic}
-F.~Sun, Y.~Liu, J.-X. Wang, H.~Sun, Symbolic physics learner: Discovering
-  governing equations via monte carlo tree search, arXiv preprint
-  arXiv:2205.13134 (2022).
+F.~Sun, Y.~Liu, J.-X. Wang, H.~Sun, Symbolic physics learner: Discovering governing equations via monte carlo tree search, arXiv preprint arXiv:2205.13134 (2022).
 
 \bibitem{bellemare2017distributional}
-M.~G. Bellemare, W.~Dabney, R.~Munos, \href{https://arxiv.org/abs/1707.06887}{A
-  distributional perspective on reinforcement learning}, arXiv preprint
-  arXiv:1707.06887 (2017).
-\newblock \href {https://doi.org/10.48550/arXiv.1707.06887}
-  {\path{doi:10.48550/arXiv.1707.06887}}.
+M.~G. Bellemare, W.~Dabney, R.~Munos, \href{https://arxiv.org/abs/1707.06887}{A distributional perspective on reinforcement learning}, arXiv preprint arXiv:1707.06887 (2017).
+\newblock \href {https://doi.org/10.48550/arXiv.1707.06887} {\path{doi:10.48550/arXiv.1707.06887}}.
 \newline\urlprefix\url{https://arxiv.org/abs/1707.06887}
 
 \bibitem{chow2015cvar}
-Y.~Chow, A.~Tamar, S.~Mannor, M.~Pavone,
-  \href{https://arxiv.org/abs/1506.02188}{Risk-sensitive and robust
-  decision-making: a cvar optimization approach}, arXiv preprint
-  arXiv:1506.02188 (2015).
-\newblock \href {https://doi.org/10.48550/arXiv.1506.02188}
-  {\path{doi:10.48550/arXiv.1506.02188}}.
+Y.~Chow, A.~Tamar, S.~Mannor, M.~Pavone, \href{https://arxiv.org/abs/1506.02188}{Risk-sensitive and robust decision-making: a cvar optimization approach}, arXiv preprint arXiv:1506.02188 (2015).
+\newblock \href {https://doi.org/10.48550/arXiv.1506.02188} {\path{doi:10.48550/arXiv.1506.02188}}.
 \newline\urlprefix\url{https://arxiv.org/abs/1506.02188}
 
 \bibitem{goodman2017european}
-B.~Goodman, S.~Flaxman, European union regulations on algorithmic
-  decision-making and a ``right to explanation'', AI Magazine 38~(3) (2017)
-  50--57.
+B.~Goodman, S.~Flaxman, European union regulations on algorithmic decision-making and a ``right to explanation'', AI Magazine 38~(3) (2017) 50--57.
 
 \bibitem{jain2019attention}
-S.~Jain, B.~C. Wallace, Attention is not explanation, in: NAACL-HLT, 2019, pp.
-  3543--3556.
+S.~Jain, B.~C. Wallace, Attention is not explanation, in: NAACL-HLT, 2019, pp. 3543--3556.
 
 \bibitem{serrano2019attention}
-S.~Serrano, N.~A. Smith, Is attention interpretable?, in: ACL, 2019, pp.
-  2931--2951.
+S.~Serrano, N.~A. Smith, Is attention interpretable?, in: ACL, 2019, pp. 2931--2951.
 
 \bibitem{wiegreffe2019attention}
-S.~Wiegreffe, Y.~Pinter, Attention is not not explanation, in: EMNLP-IJCNLP,
-  2019, pp. 11--20.
+S.~Wiegreffe, Y.~Pinter, Attention is not not explanation, in: EMNLP-IJCNLP, 2019, pp. 11--20.
 
 \bibitem{alvarez2018towards}
-D.~Alvarez-Melis, T.~S. Jaakkola, Towards robust interpretability with
-  self-explaining neural networks, in: NeurIPS, 2018, pp. 7775--7784.
+D.~Alvarez-Melis, T.~S. Jaakkola, Towards robust interpretability with self-explaining neural networks, in: NeurIPS, 2018, pp. 7775--7784.
 
 \bibitem{appel2005technical}
 G.~Appel, Technical analysis: Power tools for active investors, FT Press, 2005.
 
 \bibitem{hochreiter1997long}
-S.~Hochreiter, J.~Schmidhuber, Long short-term memory, Neural Computation 9~(8)
-  (1997) 1735--1780.
+S.~Hochreiter, J.~Schmidhuber, Long short-term memory, Neural Computation 9~(8) (1997) 1735--1780.
 
 \bibitem{schulman2017proximal}
-J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov, Proximal policy
-  optimization algorithms, in: arXiv preprint arXiv:1707.06347, 2017.
+J.~Schulman, F.~Wolski, P.~Dhariwal, A.~Radford, O.~Klimov, Proximal policy optimization algorithms, in: arXiv preprint arXiv:1707.06347, 2017.
 
 \end{thebibliography}

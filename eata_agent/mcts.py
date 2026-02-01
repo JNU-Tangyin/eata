@@ -108,8 +108,9 @@ class MCTS():
        # 更新待展开的非终结符列表：将新规则产生的非终结符加到列表头部，并移除刚刚被展开的那个
 
         if not ntn: # 如果待展开列表为空，说明表达式已经构建完成。
-            reward, eq = self.score(self.tree_to_eq(state.split(',')), len(state.split(',')), self.data_sample,
-                                    eta=self.eta)
+            eq_str = self.tree_to_eq(state.split(','))
+            reward, eq = self.score(eq_str, len(state.split(',')), self.data_sample, eta=self.eta)
+            
             # 调用评分函数计算最终得分(reward)和表达式(eq)。
             return state, ntn, reward, True, eq  # 返回新状态、空列表、奖励、完成标志(True)和表达式。
         else: # 如果表达式未构建完成。
@@ -119,6 +120,7 @@ class MCTS():
         # 功能：执行N次(num_play)蒙特卡洛随机模拟（Rollout）。
         best_eq = ''  # 记录这N次模拟中找到的最佳表达式。
         best_r = 0# 记录最佳表达式对应的奖励。先默认空值
+        
         for n in range(num_play):
             done = False
             state = state_initial
@@ -128,6 +130,8 @@ class MCTS():
                 if not ntn:
                     break
                 valid_index = self.valid_prods(ntn[0])
+                if not valid_index:
+                    break
                 action = np.random.choice(valid_index)
                 next_state, ntn_next, reward, done, eq = self.step(state, action, ntn)
                 state = next_state
@@ -339,26 +343,9 @@ class MCTS():
                 else: # 如果生成了完整表达式 (done=True)。
                     UC = []  # 强制认为没有未访问节点
 
-
-                    # --- 3. 模拟 (Simulation) ---   这里的模拟是在与没有未访问节点，就不用进行拓展展开，直接模拟计算策略价值等
-                    # 核心改造：融合三个价值评估: 精度(value_nn), 盈利(profit_nn), 随机模拟(rollout)
-                    w = 0.7# 定义精度与盈利的权重，0.5代表各占一半
-                    
-                    if alpha > 0:
-                        value_accuracy = float(value_nn.detach() if hasattr(value_nn, 'detach') else value_nn)
-                        value_profit = float(profit_nn.detach() if hasattr(profit_nn, 'detach') else profit_nn)
-                        # 融合神经网络的两个头
-                        value_fused_nn = w * value_accuracy + (1 - w) * value_profit
-                    else:
-                        value_fused_nn = 0.0
-
-                    if alpha < 1:
-                        value_rollout, _ = self.rollout(num_play, next_state, ntn_next)
-                    else:
-                        value_rollout = 0.0
-                    
-                    # 最终奖励是神经网络融合价值与随机模拟价值的再融合
-                    reward = alpha * value_fused_nn + (1 - alpha) * value_rollout
+                    # BUG FIX: Do not overwrite reward with estimate for terminal nodes!
+                    # The reward returned by self.step() is the true score.
+                    # Previous code incorrectly calculated value_fused_nn/rollout and overwrote reward.
                     
                     if reward > best_solution[1]:  # 如果发现了新的全局最优解。
                         self.update_modules(next_state, reward, eq)  # 更新模块库。
@@ -409,7 +396,12 @@ class MCTS():
                         value_fused_nn = 0.0
 
                     if alpha < 1:
-                        value_rollout, _ = self.rollout(num_play, next_state, ntn_next)
+                        value_rollout, best_eq_rollout = self.rollout(num_play, next_state, ntn_next)
+                        # Capture best rollout solution
+                        if value_rollout > best_solution[1]:
+                            best_solution = (best_eq_rollout, value_rollout)
+                            # Note: best_solution_node tracks the tree node we are visiting, 
+                            # but best_solution tracks the best Eq found anywhere.
                     else:
                         value_rollout = 0.0
                     
@@ -421,7 +413,9 @@ class MCTS():
 
                 if reward > best_solution[1]:  # 如果发现了新的全局最优解
                     self.update_QN_scale(reward)
-                    best_solution = (eq, reward)
+                    # Only update best_solution if we actually have an equation (done=True case)
+                    if eq is not None:
+                        best_solution = (eq, reward)
                     best_solution_node = {'state': next_state, 'ntn': ntn_next}
 
                 # --- 4. 反向传播 (Backpropagation) ---

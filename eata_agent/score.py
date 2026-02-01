@@ -4,6 +4,7 @@ from contextlib import contextmanager
 
 import numpy as np
 from numpy import *
+from . import symbolics
 from gplearn.functions import make_function
 from scipy.optimize import minimize
 from sympy import simplify, expand
@@ -75,6 +76,16 @@ def score_with_est(eq, tree_size, data, t_limit=1.0, eta=0.999):
         'exp': np.exp,
         'log': np.log,
         'sqrt': np.sqrt,
+        'delay': symbolics._protected_delay,
+        'ma': symbolics._protected_ma,
+        'diff': symbolics._protected_diff,
+        'max_n': symbolics._protected_max_n,
+        'min_n': symbolics._protected_min_n,
+        'mom': symbolics._protected_mom,
+        'rsi': symbolics._protected_rsi,
+        'volatility': symbolics._protected_volatility,
+        'ite': symbolics._protected_ite,
+        'abs': np.abs,
     }
 
     try:
