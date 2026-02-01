@@ -48,14 +48,13 @@
 \citation{mckay2010grammar}
 \citation{kusner2017grammar}
 \citation{ellis2021dreamcoder}
-\citation{cao2022ai}
-\citation{goodman2017european}
-\citation{weber2024comprehensive}
 \@writefile{toc}{\contentsline {section}{\numberline {2}Related Work}{2}{section.2}\protected@file@percent }
 \newlabel{sec:related}{{2}{2}{Related Work}{section.2}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.1}Machine Learning for Algorithmic Trading}{2}{subsection.2.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.2}Symbolic Regression and Expression Discovery}{2}{subsection.2.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Explainable AI in Finance}{2}{subsection.2.3}\protected@file@percent }
+\citation{cao2022ai}
+\citation{goodman2017european}
+\citation{weber2024comprehensive}
 \citation{ribeiro2016should}
 \citation{lundberg2017unified}
 \citation{bracke2019machine}
@@ -86,6 +85,7 @@
 \citation{silver2016mastering}
 \citation{kakushadze2016101}
 \citation{cont2001empirical}
+\@writefile{toc}{\contentsline {subsection}{\numberline {2.3}Explainable AI in Finance}{3}{subsection.2.3}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.4}Alpha Factor Mining in Quantitative Finance}{3}{subsection.2.4}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsection}{\numberline {2.5}Positioning of EATA}{3}{subsection.2.5}\protected@file@percent }
 \@writefile{lot}{\contentsline {table}{\numberline {1}{\ignorespaces Comparison with Related Approaches}}{3}{table.caption.1}\protected@file@percent }
@@ -93,88 +93,72 @@
 \newlabel{tab:comparison}{{1}{3}{Comparison with Related Approaches}{table.caption.1}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {3}Methodology}{3}{section.3}\protected@file@percent }
 \newlabel{sec:method}{{3}{3}{Methodology}{section.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Notation and Terminology}{3}{subsection.3.1}\protected@file@percent }
-\newlabel{subsec:notation}{{3.1}{3}{Notation and Terminology}{subsection.3.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Problem Formulation}{3}{subsection.3.2}\protected@file@percent }
-\newlabel{subsec:problem}{{3.2}{3}{Problem Formulation}{subsection.3.2}{}}
-\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Notation and Terminology}}{4}{table.caption.2}\protected@file@percent }
-\newlabel{tab:notation}{{2}{4}{Notation and Terminology}{table.caption.2}{}}
-\newlabel{eq:objective}{{1}{4}{Problem Formulation}{equation.1}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}System Architecture}{4}{subsection.3.3}\protected@file@percent }
-\newlabel{subsec:architecture}{{3.3}{4}{System Architecture}{subsection.3.3}{}}
-\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces EATA System Architecture. MCTS explores the grammar-defined expression space guided by PVNet. Experiences are stored in buffer $\mathcal  {B}$ for network training.}}{4}{figure.caption.3}\protected@file@percent }
-\newlabel{fig:architecture}{{1}{4}{EATA System Architecture. MCTS explores the grammar-defined expression space guided by PVNet. Experiences are stored in buffer $\mathcal {B}$ for network training}{figure.caption.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Context-Free Grammar for Financial Expressions}{4}{subsection.3.4}\protected@file@percent }
-\newlabel{subsec:grammar}{{3.4}{4}{Context-Free Grammar for Financial Expressions}{subsection.3.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Neural-Guided Monte Carlo Tree Search}{4}{subsection.3.5}\protected@file@percent }
-\newlabel{subsec:mcts}{{3.5}{4}{Neural-Guided Monte Carlo Tree Search}{subsection.3.5}{}}
-\newlabel{eq:uct}{{7}{4}{Neural-Guided Monte Carlo Tree Search}{equation.7}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Neural-Guided MCTS for Symbolic Regression}}{5}{algorithm.1}\protected@file@percent }
-\newlabel{alg:mcts}{{1}{5}{Neural-Guided MCTS for Symbolic Regression}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.1}Problem Formulation}{3}{subsection.3.1}\protected@file@percent }
+\newlabel{subsec:problem}{{3.1}{3}{Problem Formulation}{subsection.3.1}{}}
+\newlabel{eq:objective}{{1}{3}{Problem Formulation}{equation.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.2}Domain-Specific Grammar Design}{4}{subsection.3.2}\protected@file@percent }
+\newlabel{subsec:grammar}{{3.2}{4}{Domain-Specific Grammar Design}{subsection.3.2}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.3}Neural-Guided Monte Carlo Tree Search}{4}{subsection.3.3}\protected@file@percent }
+\newlabel{subsec:mcts}{{3.3}{4}{Neural-Guided Monte Carlo Tree Search}{subsection.3.3}{}}
+\newlabel{eq:ucb}{{6}{4}{Neural-Guided Monte Carlo Tree Search}{equation.6}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {1}{\ignorespaces Neural-Guided MCTS for Symbolic Regression}}{4}{algorithm.1}\protected@file@percent }
+\newlabel{alg:mcts}{{1}{4}{Neural-Guided MCTS for Symbolic Regression}{algorithm.1}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.4}Profit-Aware RL Reward via Wasserstein Distance}{4}{subsection.3.4}\protected@file@percent }
+\newlabel{subsec:rlreward}{{3.4}{4}{Profit-Aware RL Reward via Wasserstein Distance}{subsection.3.4}{}}
+\newlabel{eq:wasserstein}{{7}{4}{Profit-Aware RL Reward via Wasserstein Distance}{equation.7}{}}
+\newlabel{eq:rlreward}{{8}{5}{Profit-Aware RL Reward via Wasserstein Distance}{equation.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.5}Three-Headed Policy-Value-Profit Network}{5}{subsection.3.5}\protected@file@percent }
+\newlabel{subsec:pvnet}{{3.5}{5}{Three-Headed Policy-Value-Profit Network}{subsection.3.5}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {2}{\ignorespaces PVNet Forward Pass}}{5}{algorithm.2}\protected@file@percent }
 \newlabel{alg:pvnet}{{2}{5}{PVNet Forward Pass}{algorithm.2}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Three-Headed Policy-Value-Profit Network}{5}{subsection.3.6}\protected@file@percent }
-\newlabel{subsec:pvnet}{{3.6}{5}{Three-Headed Policy-Value-Profit Network}{subsection.3.6}{}}
-\newlabel{eq:loss}{{8}{5}{Three-Headed Policy-Value-Profit Network}{equation.8}{}}
-\newlabel{eq:loss_policy}{{9}{5}{Three-Headed Policy-Value-Profit Network}{equation.9}{}}
-\newlabel{eq:loss_value}{{10}{5}{Three-Headed Policy-Value-Profit Network}{equation.10}{}}
-\newlabel{eq:loss_profit}{{11}{5}{Three-Headed Policy-Value-Profit Network}{equation.11}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Expression Scoring and Coefficient Optimization}{5}{subsection.3.7}\protected@file@percent }
-\newlabel{subsec:scoring}{{3.7}{5}{Expression Scoring and Coefficient Optimization}{subsection.3.7}{}}
+\newlabel{eq:loss}{{9}{5}{Three-Headed Policy-Value-Profit Network}{equation.9}{}}
+\newlabel{eq:loss_policy}{{10}{5}{Three-Headed Policy-Value-Profit Network}{equation.10}{}}
+\newlabel{eq:loss_value}{{11}{5}{Three-Headed Policy-Value-Profit Network}{equation.11}{}}
+\newlabel{eq:loss_profit}{{12}{5}{Three-Headed Policy-Value-Profit Network}{equation.12}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.6}Expression Scoring with Coefficient Optimization}{5}{subsection.3.6}\protected@file@percent }
+\newlabel{subsec:scoring}{{3.6}{5}{Expression Scoring with Coefficient Optimization}{subsection.3.6}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {3}{\ignorespaces Expression Scoring with Coefficient Estimation}}{5}{algorithm.3}\protected@file@percent }
 \newlabel{alg:score}{{3}{5}{Expression Scoring with Coefficient Estimation}{algorithm.3}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Grammar Augmentation via Module Extraction}{5}{subsection.3.8}\protected@file@percent }
-\newlabel{subsec:augmentation}{{3.8}{5}{Grammar Augmentation via Module Extraction}{subsection.3.8}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Overall Training Pipeline}{5}{subsection.3.9}\protected@file@percent }
-\newlabel{subsec:pipeline}{{3.9}{5}{Overall Training Pipeline}{subsection.3.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.10}Trading Signal Generation}{5}{subsection.3.10}\protected@file@percent }
-\newlabel{subsec:signal}{{3.10}{5}{Trading Signal Generation}{subsection.3.10}{}}
-\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Grammar Augmentation}}{6}{algorithm.4}\protected@file@percent }
-\newlabel{alg:augment}{{4}{6}{Grammar Augmentation}{algorithm.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.7}Grammar Augmentation via Module Extraction}{5}{subsection.3.7}\protected@file@percent }
+\newlabel{subsec:augmentation}{{3.7}{5}{Grammar Augmentation via Module Extraction}{subsection.3.7}{}}
+\@writefile{loa}{\contentsline {algorithm}{\numberline {4}{\ignorespaces Grammar Augmentation}}{5}{algorithm.4}\protected@file@percent }
+\newlabel{alg:augmentation}{{4}{5}{Grammar Augmentation}{algorithm.4}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.8}Overall Training Pipeline}{5}{subsection.3.8}\protected@file@percent }
+\newlabel{subsec:pipeline}{{3.8}{5}{Overall Training Pipeline}{subsection.3.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.9}Trading Signal Generation}{5}{subsection.3.9}\protected@file@percent }
+\newlabel{subsec:signal}{{3.9}{5}{Trading Signal Generation}{subsection.3.9}{}}
+\newlabel{eq:signal}{{13}{5}{Trading Signal Generation}{equation.13}{}}
 \@writefile{loa}{\contentsline {algorithm}{\numberline {5}{\ignorespaces EATA Training Pipeline}}{6}{algorithm.5}\protected@file@percent }
 \newlabel{alg:main}{{5}{6}{EATA Training Pipeline}{algorithm.5}{}}
-\newlabel{eq:signal}{{12}{6}{Trading Signal Generation}{equation.12}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {3.11}Complexity Analysis}{6}{subsection.3.11}\protected@file@percent }
-\newlabel{subsec:complexity}{{3.11}{6}{Complexity Analysis}{subsection.3.11}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {3.10}Complexity Analysis}{6}{subsection.3.10}\protected@file@percent }
+\newlabel{subsec:complexity}{{3.10}{6}{Complexity Analysis}{subsection.3.10}{}}
 \@writefile{toc}{\contentsline {section}{\numberline {4}Experiments}{6}{section.4}\protected@file@percent }
 \newlabel{sec:experiments}{{4}{6}{Experiments}{section.4}{}}
 \@writefile{toc}{\contentsline {subsection}{\numberline {4.1}Experimental Setup}{6}{subsection.4.1}\protected@file@percent }
 \@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.1}Datasets}{6}{subsubsection.4.1.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Baseline Methods}{6}{subsubsection.4.1.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.3}Evaluation Metrics}{7}{subsubsection.4.1.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.4}Implementation Details}{7}{subsubsection.4.1.4}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Main Results}{7}{subsection.4.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Performance Comparison (Mean $\pm $ Std across 31 stocks). $^*$ indicates $p < 0.05$ and $^{**}$ indicates $p < 0.01$ in paired t-test against EATA.}}{7}{table.caption.4}\protected@file@percent }
-\newlabel{tab:main_results}{{3}{7}{Performance Comparison (Mean $\pm $ Std across 31 stocks). $^*$ indicates $p < 0.05$ and $^{**}$ indicates $p < 0.01$ in paired t-test against EATA}{table.caption.4}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Impact of Transaction Costs}{7}{subsection.4.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Performance under Transaction Costs (Annualized Return \%)}}{7}{table.caption.5}\protected@file@percent }
-\newlabel{tab:transaction_cost}{{4}{7}{Performance under Transaction Costs (Annualized Return \%)}{table.caption.5}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Failure Case Analysis}{7}{subsection.4.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Failure Case Analysis (EATA AR $<$ Buy \& Hold AR)}}{7}{table.caption.6}\protected@file@percent }
-\newlabel{tab:failure}{{5}{7}{Failure Case Analysis (EATA AR $<$ Buy \& Hold AR)}{table.caption.6}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Ablation Studies}{7}{subsection.4.5}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Ablation: Effect of Profit Head}}{8}{table.caption.7}\protected@file@percent }
-\newlabel{tab:ablation_profit}{{6}{8}{Ablation: Effect of Profit Head}{table.caption.7}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}Effect of Profit Head}{8}{subsubsection.4.5.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.2}Effect of Grammar Augmentation}{8}{subsubsection.4.5.2}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {7}{\ignorespaces Ablation: Effect of Grammar Augmentation}}{8}{table.caption.8}\protected@file@percent }
-\newlabel{tab:ablation_aug}{{7}{8}{Ablation: Effect of Grammar Augmentation}{table.caption.8}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.3}Effect of Expression Inheritance}{8}{subsubsection.4.5.3}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {8}{\ignorespaces Ablation: Effect of Expression Inheritance}}{8}{table.caption.9}\protected@file@percent }
-\newlabel{tab:ablation_inherit}{{8}{8}{Ablation: Effect of Expression Inheritance}{table.caption.9}{}}
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.6}Case Study: Discovered Expressions}{8}{subsection.4.6}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.1}Example 1: Momentum-Based Expression}{8}{subsubsection.4.6.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.2}Example 2: Volume-Price Relationship}{8}{subsubsection.4.6.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.6.3}Example 3: Multi-Factor Expression}{8}{subsubsection.4.6.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsection}{\numberline {4.7}Sensitivity Analysis}{8}{subsection.4.7}\protected@file@percent }
-\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Sensitivity analysis: (a) Lookback $T_{\text  {in}}$, (b) Fusion $\omega $, (c) Guidance $\alpha $.}}{8}{figure.caption.10}\protected@file@percent }
-\newlabel{fig:sensitivity}{{2}{8}{Sensitivity analysis: (a) Lookback $T_{\text {in}}$, (b) Fusion $\omega $, (c) Guidance $\alpha $}{figure.caption.10}{}}
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.1}Lookback Window Size}{8}{subsubsection.4.7.1}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.2}Value Fusion Weight $\omega $}{8}{subsubsection.4.7.2}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.3}Neural Guidance Weight $\alpha $}{8}{subsubsection.4.7.3}\protected@file@percent }
-\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.7.4}Loss Weights}{8}{subsubsection.4.7.4}\protected@file@percent }
-\@writefile{lot}{\contentsline {table}{\numberline {9}{\ignorespaces Effect of Loss Weights $(\lambda _\pi , \lambda _V, \lambda _P)$}}{8}{table.caption.11}\protected@file@percent }
-\newlabel{tab:loss_weights}{{9}{8}{Effect of Loss Weights $(\lambda _\pi , \lambda _V, \lambda _P)$}{table.caption.11}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.1.2}Baselines}{6}{subsubsection.4.1.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.2}Main Results: Profitability vs. Black-Box (RQ3)}{6}{subsection.4.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.1}Core Dataset Performance}{6}{subsubsection.4.2.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {2}{\ignorespaces Main Performance Comparison (31 Stocks). EATA achieves SOTA Sharpe Ratio while maintaining interpretability. \textcolor {red}{[FAKE: Values updated to 2024 end.]}}}{6}{table.caption.2}\protected@file@percent }
+\newlabel{tab:main_results}{{2}{6}{Main Performance Comparison (31 Stocks). EATA achieves SOTA Sharpe Ratio while maintaining interpretability. \fake {Values updated to 2024 end.}}{table.caption.2}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.2}Cumulative Returns \& Regime Analysis}{6}{subsubsection.4.2.2}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {1}{\ignorespaces Cumulative Returns (2020-2024). EATA (Blue) consistently outperforms Buy \& Hold (Black) and LSTM (Gray), particularly during the Bear Regime (Red shading). \textcolor {red}{[FAKE: Regime shading based on VIX thresholds.]}}}{7}{figure.caption.3}\protected@file@percent }
+\newlabel{fig:cum_returns}{{1}{7}{Cumulative Returns (2020-2024). EATA (Blue) consistently outperforms Buy \& Hold (Black) and LSTM (Gray), particularly during the Bear Regime (Red shading). \fake {Regime shading based on VIX thresholds.}}{figure.caption.3}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {3}{\ignorespaces Generalization on S\&P 100. \textcolor {red}{[FAKE: Placeholder data for sectors.]}}}{7}{table.caption.4}\protected@file@percent }
+\newlabel{tab:sp100}{{3}{7}{Generalization on S\&P 100. \fake {Placeholder data for sectors.}}{table.caption.4}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.2.3}Generalization to S\&P 100}{7}{subsubsection.4.2.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.3}Interpretability Analysis (RQ1)}{7}{subsection.4.3}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.1}Pareto Frontier: Complexity vs. Performance}{7}{subsubsection.4.3.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {2}{\ignorespaces Pareto Frontier of Interpretability. EATA discovers models that are both accurate (High Sharpe) and simple (Low Complexity), breaking the typical trade-off. \textcolor {red}{[FAKE: Complexity measured by AST node count.]}}}{7}{figure.caption.5}\protected@file@percent }
+\newlabel{fig:pareto}{{2}{7}{Pareto Frontier of Interpretability. EATA discovers models that are both accurate (High Sharpe) and simple (Low Complexity), breaking the typical trade-off. \fake {Complexity measured by AST node count.}}{figure.caption.5}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.3.2}Case Studies: Discovered Alpha}{7}{subsubsection.4.3.2}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.4}Mechanism Analysis: Why EATA Works? (RQ2)}{7}{subsection.4.4}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.1}Effect of Wasserstein Profit Head}{7}{subsubsection.4.4.1}\protected@file@percent }
+\@writefile{lof}{\contentsline {figure}{\numberline {3}{\ignorespaces Return Distribution Modeling. EATA captures the ``fat tails'' of real market returns (Gray Area), unlike MSE-based models (Red Dashed) which assume normality. \textcolor {red}{[FAKE: KDE plot of test set residuals.]}}}{7}{figure.caption.6}\protected@file@percent }
+\newlabel{fig:dist}{{3}{7}{Return Distribution Modeling. EATA captures the ``fat tails'' of real market returns (Gray Area), unlike MSE-based models (Red Dashed) which assume normality. \fake {KDE plot of test set residuals.}}{figure.caption.6}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {4}{\ignorespaces Ablation Study: Loss Components.}}{7}{table.caption.7}\protected@file@percent }
+\newlabel{tab:ablation_loss}{{4}{7}{Ablation Study: Loss Components}{table.caption.7}{}}
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.4.2}Search Efficiency}{7}{subsubsection.4.4.2}\protected@file@percent }
 \bibstyle{IEEEtran}
 \bibdata{references}
 \bibcite{hendershott2011does}{1}
@@ -189,6 +173,15 @@
 \bibcite{cho2014learning}{10}
 \bibcite{chen2015gru}{11}
 \bibcite{vaswani2017attention}{12}
+\@writefile{lof}{\contentsline {figure}{\numberline {4}{\ignorespaces Search Efficiency. Neural guidance (Blue) accelerates the discovery of profitable expressions compared to GP (Green) and Random Search (Gray). \textcolor {red}{[FAKE: Averaged over 5 runs.]}}}{8}{figure.caption.8}\protected@file@percent }
+\newlabel{fig:efficiency}{{4}{8}{Search Efficiency. Neural guidance (Blue) accelerates the discovery of profitable expressions compared to GP (Green) and Random Search (Gray). \fake {Averaged over 5 runs.}}{figure.caption.8}{}}
+\@writefile{toc}{\contentsline {subsection}{\numberline {4.5}Robustness Checks}{8}{subsection.4.5}\protected@file@percent }
+\@writefile{toc}{\contentsline {subsubsection}{\numberline {4.5.1}Transaction Costs}{8}{subsubsection.4.5.1}\protected@file@percent }
+\@writefile{lot}{\contentsline {table}{\numberline {5}{\ignorespaces Impact of Transaction Costs (bps).}}{8}{table.caption.9}\protected@file@percent }
+\newlabel{tab:costs}{{5}{8}{Impact of Transaction Costs (bps)}{table.caption.9}{}}
+\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{8}{section.5}\protected@file@percent }
+\newlabel{sec:conclusion}{{5}{8}{Conclusion}{section.5}{}}
+\@writefile{toc}{\contentsline {section}{References}{8}{section*.11}\protected@file@percent }
 \bibcite{ding2020hierarchical}{13}
 \bibcite{li2019enhancing}{14}
 \bibcite{chen2016xgboost}{15}
@@ -206,9 +199,6 @@
 \bibcite{stephens2016gplearn}{27}
 \bibcite{burlacu2020operon}{28}
 \bibcite{poli2008field}{29}
-\@writefile{toc}{\contentsline {section}{\numberline {5}Conclusion}{9}{section.5}\protected@file@percent }
-\newlabel{sec:conclusion}{{5}{9}{Conclusion}{section.5}{}}
-\@writefile{toc}{\contentsline {section}{References}{9}{section*.13}\protected@file@percent }
 \bibcite{petersen2021deep}{30}
 \bibcite{biggio2021neural}{31}
 \bibcite{udrescu2020ai}{32}
@@ -246,4 +236,8 @@
 \bibcite{xu2024alphaforge}{64}
 \bibcite{zhao2024alpha}{65}
 \bibcite{cont2001empirical}{66}
-\gdef \@abspage@last{10}
+\@writefile{toc}{\contentsline {section}{Appendix}{10}{section*.12}\protected@file@percent }
+\newlabel{app:notation}{{A}{10}{\appendixname }{section*.12}{}}
+\@writefile{lot}{\contentsline {table}{\numberline {6}{\ignorespaces Notation and Terminology}}{11}{table.caption.13}\protected@file@percent }
+\newlabel{tab:notation}{{6}{11}{Notation and Terminology}{table.caption.13}{}}
+\gdef \@abspage@last{11}
