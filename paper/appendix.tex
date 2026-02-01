@@ -7,6 +7,7 @@
 \centering
 \caption{EATA Hyperparameters}
 \label{tab:hyperparams}
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{llc}
 \toprule
 \textbf{Category} & \textbf{Parameter} & \textbf{Value} \\
@@ -37,6 +38,7 @@
 & Quantile thresholds ($Q_{25}, Q_{75}$) & 0.25, 0.75 \\
 \bottomrule
 \end{tabular}
+}
 \end{table}
 Table~\ref{tab:hyperparams} lists the default hyperparameters used in EATA experiments.
 
@@ -49,7 +51,7 @@ Table~\ref{tab:notation} summarizes the notation used throughout this paper, fol
 \centering
 \caption{Notation and Terminology}
 \label{tab:notation}
-\resizebox{\textwidth}{!}{%
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{clp{8cm}}
 \toprule
 \textbf{Category} & \textbf{Symbol} & \textbf{Description} \\
@@ -109,7 +111,7 @@ Table~\ref{tab:notation} summarizes the notation used throughout this paper, fol
 
 \section{Additional Experimental Results}
 
-\subsection{Full Performance Breakdown}
+\paragraph{Full Performance Breakdown}
 
 Table~\ref{tab:detailed_metrics} presents the detailed performance metrics for representative S\&P 500 constituents in our core dataset, comparing EATA with the NoRL baseline (EATA without Profit Head). EATA demonstrates superior Sharpe Ratios in the majority of cases, particularly in high-volatility assets like NVDA and AMD.
 
@@ -147,9 +149,8 @@ XOM & 20.5\% & 22.0\% & 0.79 & 0.83 & 32.6\% & 31.4\% \\
 }
 \end{table*}
 
-\subsection{Search Efficiency Comparison}
+\paragraph{Search Efficiency Comparison}
 
-Figure~\ref{fig:search_efficiency} compares convergence speed across methods.
 
 \begin{figure}[htbp]
 \centering
@@ -157,12 +158,15 @@ Figure~\ref{fig:search_efficiency} compares convergence speed across methods.
 \caption{Search efficiency. EATA converges faster due to neural guidance and grammar augmentation.}
 \label{fig:search_efficiency}
 \end{figure}
+Figure~\ref{fig:search_efficiency} compares convergence speed across methods.
 
-\section{Proof of Proposition 1}
+\section{Wasserstein distance}
 
-\textbf{Proposition 1.} Wasserstein distance is superior to MSE and KL divergence for financial returns due to three properties: metric structure, tail sensitivity, and geometric interpretation.
+\begin{proposition}
+    Wasserstein distance is superior to MSE and KL divergence for financial returns due to three properties: metric structure, tail sensitivity, and geometric interpretation.
+\end{proposition}
 
-\textbf{Proof.}
+\begin{proof}
 
 \textit{Property 1 (Metric Structure).} The 1-Wasserstein distance satisfies:
 \begin{enumerate}
@@ -181,15 +185,17 @@ This equally weights all quantiles, including extremes. MSE, by contrast, is dom
 
 \textit{Property 3 (Geometric Interpretation).} Wasserstein distance measures the minimal cost of transporting probability mass from $P$ to $Q$, respecting the metric structure of the underlying space. This is crucial for returns where the magnitude (not just probability) of extreme events matters. $\square$
 
+\end{proof}
+
 \section{Additional Discovered Expressions}
 
-\textbf{Expression 3: Volatility-Adjusted Momentum}
+\paragraph{Volatility-Adjusted Momentum}
 \begin{equation}
 e = \frac{\text{mom}(x_{\text{close}}, 10)}{\text{vol}(x_{\text{close}}, 20)} \times \mathbb{I}(\text{ma}(x_{\text{close}}, 5) > \text{ma}(x_{\text{close}}, 20))
 \end{equation}
 \textit{Interpretation:} Momentum normalized by volatility, filtered by trend confirmation (golden cross).
 
-\textbf{Expression 4: Mean Reversion with Volume}
+\paragraph{Mean Reversion with Volume}
 \begin{equation}
 e = (x_{\text{close}} - \text{ma}(x_{\text{close}}, 20)) \times \frac{x_{\text{volume}}}{\text{ma}(x_{\text{volume}}, 20)}
 \end{equation}
