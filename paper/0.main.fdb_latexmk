@@ -1,14 +1,15 @@
 # Fdb version 4
-["bibtex 0.main"] 1769933653.44923 "0.main.aux" "0.main.bbl" "0.main" 1769933654.83432 0
+["bibtex 0.main"] 1769934389.26013 "0.main.aux" "0.main.bbl" "0.main" 1769934390.96765 0
   "./references.bib" 1769929155.38015 23710 cc0562bf94af695411cc85ce12eabd9c ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/ieeetran/IEEEtran.bst" 1440712899 57748 7c8250ecf02814ce6ddc0cdbb63df1dd ""
-  "0.main.aux" 1769933654.50732 21857 9b448cee6cef952f627543a70f2a323c "pdflatex"
+  "0.main.aux" 1769934390.63381 22464 3a25969955ce4f3c965ab0e0c45a01e3 "pdflatex"
   (generated)
   "0.main.bbl"
   "0.main.blg"
   (rewritten before read)
-["pdflatex"] 1769933653.55125 "0.main.tex" "0.main.pdf" "0.main" 1769933654.83457 0
+["pdflatex"] 1769934389.37127 "/Users/yin/Desktop/doing/eata/paper/0.main.tex" "0.main.pdf" "0.main" 1769934390.96785 0
   "../tables/sp500_full_table.tex" 1769932994.35212 482 abe03a0a269f5eb306b1cc2ebfa2d9f4 ""
+  "/Users/yin/Desktop/doing/eata/paper/0.main.tex" 1769933324.96093 3621 f0a7d9501b049faa561ecd4409bd0dc4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/base/8r.enc" 1165713224 4850 80dc9bab7f31fb78a000ccfed0e27cab ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/adobe/helvetic/phvb7t.tfm" 1136768653 2240 eb56c13537f4d8a0bd3fafc25572b1bd ""
@@ -255,14 +256,14 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1758509612 5528139 daf1353d2d3d7fed9df2ebbf1b26218e ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1758509781 3621557 167bfc5b4373711c8aabb7a7f74f02e3 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "0.main.aux" 1769933654.50732 21857 9b448cee6cef952f627543a70f2a323c "pdflatex"
-  "0.main.bbl" 1769933653.54989 16015 b57217eb71e6b7d3b4a8304238690c99 "bibtex 0.main"
-  "0.main.out" 1769933654.50872 9726 c8701a37a7cfe844ad827ae9fb551697 "pdflatex"
+  "0.main.aux" 1769934390.63381 22464 3a25969955ce4f3c965ab0e0c45a01e3 "pdflatex"
+  "0.main.bbl" 1769934389.36738 15757 8fa44c93aea5dbf66ffa54b0ffbb8386 "bibtex 0.main"
+  "0.main.out" 1769934390.6354 10242 b19614c915d25dd0c6c4b85fb3fb3d54 "pdflatex"
   "0.main.tex" 1769933324.96093 3621 f0a7d9501b049faa561ecd4409bd0dc4 ""
   "1.intro.tex" 1769929040.32853 5524 cdf8121d9b435eba5909567c6ade77ac ""
   "2.related.tex" 1769933647.87839 20661 b2b50197efc205ac3d2f04f73d1b31c5 ""
   "3.method.tex" 1769932966.65344 26557 89b3ff50745b795d9420d59cbbf47056 ""
-  "4.experiments.tex" 1769932523.11583 17301 162cd0caefafad1f02e6f4a63f593aee ""
+  "4.experiments.tex" 1769934387.60914 19501 f2502cc1e786d63d1703b83f1902eae6 ""
   "5.conclusion.tex" 1769929563.32034 3465 233d2020d90e509780d5dc5b24d04aa4 ""
   "appendix.tex" 1769932800.19616 8325 050d67067f296c1430ab9e5ecbd18648 ""
   "figures/fig2_pareto_frontier.pdf" 1769932996.25855 23747 95f0073f5d468e5a9627677099437354 ""

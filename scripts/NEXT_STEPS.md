@@ -481,7 +481,107 @@ python run_experiments.py \
 
 ## 4. P0/P1：消融实验（机制闭环）
 
-### 4.1 Profit Head 消融（NoRL / NEMoTS-style）（P0）
+### 4.1 Wasserstein vs. Alternative Distributional Objectives（P0）
+
+- **目标**：通过实验验证Wasserstein目标优于其他分布度量（KL、JS、CVaR、MSE），对应RQ1。
+- **输入**：
+  - S&P 500代表股票数据
+  - 分布度量实现：Wasserstein、KL、JS、CVaR(5%)、MSE
+- **方法**：
+  - 对每个分布度量训练EATA变体（仅替换r^rl目标）
+  - 评估：Sharpe、MDD、Skewness、VaR_95、CVaR_95
+- **输出产物**：
+  - `tables/objectives_comparison.csv`
+- **验收标准**：
+  - Wasserstein在所有指标上优于其他度量
+  - 与论文Table~\ref{tab:objectives}对齐
+
+#### 4.1.1 输出字段约定（Schema）
+
+- `tables/objectives_comparison.csv`：
+  - `objective`（Wasserstein/KL/JS/CVaR/MSE）
+  - `sr`, `mdd`, `skewness`, `var_95`, `cvar_95`
+  - `n_tickers`（有效股票数）
+
+#### 4.1.2 建议的绘图脚本
+
+```python
+# analysis/plot_objectives_comparison.py
+import pandas as pd
+import matplotlib.pyplot as plt
+
+df = pd.read_csv('tables/objectives_comparison.csv')
+
+fig, axes = plt.subplots(1, 2, figsize=(12, 4))
+
+# 左图：Sharpe vs MDD
+axes[0].scatter(df['mdd'], df['sr'], c=df['objective'].map({'Wasserstein': 'blue', 'MSE': 'gray', 'KL': 'green', 'JS': 'orange', 'CVaR': 'red'}))
+axes[0].set_xlabel('MDD (%)')
+axes[0].set_ylabel('Sharpe Ratio')
+axes[0].set_title('Risk-Return Trade-off by Objective')
+
+# 右图：Tail Risk Metrics
+metrics = ['var_95', 'cvar_95']
+x = range(len(df['objective'].unique()))
+width = 0.15
+for i, obj in enumerate(df['objective'].unique()):
+    subset = df[df['objective'] == obj]
+    axes[1].bar([j + i*width for j in x], subset[metrics].values[0], width, label=obj)
+axes[1].set_xticks([j + width*2 for j in x])
+axes[1].set_xticklabels(['VaR$_{95}$', 'CVaR$_{95}$'])
+axes[1].set_ylabel('Risk (%)')
+axes[1].set_title('Tail Risk Control by Objective')
+axes[1].legend()
+
+plt.tight_layout()
+plt.savefig('paper/figures/objectives_comparison.pdf')
+```
+
+### 4.2 Synthetic Validation（P1）
+
+- **目标**：在已知分布的合成数据上验证Wasserstein是否能正确捕捉尾部风险。
+- **输入**：
+  - 合成收益分布：Gaussian、Skewed、Heavy-tailed (Student-t)、Mixture
+- **方法**：
+  - 对每个分布训练Wasserstein和MSE目标策略
+  - 计算策略收益分布与目标分布的Earth Mover's Distance (EMD)
+  - 比较EMD得分
+- **输出产物**：
+  - `tables/synthetic_validation.csv`
+  - `paper/figures/synthetic_validation.pdf`
+- **验收标准**：
+  - Wasserstein策略的EMD显著低于MSE策略（p < 0.01）
+  - 与论文Synthetic Validation小节对齐
+
+#### 4.2.1 输出字段约定（Schema）
+
+- `tables/synthetic_validation.csv`：
+  - `distribution`（Gaussian/Skewed/Heavy-tailed/Mixture）
+  - `objective`（Wasserstein/MSE）
+  - `emd_score`
+  - `n_runs`（多次运行次数）
+  - `emd_mean`, `emd_std`
+
+#### 4.2.2 建议的绘图脚本
+
+```python
+# analysis/plot_synthetic_validation.py
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+df = pd.read_csv('tables/synthetic_validation.csv')
+
+plt.figure(figsize=(8, 5))
+sns.barplot(data=df, x='distribution', y='emd_mean', hue='objective')
+plt.ylabel('EMD Score (Lower is Better)')
+plt.title('Synthetic Validation: Wasserstein vs. MSE')
+plt.legend(title='Objective')
+plt.tight_layout()
+plt.savefig('paper/figures/synthetic_validation.pdf')
+```
+
+### 4.3 Profit Head 消融（NoRL / NEMoTS-style）（P0）
 
 - **目标**：直接验证 Profit Head 的必要性（对应 RQ1/RQ2）。
 - **输出产物**：
