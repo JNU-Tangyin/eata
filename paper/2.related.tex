@@ -2,46 +2,62 @@
 \section{Related Work}
 \label{sec:related}
 
-This section reviews prior work in three areas: algorithmic trading with machine learning, symbolic regression, and explainable AI in finance.
+This section reviews prior work in symbolic regression for trading, organized along two dimensions: (1) the search paradigm (evolutionary vs. neural-guided), and (2) the optimization objective (accuracy vs. profitability).
 
+%------------------------------------------------------------------------------
+\subsection{Symbolic Regression: Evolutionary vs. Neural-Guided}
+
+\textbf{Evolutionary Approaches.} Genetic Programming (GP)~\cite{koza1994genetic} has been the dominant paradigm for symbolic regression since the 1990s, evolving expression trees through selection, crossover, and mutation. Schmidt and Lipson~\cite{schmidt2009distilling} demonstrated GP's ability to rediscover physical laws. Modern implementations like gplearn~\cite{stephens2016gplearn} and Operon~\cite{burlacu2020operon} improve efficiency through vectorized evaluation. However, GP suffers from bloat (uncontrolled growth) and premature convergence on rugged fitness landscapes~\cite{poli2008field}.
+
+\textbf{Neural-Guided Approaches.} Recent work leverages neural networks to guide symbolic search:
+\begin{itemize}
+    \item \textbf{DSR}~\cite{petersen2021deep}: Uses an RNN as a policy network trained via REINFORCE to generate expressions token-by-token.
+    \item \textbf{AI-Feynman}~\cite{udrescu2020ai}: Combines neural fitting with physics-inspired techniques (dimensional analysis, symmetry detection).
+    \item \textbf{Transformer-based}~\cite{biggio2021neural}: Maps input-output pairs directly to symbolic expressions.
+\end{itemize}
+
+%------------------------------------------------------------------------------
+\subsection{Monte Carlo Tree Search for Symbolic Regression}
+
+Monte Carlo Tree Search (MCTS)~\cite{coulom2006efficient} has emerged as a powerful alternative to GP, balancing exploration and exploitation through the UCB formula~\cite{kocsis2006bandit}. Key milestones include White et al.~\cite{white2015programming} applying MCTS to symbolic regression and Cazenave~\cite{cazenave2013monte} introducing nested MCTS.
+
+Most relevant to our work is \textbf{NEMoTS} (Neural Equation Monte Carlo Tree Search)~\cite{sun2022symbolic}, which combined MCTS with a Policy-Value network inspired by AlphaGo~\cite{silver2016mastering}. NEMoTS achieved state-of-the-art results on standard SR benchmarks.
+
+\textbf{EATA vs. NEMoTS.} While EATA builds upon the NEMoTS framework, we introduce three critical innovations tailored for financial trading:
+\begin{enumerate}
+    \item \textbf{Profit Head}: NEMoTS uses policy and value heads for search guidance and expression quality estimation (MSE-based). EATA adds a \textit{third} head explicitly predicting trading profitability via Wasserstein distance.
+    \item \textbf{Domain Grammar}: NEMoTS uses generic mathematical operators. EATA introduces domain-specific financial operators (e.g., MA, RSI, Momentum) with fixed windows.
+    \item \textbf{Sliding Window}: EATA explicitly addresses non-stationarity through temporal adaptation and expression inheritance, whereas NEMoTS assumes a stationary data distribution.
+\end{enumerate}
+
+Table~\ref{tab:nemots_compare} provides a detailed component-wise comparison.
+
+\begin{table}[htbp]
+\centering
+\caption{Detailed Comparison: EATA vs. NEMoTS}
+\label{tab:nemots_compare}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcc}
+\toprule
+\textbf{Component} & \textbf{NEMoTS} & \textbf{EATA (Ours)} \\
+\midrule
+Search Algorithm & MCTS + UCB & MCTS + UCB (same base) \\
+Neural Guidance & Policy + Value heads & Policy + Value + \textbf{Profit} heads \\
+Reward Signal & $r = 1/(1+\text{MSE})$ & $r^V = 1/(1+\text{MSE})$, $r^P = 1/(1+\mathcal{W}_1)$ \\
+Grammar & Generic math ops & Generic + \textbf{Financial ops} \\
+Temporal Adaptation & None & \textbf{Sliding window} + inheritance \\
+Grammar Augmentation & Yes & Yes (same mechanism) \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+%------------------------------------------------------------------------------
 \subsection{Machine Learning for Algorithmic Trading}
 
-Algorithmic trading has evolved from rule-based systems to sophisticated machine learning approaches. Early work relied on technical indicators such as Moving Average Convergence Divergence (MACD)~\cite{appel2005technical}, Relative Strength Index (RSI)~\cite{wilder1978new}, and Bollinger Bands~\cite{bollinger2002bollinger}. While these hand-crafted rules remain widely used due to their interpretability, they often fail to adapt to changing market regimes and exhibit limited predictive power in complex market conditions~\cite{park2007we}.
+Deep learning approaches for trading include LSTM/GRU~\cite{fischer2018deep,chen2015gru} for capturing long-term dependencies and Transformers~\cite{ding2020hierarchical} for multi-scale pattern detection. Deep Reinforcement Learning (DRL) frameworks like FinRL~\cite{liu2020finrl} frame trading as sequential decision-making. While these methods achieve strong performance, they remain black-boxes, limiting regulatory compliance and human oversight~\cite{cao2022ai}.
 
-The advent of deep learning has transformed financial prediction. Fischer and Krauss~\cite{fischer2018deep} demonstrated that Long Short-Term Memory (LSTM) networks~\cite{hochreiter1997long} can capture long-term dependencies in stock price movements, outperforming traditional methods on S\&P 500 constituents. Subsequent work explored Gated Recurrent Units (GRU)~\cite{cho2014learning} for their computational efficiency while maintaining comparable accuracy~\cite{chen2015gru}. More recently, Transformer architectures~\cite{vaswani2017attention} have shown promise in financial time series forecasting. Ding et al.~\cite{ding2020hierarchical} proposed a hierarchical multi-scale Gaussian Transformer that captures both local patterns and global trends, while Li et al.~\cite{li2019enhancing} incorporated attention mechanisms to weight the importance of historical observations. Gradient boosting methods, particularly XGBoost~\cite{chen2016xgboost} and LightGBM~\cite{ke2017lightgbm}, have also achieved strong results in stock prediction tasks due to their ability to handle heterogeneous features and capture non-linear relationships~\cite{zhang2020stock}.
-
-Deep reinforcement learning (DRL) has emerged as a powerful paradigm for automated trading, framing the problem as sequential decision-making under uncertainty. Liu et al.~\cite{liu2020finrl} developed FinRL, a comprehensive framework implementing algorithms such as Proximal Policy Optimization (PPO)~\cite{schulman2017proximal}, Advantage Actor-Critic (A2C)~\cite{mnih2016asynchronous}, and Deep Deterministic Policy Gradient (DDPG)~\cite{lillicrap2015continuous}. Yang et al.~\cite{yang2020deep} demonstrated that ensemble DRL methods can achieve superior risk-adjusted returns compared to individual algorithms. However, these approaches typically produce black-box policies that are difficult to interpret, limiting their adoption in regulated financial environments where explainability is mandated~\cite{cao2022ai}.
-
-\subsection{Symbolic Regression and Expression Discovery}
-
-Symbolic regression aims to discover mathematical expressions that accurately describe observed data while maintaining interpretability. Unlike traditional regression that fits parameters of a predefined functional form, symbolic regression searches over the space of possible expressions, making it a challenging combinatorial optimization problem~\cite{makke2024interpretable}.
-
-Genetic programming (GP)~\cite{koza1994genetic} has been the dominant approach for symbolic regression, evolving populations of expression trees through selection, crossover, and mutation. Schmidt and Lipson~\cite{schmidt2009distilling} demonstrated that GP can rediscover fundamental physics laws from experimental data. Modern implementations such as gplearn~\cite{stephens2016gplearn} and Operon~\cite{burlacu2020operon} have improved efficiency through vectorized evaluation and semantic operators. However, GP suffers from bloat (uncontrolled growth of expression complexity) and often converges to local optima due to the rugged fitness landscape~\cite{poli2008field}.
-
-Recent advances have explored neural network-guided approaches to symbolic regression. Petersen et al.~\cite{petersen2021deep} proposed Deep Symbolic Regression (DSR), which uses a recurrent neural network trained via reinforcement learning to generate expressions token by token. Biggio et al.~\cite{biggio2021neural} introduced a Transformer-based approach that directly maps input-output pairs to symbolic expressions. Udrescu and Tegmark~\cite{udrescu2020ai} developed AI-Feynman, combining neural network fitting with physics-inspired techniques such as dimensional analysis and symmetry detection to discover equations from the Feynman Lectures. Kamienny et al.~\cite{kamienny2022end} proposed end-to-end symbolic regression using Transformers, achieving state-of-the-art performance on standard benchmarks.
-
-Monte Carlo Tree Search (MCTS)~\cite{coulom2006efficient} has emerged as an effective alternative to GP for symbolic regression. MCTS balances exploration and exploitation through the Upper Confidence Bound for Trees (UCT) formula~\cite{kocsis2006bandit}, systematically building a search tree over the expression space. White et al.~\cite{white2015programming} first applied MCTS to symbolic regression, demonstrating competitive performance with GP. Cazenave~\cite{cazenave2013monte} introduced nested MCTS for expression discovery, improving search efficiency through hierarchical decomposition. Sun et al.~\cite{sun2022symbolic} proposed NEMoTS (Neural Equation Monte Carlo Tree Search), combining MCTS with a policy-value network inspired by AlphaGo~\cite{silver2016mastering} and AlphaZero~\cite{silver2017mastering}. The neural network guides the search by predicting promising actions and estimating expression quality, significantly accelerating convergence. Lu et al.~\cite{lu2021incorporating} further enhanced MCTS-based symbolic regression by incorporating actor-critic methods for more stable training.
-
-Grammar-guided approaches provide a principled way to define the search space for symbolic expressions. Context-free grammars (CFGs) ensure syntactic validity of generated expressions and enable domain-specific constraints~\cite{mckay2010grammar}. Kusner et al.~\cite{kusner2017grammar} proposed Grammar Variational Autoencoders that encode expressions into a continuous latent space while respecting grammatical constraints. Recent work has explored grammar augmentation, where high-quality sub-expressions are extracted and added as new production rules to accelerate future search~\cite{ellis2021dreamcoder}.
-
-\subsection{Explainable AI in Finance}
-
-The deployment of AI in finance faces unique challenges due to regulatory requirements, risk management needs, and stakeholder trust~\cite{cao2022ai}. The European Union's AI Act and similar regulations mandate explainability for high-risk AI applications, including those in financial services~\cite{goodman2017european}. This has driven significant research into explainable AI (XAI) methods for finance~\cite{weber2024comprehensive}.
-
-Post-hoc explanation methods attempt to interpret black-box models after training. LIME (Local Interpretable Model-agnostic Explanations)~\cite{ribeiro2016should} approximates complex models with locally linear surrogates, while SHAP (SHapley Additive exPlanations)~\cite{lundberg2017unified} provides theoretically grounded feature attributions based on cooperative game theory. These methods have been widely applied in credit scoring~\cite{bracke2019machine}, fraud detection~\cite{bhattacharyya2011data}, and trading strategy analysis~\cite{chen2021interpretable}. However, post-hoc explanations have limitations: they explain individual predictions rather than the model's overall logic, may be unstable across similar inputs, and can be manipulated to produce misleading explanations~\cite{slack2020fooling}.
-
-Attention mechanisms in Transformer models provide some interpretability by highlighting which input features influence predictions~\cite{ding2020hierarchical}. However, Jain and Wallace~\cite{jain2019attention} demonstrated that attention weights do not always faithfully represent the model's reasoning, and Serrano and Smith~\cite{serrano2019attention} showed that attention can be misleading in certain contexts. This has motivated research into more reliable attention-based interpretability methods~\cite{wiegreffe2019attention}.
-
-Inherently interpretable models offer an alternative to post-hoc explanation. Decision trees and rule-based systems provide transparent decision logic but often sacrifice predictive performance~\cite{rudin2019stop}. Recent work has explored extracting interpretable rules from ensemble models~\cite{deng2019interpreting} and training neural networks with built-in interpretability constraints~\cite{alvarez2018towards}. Our work follows this philosophy by discovering mathematical expressions that are inherently interpretable while maintaining competitive predictive accuracy.
-
-\subsection{Alpha Factor Mining in Quantitative Finance}
-
-A closely related line of work focuses on automatically discovering alpha factors---quantitative signals that predict stock returns. Kakushadze~\cite{kakushadze2016101} published 101 Formulaic Alphas, a library of hand-crafted expressions used in quantitative trading. These formulas combine price, volume, and fundamental data using operations such as rank, correlation, and time-series functions. While influential, manually designing such factors is time-consuming and may not capture all predictive patterns in the data.
-
-Automated alpha mining has attracted significant attention. Genetic programming has been applied to evolve alpha factors~\cite{chen2020alpha}, with recent work incorporating warm-start initialization from existing factors to improve search efficiency~\cite{ren2024alpha}. Yu et al.~\cite{yu2023alphagen} proposed AlphaGen, using reinforcement learning to generate alpha factors that maximize portfolio returns. Zhang et al.~\cite{zhang2020alphagen} explored deep learning approaches for alpha generation, training neural networks to output factor values directly. Xu et al.~\cite{xu2024alphaforge} developed AlphaForge, a framework that mines and dynamically combines formulaic alphas using attention mechanisms. Zhao et al.~\cite{zhao2024alpha} introduced Alpha-GPT, leveraging large language models to assist human researchers in alpha discovery through interactive dialogue.
-
-Our work differs from traditional alpha mining in several key aspects. First, we jointly optimize for prediction accuracy and trading profitability, rather than focusing solely on factor discovery. Second, we employ neural-guided MCTS for more efficient search compared to genetic programming. Third, our grammar includes domain-specific financial operators that encode trading knowledge, enabling the discovery of more meaningful expressions.
-
+%------------------------------------------------------------------------------
 \subsection{Positioning of EATA}
 
 Table~\ref{tab:comparison} compares EATA with related approaches across key dimensions. EATA uniquely combines neural-guided search, domain-specific financial operators, and profit-aware training within an interpretable symbolic regression framework.
@@ -50,19 +66,19 @@ Table~\ref{tab:comparison} compares EATA with related approaches across key dime
 \centering
 \caption{Comparison with Related Approaches}
 \label{tab:comparison}
-\begin{tabular}{lcccc}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
 \toprule
-\textbf{Method} & \textbf{Interp.} & \textbf{Neural} & \textbf{Finance} & \textbf{Profit} \\
+\textbf{Method} & \textbf{Interp.} & \textbf{Neural} & \textbf{Finance} & \textbf{Profit} & \textbf{Stationarity} \\
 \midrule
-LSTM/Transformer~\cite{fischer2018deep,ding2020hierarchical} & \ding{55} & \ding{51} & \ding{55} & \ding{55} \\
-FinRL~\cite{liu2020finrl} & \ding{55} & \ding{51} & \ding{51} & \ding{51} \\
-Genetic Programming~\cite{koza1994genetic} & \ding{51} & \ding{55} & \ding{55} & \ding{55} \\
-Alpha Mining~\cite{kakushadze2016101,yu2023alphagen} & \ding{51} & \ding{55} & \ding{51} & \ding{55} \\
-DSR~\cite{petersen2021deep} & \ding{51} & \ding{51} & \ding{55} & \ding{55} \\
-NEMoTS~\cite{sun2022symbolic} & \ding{51} & \ding{51} & \ding{55} & \ding{55} \\
-\textbf{EATA (Ours)} & \ding{51} & \ding{51} & \ding{51} & \ding{51} \\
+LSTM/Transformer & \ding{55} & \ding{51} & \ding{55} & \ding{55} & \ding{51} \\
+FinRL (PPO) & \ding{55} & \ding{51} & \ding{51} & \ding{51} & \ding{51} \\
+GP (Symbolic) & \ding{51} & \ding{55} & \ding{55} & \ding{55} & \ding{55} \\
+Alpha Mining & \ding{51} & \ding{55} & \ding{51} & \ding{55} & \ding{55} \\
+DSR & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{55} \\
+NEMoTS & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{55} \\
+\textbf{EATA (Ours)} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51} \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
-
-While EATA builds on the NEMoTS framework~\cite{sun2022symbolic}, we introduce three key innovations: (1) a three-headed Policy-Value-Profit network that directly optimizes for trading performance alongside prediction accuracy, inspired by the dual objectives in AlphaGo~\cite{silver2016mastering} but extended with a profit prediction head; (2) a domain-specific context-free grammar incorporating financial operators such as moving averages, momentum indicators, and volatility measures, drawing from the alpha factor literature~\cite{kakushadze2016101}; and (3) a sliding window training scheme with expression inheritance that enables temporal adaptation to changing market conditions, addressing the non-stationarity challenge in financial time series~\cite{cont2001empirical}.

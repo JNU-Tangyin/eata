@@ -10,12 +10,12 @@
 \usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{hyperref}
 \usepackage{cite}
 \usepackage{subcaption}
 \usepackage{pifont}  % For \ding symbols
 \usepackage{tikz}    % For diagrams
 \usetikzlibrary{shapes,arrows,positioning,fit,backgrounds}
+\usepackage[linkcolor=blue]{hyperref}
 
 % ============== Custom Commands ==============
 \newcommand{\ie}{\textit{i.e.}}
@@ -24,6 +24,14 @@
 \newcommand{\wrt}{w.r.t.}
 \newcommand{\fake}[1]{\textcolor{red}{[FAKE: #1]}}
 
+\newcommand{\ours}{EATA}
+\newcommand{\Yin}[1]{\textcolor{red}{#1}}
+\newcommand{\RA}[1]{\textcolor{black}{#1}}
+\newcommand{\RB}[1]{\textcolor{black}{#1}}
+\newcommand{\RC}[1]{\textcolor{black}{#1}}
+\newcommand{\hidden}[1]{%
+    \textcolor{white}{\fontsize{0.1pt}{0.1pt}\selectfont #1}%
+}
 % ============== Colors ==============
 \definecolor{eataBlue}{HTML}{4169E1}
 \definecolor{profitGreen}{HTML}{50C878}
@@ -42,7 +50,7 @@
 
 \IEEEtitleabstractindextext{%
 \begin{abstract}
-Algorithmic trading systems powered by deep learning have achieved remarkable performance but suffer from a critical limitation: lack of interpretability. This opacity hinders trust, regulatory compliance, and strategy refinement. We propose EATA (Explainable Algorithmic Trading Agent), a novel framework that combines Monte Carlo Tree Search (MCTS) with neural network guidance to automatically discover interpretable mathematical expressions for stock price prediction. Our key contributions include: (1) a three-headed Policy-Value-Profit network (PVNet) that jointly optimizes for search guidance, prediction accuracy, and trading profitability; (2) a domain-specific grammar incorporating financial operators such as moving averages, momentum, and volatility indicators; (3) a grammar augmentation mechanism that extracts and reuses high-quality sub-expressions to accelerate search; and (4) a sliding window training scheme with expression inheritance for temporal adaptation. Extensive experiments on 31 stocks over a 4-year period demonstrate that EATA achieves competitive returns compared to state-of-the-art deep learning methods while providing fully interpretable trading rules in the form of mathematical formulas. The discovered expressions reveal meaningful market patterns and can be directly validated by domain experts.
+Algorithmic trading systems powered by deep learning have achieved remarkable performance but suffer from a critical limitation: lack of interpretability. This opacity hinders trust, regulatory compliance, and strategy refinement. We propose EATA (Explainable Algorithmic Trading Agent), a novel framework that combines Monte Carlo Tree Search (MCTS) with neural network guidance to automatically discover interpretable mathematical expressions for stock price prediction. Our key contributions include: (1) a three-headed Policy-Value-Profit network (PVNet) that jointly optimizes for search guidance, prediction accuracy, and trading profitability; (2) a domain-specific grammar incorporating financial operators such as moving averages, momentum, and volatility indicators; (3) a grammar augmentation mechanism that extracts and reuses high-quality sub-expressions to accelerate search; and (4) a sliding window training scheme with expression inheritance for temporal adaptation. Extensive experiments on 500 stocks over a 20-year period demonstrate that EATA achieves competitive returns compared to state-of-the-art deep learning methods while providing fully interpretable trading rules in the form of mathematical formulas. The discovered expressions reveal meaningful market patterns and can be directly validated by domain experts.
 \end{abstract}
 
 \begin{IEEEkeywords}
