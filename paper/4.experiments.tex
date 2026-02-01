@@ -2,17 +2,7 @@
 \section{Experiments}
 \label{sec:experiments}
 
-This section presents a comprehensive evaluation of EATA. We design our experiments to answer the three research questions (RQs) proposed in Section~\ref{sec:intro}:
-\begin{itemize}
-    \item \textbf{RQ1 (Objective)}: Does Wasserstein-based profit optimization outperform standard MSE-based accuracy optimization?
-    \item \textbf{RQ2 (Guidance)}: Does the neural-guided MCTS effectively navigate the search space to find profitable strategies?
-    \item \textbf{RQ3 (Performance)}: Can interpretable symbolic models achieve competitive risk-adjusted returns compared to black-box deep learning?
-\end{itemize}
-
-\subsection{Experimental Setup}
-
-\subsubsection{Datasets}
-We utilize a core dataset of \textbf{500 high-volume stocks} from the S\&P 500, covering Technology, Finance, and Healthcare sectors. The evaluation period spans from \textbf{Jan 1, 2020 to Dec 31, 2024}, capturing diverse market regimes:
+This section presents a comprehensive evaluation of EATA, addressing the research questions proposed in Section~\ref{sec:intro}. We evaluate on a dataset of \textbf{representative constituent stocks from the S\&P 500} index, covering diverse sectors including Technology, Finance, and Healthcare. The evaluation period spans from \textbf{Jan 1, 2020 to Dec 31, 2024}, capturing diverse market regimes:
 \begin{itemize}
     \item \textbf{2020}: COVID-19 crash and rapid recovery (High Volatility).
     \item \textbf{2021}: Strong Bull market.
@@ -21,25 +11,46 @@ We utilize a core dataset of \textbf{500 high-volume stocks} from the S\&P 500, 
 \end{itemize}
 Daily OHLCV data is split temporally: the first 70\% for training (sliding window) and the subsequent 30\% for out-of-sample testing.
 
-\subsubsection{Baselines}
+\subsection{S\&P 500 Evaluation}
+We additionally plan a full-universe evaluation on all eligible S\&P 500 constituents under a unified backtesting protocol. Table~\ref{tab:sp500_full_placeholder} and Figure~\ref{fig:sp500_full_placeholder} provide placeholders for the planned large-scale results.
+
+\textbf{Scope note.} To avoid overstating the current empirical scope, we separate \emph{core results} (reported on representative S\&P 500 constituents) from \emph{planned full-universe} evaluation. The placeholder artifacts are automatically generated to preserve a fully executable paper pipeline and will be replaced by real full-universe results in the final version.
+
+\begin{table}[htbp]
+\centering
+\caption{Planned Full S\&P 500 Evaluation (Placeholder).}
+\label{tab:sp500_full_placeholder}
+\input{../tables/sp500_full_table.tex}
+\end{table}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.95\columnwidth]{figures/sp500_full_sharpe_boxplot.pdf}
+\caption{Planned Full S\&P 500 Evaluation (Placeholder).}
+\label{fig:sp500_full_placeholder}
+\end{figure}
+
+\subsection{Baselines}
 We compare EATA against 8 baselines across four categories:
 \begin{itemize}
-    \item \textbf{Traditional}: Buy \& Hold, MACD (tuned).
+    \item \textbf{Traditional}: Buy \& Hold, MACD (tuned)~\cite{appel2005technical}.
     \item \textbf{Statistical}: ARIMA (5,1,0).
-    \item \textbf{Machine Learning}: LightGBM, Genetic Programming (GP, via Operon).
-    \item \textbf{Deep Learning}: LSTM, Transformer (tuned via grid search).
-    \item \textbf{Reinforcement Learning}: PPO (FinRL implementation).
-    \item \textbf{Symbolic Regression}: NEMoTS (Neural Equation MCTS, our base framework).
+    \item \textbf{Machine Learning}: LightGBM~\cite{ke2017lightgbm}, Genetic Programming (GP, via Operon)~\cite{burlacu2020operon}.
+    \item \textbf{Deep Learning}: LSTM~\cite{hochreiter1997long,fischer2018deep}, Transformer~\cite{vaswani2017attention,ding2020hierarchical} (tuned via grid search).
+    \item \textbf{Reinforcement Learning}: PPO~\cite{schulman2017proximal} (FinRL implementation~\cite{liu2020finrl}).
+    \item \textbf{Symbolic Regression}: NEMoTS~\cite{xie2024nemots}.
 \end{itemize}
 
 \subsection{Main Results: Profitability vs. Black-Box (RQ3)}
 
 \subsubsection{Performance Comparison}
-Table~\ref{tab:main_results} reports the performance metrics averaged across the 500 core stocks. EATA achieves the highest risk-adjusted returns with a \textbf{Sharpe Ratio of 0.83}, significantly outperforming the best deep learning baseline (LightGBM, Sharpe 0.52) and the traditional Buy \& Hold strategy (Sharpe 0.42).
+\textbf{Hypothesis (RQ3).} Profit-aware symbolic strategies can match or exceed black-box baselines in risk-adjusted returns while remaining intrinsically interpretable.
+
+Table~\ref{tab:main_results} reports performance metrics averaged across our evaluation universe. EATA achieves the highest risk-adjusted returns with a \textbf{Sharpe Ratio of 0.83}, outperforming the best deep learning baseline (LightGBM, Sharpe 0.52) and the traditional Buy \& Hold strategy (Sharpe 0.42).
 
 \begin{table}[htbp]
 \centering
-\caption{Main Performance Comparison (500 Core Stocks). EATA achieves SOTA Sharpe Ratio while maintaining interpretability.}
+\caption{Main Performance Comparison (Representative S\&P 500 Constituents). EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
 \label{tab:main_results}
 \resizebox{0.95\columnwidth}{!}{%
 \begin{tabular}{lccccc}
@@ -62,9 +73,22 @@ NEMoTS & 15.2 & 0.58 & 24.8 & 56\% & 0.61 \\
 }
 \end{table}
 
-\noindent $^{**}$: $p < 0.01$ (paired t-test vs. NEMoTS).
+\textbf{Discussion (Robustness).} The monotonic degradation in Table~\ref{tab:costs} is expected: higher costs reduce the effective edge of any strategy with non-zero turnover. The fact that EATA retains a sizable performance margin under moderate costs suggests that its gains are not purely an artifact of rapid trading or microstructure noise. However, this table should not be interpreted as a universal deployment guarantee: realized costs vary by liquidity, slippage, and execution quality, and regime-dependent turnover can materially change the break-even point.
 
-\textbf{Analysis.} The substantial performance gap between EATA and NEMoTS (+0.25 Sharpe) validates the importance of our financial adaptations—specifically the Profit Head and domain grammar. Deep learning models like LSTM struggle to generalize in this low signal-to-noise ratio environment, often overfitting to training noise.
+\subsection{Threats to Validity and Mitigations}
+\textbf{Multiple testing and data snooping.} Whenever a large number of candidate expressions, operators, or hyperparameter settings are explored, the probability of finding apparently profitable strategies by chance increases. Classic reality-check style procedures~\cite{white2000reality_check,hansen2005spa} and multiple-testing analyses in asset pricing~\cite{harvey2016multiple_testing} highlight that naive $p$-values can be overly optimistic. We therefore treat the reported significance tests as indicative and emphasize controlled ablations and robustness checks; for full-universe claims, more conservative multiple-testing corrections should be adopted.
+
+\textbf{Backtest overfitting.} Modern analyses show that backtest selection itself can introduce overfitting even when each individual backtest is properly out-of-sample, especially when many variants are tried and the best is reported~\cite{bailey2017pbo,bailey2014deflated_sharpe}. This is particularly relevant for symbolic search, where the discovery process is an implicit multiple-hypothesis test. Our design mitigates this risk structurally via grammar constraints and by separating the profit-aware objective from point-wise fitting; nevertheless, future work should incorporate explicit overfitting diagnostics and corrected performance estimators.
+
+\textbf{Metric uncertainty under heavy tails.} Risk-adjusted metrics such as Sharpe ratio can be noisy and sensitive to non-Gaussianity~\cite{lo2002sharpe_stats,ledoit2008sharpe}. For rigorous inference, one should report uncertainty estimates (e.g., block bootstrap) and consider tail-aware risk measures. Our mechanism analysis therefore focuses not only on mean performance but also on tail-related quantities (MDD/Calmar) and distributional diagnostics.
+
+\textbf{External validity.} Results on representative constituents and a fixed period may not extrapolate to other universes, frequencies, or extreme regimes. The planned full S\&P 500 evaluation (Table~\ref{tab:sp500_full_placeholder}, Figure~\ref{fig:sp500_full_placeholder}) is a necessary next step to quantify cross-sectional generalization.
+
+\noindent $^{**}$: $p < 0.01$ (paired t-test vs. NEMoTS). We emphasize that Sharpe ratio estimates are subject to non-trivial sampling error, especially under non-Gaussian returns~\cite{lo2002sharpe_stats}. For large-scale comparisons and to mitigate data-snooping and multiple-testing concerns, alternative procedures such as reality-check style tests and SPA tests can be adopted~\cite{white2000reality_check,hansen2005spa,bailey2014deflated_sharpe}.
+
+\noindent We report Sharpe ratio as the primary risk-adjusted metric following classical portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual}.
+
+\textbf{Analysis (RQ3).} The consistent advantage of EATA over both symbolic baselines (NEMoTS, GP) and black-box predictors (LightGBM, LSTM, Transformer) suggests that optimizing discovery toward \emph{trading utility} is essential. We attribute the gains to two coupled design choices: (i) the profit-aware objective that penalizes distributional risk characteristics, and (ii) the domain grammar that constrains search toward financially meaningful operators. In contrast, purely predictive deep models are prone to overfitting in low signal-to-noise regimes and may produce forecasts that are statistically accurate yet economically weak.
 
 \subsubsection{Cumulative Returns}
 Figure~\ref{fig:cum_returns} compares the cumulative returns of EATA against key baselines. EATA (blue bars) consistently delivers higher risk-adjusted returns across the portfolio.
@@ -76,6 +100,8 @@ Figure~\ref{fig:cum_returns} compares the cumulative returns of EATA against key
 \label{fig:cum_returns}
 \end{figure}
 
+\textbf{Discussion (RQ3).} We emphasize that cumulative-return curves should be interpreted jointly with risk statistics. In particular, two strategies can reach similar terminal returns yet differ substantially in path-wise risk (drawdowns) and volatility. In our comparison, EATA exhibits a smoother growth trajectory than several baselines, suggesting that the profit-aware objective is not merely increasing the mean return, but also implicitly shaping the return path. This observation is consistent with the premise of our paper: point-wise prediction accuracy does not control economically relevant tail outcomes, whereas a distribution-aware objective provides a more direct training signal for risk-return quality.
+
 \subsubsection{Strategy Correlation}
 Figure~\ref{fig:correlation} illustrates the correlation between EATA's returns and other strategies. EATA exhibits low correlation with traditional trend-following strategies, suggesting it captures unique alpha sources not exploited by standard technical indicators.
 
@@ -86,10 +112,14 @@ Figure~\ref{fig:correlation} illustrates the correlation between EATA's returns 
 \label{fig:correlation}
 \end{figure}
 
+\textbf{Discussion (RQ3).} Correlation analysis serves two purposes. First, low correlation with Buy \& Hold indicates that the strategy is not simply re-packaging market beta. Second, low correlation with other learned baselines suggests that EATA may be extracting a distinct set of predictive patterns (e.g., regime-dependent momentum/mean-reversion combinations). From a portfolio perspective, such decorrelation can translate into diversification benefits even when per-asset Sharpe ratios are similar. Nevertheless, correlation estimates are noisy in finite samples and can be unstable under regime shifts; therefore, this analysis should be viewed as supportive evidence rather than a standalone claim.
+
 \subsection{Mechanism Analysis: Wasserstein vs. MSE (RQ1)}
 
 \subsubsection{Return Distribution}
-A key hypothesis of our work is that optimizing for Wasserstein distance improves tail risk management. Figure~\ref{fig:dist} shows the distribution of returns generated by EATA. The distribution exhibits a positive skew, indicating that the agent successfully learns to cut losses (limiting the left tail) while letting profits run (extending the right tail).
+\textbf{Hypothesis (RQ1).} Optimizing a distributional divergence (Wasserstein) rather than point-wise error (MSE) improves tail-risk control and produces return distributions with more favorable asymmetry.
+
+Figure~\ref{fig:dist} shows the distribution of returns generated by EATA. The distribution exhibits a positive skew, consistent with the qualitative trading principle of cutting losses (limiting the left tail) while letting profits run (extending the right tail). Quantitatively, Table~\ref{tab:ablation_loss} provides a controlled comparison against the MSE-based NoRL variant defined in Section~\ref{subsec:reward_flow}.
 
 \begin{figure}[htbp]
 \centering
@@ -97,6 +127,8 @@ A key hypothesis of our work is that optimizing for Wasserstein distance improve
 \caption{Return Distribution. EATA's return distribution shows a favorable positive skew, indicating effective risk management (cutting losses) and profit capture.}
 \label{fig:dist}
 \end{figure}
+
+\textbf{Discussion (RQ1).} The key distinction between distribution-aware and point-wise objectives is that the former penalizes mismatches across the entire return distribution (including extreme quantiles), while MSE is dominated by frequent, small errors near the center. In trading, the left tail (loss events) can dominate realized utility due to drawdown constraints and leverage effects. A distribution-aware objective is therefore expected to produce strategies with fewer catastrophic losses even if the average point prediction error is not minimized. This provides a mechanism-level interpretation for why the Profit Head can reduce tail risk in Table~\ref{tab:ablation_loss}.
 
 \subsubsection{Risk-Return Trade-off}
 Figure~\ref{fig:risk_return} visualizes the Risk-Return profile of all stocks. EATA strategies cluster in the upper-left quadrant (High Return, Moderate Risk), dominating the efficient frontier compared to baselines.
@@ -107,6 +139,8 @@ Figure~\ref{fig:risk_return} visualizes the Risk-Return profile of all stocks. E
 \caption{Risk-Return Scatter Plot. Each point represents a stock. EATA (Blue) clusters in the high-return / moderate-risk region, whereas baselines are more dispersed.}
 \label{fig:risk_return}
 \end{figure}
+
+\textbf{Discussion (RQ1/RQ3).} Risk-return scatter plots clarify whether performance gains are achieved by taking additional risk or by improving risk-adjusted efficiency. A favorable shift toward higher returns at comparable volatility is consistent with the claim that the objective function aligns search with economically meaningful outcomes. We caution that volatility alone is not a complete risk measure under heavy tails~\cite{cont2001empirical}; however, together with MDD/Calmar in Table~\ref{tab:main_results}, this view helps distinguish ``high-return-but-unstable'' strategies from genuinely risk-efficient ones.
 
 \subsubsection{Ablation Study: Profit Head}
 Table~\ref{tab:ablation_loss} presents an ablation study removing the Profit Head (the "NoRL" configuration).
@@ -127,12 +161,14 @@ w/o Profit Head (NoRL) & 20.4 & 0.66 & 45.4 & 51.4\% \\
 }
 \end{table}
 
-\textbf{Finding.} Removing the Profit Head causes a sharp drop in Sharpe Ratio (0.83 $\rightarrow$ 0.66) and a significant increase in Maximum Drawdown (36.5\% $\rightarrow$ 45.4\%). This confirms that the Profit Head acts as a crucial regularizer, steering the search away from strategies that might have high MSE accuracy but dangerous drawdown characteristics.
+\textbf{Finding (RQ1).} Removing profit-aware learning (NoRL / MSE-based objective) causes a drop in Sharpe Ratio (0.83 $\rightarrow$ 0.66) and an increase in Maximum Drawdown (36.5\% $\rightarrow$ 45.4\%). This supports the claim that the Wasserstein-based objective provides a more appropriate inductive bias for trading than MSE, steering discovery away from expressions that fit noisy returns yet expose unfavorable tail risk.
 
 \subsection{Interpretability and Search Efficiency (RQ2)}
 
 \subsubsection{Search Efficiency}
-Neural guidance significantly accelerates the discovery of profitable expressions. Figure~\ref{fig:efficiency} shows that EATA converges to high-quality solutions roughly $3\times$ faster than standard Genetic Programming.
+\textbf{Hypothesis (RQ2).} Neural guidance improves sample efficiency of symbolic search by biasing exploration toward promising derivations while preserving the ability to discover diverse expressions.
+
+Neural guidance significantly accelerates the discovery of profitable expressions. Figure~\ref{fig:efficiency} shows that EATA reaches high-quality solutions substantially faster than unguided search baselines.
 
 \begin{figure}[htbp]
 \centering
@@ -142,7 +178,7 @@ Neural guidance significantly accelerates the discovery of profitable expression
 \end{figure}
 
 \subsubsection{Pareto Frontier}
-EATA discovers models that sit on the optimal frontier of complexity versus performance (Figure~\ref{fig:pareto}), offering a practical trade-off for traders who require explainability.
+\textbf{Analysis (RQ2/RQ3).} The Pareto frontier in Figure~\ref{fig:pareto} illustrates that EATA can produce expressions that are simultaneously \emph{competitive} and \emph{simple}, which is essential in regulated environments where overly complex rules are hard to audit. Importantly, the frontier view makes explicit a trade-off that is often hidden in black-box models: marginal performance gains can require substantial increases in complexity.
 
 \begin{figure}[htbp]
 \centering
@@ -154,7 +190,7 @@ EATA discovers models that sit on the optimal frontier of complexity versus perf
 \subsection{Robustness Checks}
 
 \subsubsection{Transaction Costs}
-We evaluate EATA under varying transaction costs (Table~\ref{tab:costs}). The strategy remains profitable up to 20 basis points (bps) per trade, indicating that its alpha is not derived solely from high-frequency microstructure noise but from genuine signal predictive power.
+We evaluate EATA under varying transaction costs (Table~\ref{tab:costs}). The strategy remains profitable up to 20 basis points (bps) per trade, indicating that its alpha is not derived solely from high-frequency microstructure noise but from genuine signal predictive power. This setup follows standard empirical practice in modeling implementation frictions in equity trading~\cite{keim1997transaction_costs}.
 
 \begin{table}[htbp]
 \centering

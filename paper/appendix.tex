@@ -1,5 +1,44 @@
 % appendix.tex - Appendix
 \appendix
+\section{Hyperparameter Settings}
+\label{app:hyperparams}
+
+\begin{table}[htbp]
+\centering
+\caption{EATA Hyperparameters}
+\label{tab:hyperparams}
+\begin{tabular}{llc}
+\toprule
+\textbf{Category} & \textbf{Parameter} & \textbf{Value} \\
+\midrule
+\multirow{3}{*}{MCTS}
+& Episodes per iteration ($K$) & 100 \\
+& Max expression length ($L^{\max}$) & 50 \\
+& UCB exploration constant ($C$) & 1.0 \\
+\midrule
+\multirow{3}{*}{Neural Network}
+& Hidden dimension ($d_h$) & 128 \\
+& Learning rate & $10^{-4}$ \\
+& Batch size & 32 \\
+\midrule
+\multirow{3}{*}{Loss Weights}
+& $\lambda^{\pi}$ (Policy) & 0.5 \\
+& $\lambda^{V}$ (Value) & 0.3 \\
+& $\lambda^{P}$ (Profit) & 0.2 \\
+\midrule
+\multirow{3}{*}{Training}
+& Sliding window size ($T^{\text{in}}$) & 252 days \\
+& Lookahead ($H$) & 5 days \\
+& Buffer capacity ($B^{\max}$) & 10,000 \\
+\midrule
+\multirow{3}{*}{Grammar}
+& Module max length ($L^{\text{mod}}$) & 10 \\
+& Module library size ($M^{\max}$) & 100 \\
+& Quantile thresholds ($Q_{25}, Q_{75}$) & 0.25, 0.75 \\
+\bottomrule
+\end{tabular}
+\end{table}
+Table~\ref{tab:hyperparams} lists the default hyperparameters used in EATA experiments.
 
 \section{Notation and Terminology}
 \label{app:notation}
@@ -66,52 +105,13 @@ Table~\ref{tab:notation} summarizes the notation used throughout this paper, fol
 }
 \end{table*}
 
-\section{Hyperparameter Settings}
-\label{app:hyperparams}
 
-Table~\ref{tab:hyperparams} lists the default hyperparameters used in EATA experiments.
-
-\begin{table}[htbp]
-\centering
-\caption{EATA Hyperparameters}
-\label{tab:hyperparams}
-\begin{tabular}{llc}
-\toprule
-\textbf{Category} & \textbf{Parameter} & \textbf{Value} \\
-\midrule
-\multirow{3}{*}{MCTS}
-& Episodes per iteration ($K$) & 100 \\
-& Max expression length ($L^{\max}$) & 50 \\
-& UCB exploration constant ($C$) & 1.0 \\
-\midrule
-\multirow{3}{*}{Neural Network}
-& Hidden dimension ($d_h$) & 128 \\
-& Learning rate & $10^{-4}$ \\
-& Batch size & 32 \\
-\midrule
-\multirow{3}{*}{Loss Weights}
-& $\lambda^{\pi}$ (Policy) & 0.5 \\
-& $\lambda^{V}$ (Value) & 0.3 \\
-& $\lambda^{P}$ (Profit) & 0.2 \\
-\midrule
-\multirow{3}{*}{Training}
-& Sliding window size ($T^{\text{in}}$) & 252 days \\
-& Lookahead ($H$) & 5 days \\
-& Buffer capacity ($B^{\max}$) & 10,000 \\
-\midrule
-\multirow{3}{*}{Grammar}
-& Module max length ($L^{\text{mod}}$) & 10 \\
-& Module library size ($M^{\max}$) & 100 \\
-& Quantile thresholds ($Q_{25}, Q_{75}$) & 0.25, 0.75 \\
-\bottomrule
-\end{tabular}
-\end{table}
 
 \section{Additional Experimental Results}
 
 \subsection{Full Performance Breakdown}
 
-Table~\ref{tab:detailed_metrics} presents the detailed performance metrics for all 20 stocks in our core dataset, comparing EATA with the NoRL baseline (EATA without Profit Head). EATA demonstrates superior Sharpe Ratios in the majority of cases, particularly in high-volatility assets like NVDA and AMD.
+Table~\ref{tab:detailed_metrics} presents the detailed performance metrics for representative S\&P 500 constituents in our core dataset, comparing EATA with the NoRL baseline (EATA without Profit Head). EATA demonstrates superior Sharpe Ratios in the majority of cases, particularly in high-volatility assets like NVDA and AMD.
 
 \begin{table*}[htbp]
 \centering
