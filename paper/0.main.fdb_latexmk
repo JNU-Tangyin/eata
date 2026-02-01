@@ -1,13 +1,13 @@
 # Fdb version 4
-["bibtex 0.main"] 1769938295.07021 "0.main.aux" "0.main.bbl" "0.main" 1769938298.88351 0
+["bibtex 0.main"] 1769938567.26736 "0.main.aux" "0.main.bbl" "0.main" 1769938570.89107 0
   "./references.bib" 1769929155.38015 23710 cc0562bf94af695411cc85ce12eabd9c ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/elsarticle/elsarticle-num.bst" 1736456871 29462 3b2a1af2ce1e224a3b46ee048ffd4b98 ""
-  "0.main.aux" 1769938298.478 24235 33365baa9c91926baca31fbea6bd7897 "pdflatex"
+  "0.main.aux" 1769938570.53304 24235 f47c571ed8f81c1ef661a79d6c65ce4f "pdflatex"
   (generated)
   "0.main.bbl"
   "0.main.blg"
   (rewritten before read)
-["pdflatex"] 1769938295.30009 "0.main.tex" "0.main.pdf" "0.main" 1769938298.88369 2
+["pdflatex"] 1769938567.36726 "0.main.tex" "0.main.pdf" "0.main" 1769938570.89125 2
   "../tables/sp500_full_table.tex" 1769932994.35212 482 abe03a0a269f5eb306b1cc2ebfa2d9f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
@@ -238,11 +238,11 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1758509612 5528139 daf1353d2d3d7fed9df2ebbf1b26218e ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1758509781 3621557 167bfc5b4373711c8aabb7a7f74f02e3 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "0.main.aux" 1769938298.478 24235 33365baa9c91926baca31fbea6bd7897 "pdflatex"
-  "0.main.bbl" 1769938295.29875 14903 30a15eac69a0f44618cc3b46b2427df7 "bibtex 0.main"
-  "0.main.out" 1769938298.47941 10544 1915d391713e08fc5be15016de91791f "pdflatex"
-  "0.main.spl" 1769938295.49421 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "0.main.tex" 1769937355.03558 3998 12ef8584f6e1375b2701baa2bca9ab34 ""
+  "0.main.aux" 1769938570.53304 24235 f47c571ed8f81c1ef661a79d6c65ce4f "pdflatex"
+  "0.main.bbl" 1769938567.3636 14903 30a15eac69a0f44618cc3b46b2427df7 "bibtex 0.main"
+  "0.main.out" 1769938570.53454 10544 1915d391713e08fc5be15016de91791f "pdflatex"
+  "0.main.spl" 1769938567.54348 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "0.main.tex" 1769938545.94583 4776 b9a788d4012e06b161933656460aa89f ""
   "1.intro.tex" 1769929040.32853 5524 cdf8121d9b435eba5909567c6ade77ac ""
   "2.related.tex" 1769933647.87839 20661 b2b50197efc205ac3d2f04f73d1b31c5 ""
   "3.method.tex" 1769932966.65344 26557 89b3ff50745b795d9420d59cbbf47056 ""
