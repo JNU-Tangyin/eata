@@ -165,7 +165,7 @@ class Evaluator():
         
         pass
 
-from globals import test_result, summary, etf_action
+from core.globals import test_result, summary, etf_action
 from pathlib import Path
 import sys
 

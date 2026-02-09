@@ -32,7 +32,10 @@ plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
 plt.rcParams['axes.unicode_minus'] = False
 
 # 设置ggplot风格
-plt.style.use('seaborn-v0_8')
+try:
+    plt.style.use('seaborn-v0_8')
+except OSError:
+    plt.style.use('seaborn')
 sns.set_palette("husl")
 
 class ExperimentPipeline:

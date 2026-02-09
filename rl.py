@@ -71,6 +71,28 @@ class RewardUtilizationSystem:
         
         return PolicyNetwork()
     
+    def _map_action_to_index(self, action: int) -> int:
+        """
+        将交易信号映射到数组索引
+        
+        Args:
+            action: 交易信号 (-1: 卖出, 0: 持有, 1: 买入)
+            
+        Returns:
+            数组索引 (0, 1, 2)
+        """
+        action_mapping = {
+            -1: 0,  # 卖出 -> 索引0
+             0: 1,  # 持有 -> 索引1
+             1: 2   # 买入 -> 索引2
+        }
+        
+        if action not in action_mapping:
+            print(f"⚠️ 未知交易信号: {action}, 默认映射到持有(索引1)")
+            return 1
+        
+        return action_mapping[action]
+    
     def store_experience(self, state: np.ndarray, action: int, reward: float, next_state: np.ndarray):
         """
         存储经验到回放缓冲区
@@ -109,7 +131,7 @@ class RewardUtilizationSystem:
             reward: 获得的奖励
             loss: 损失值
             market_state: 市场状态特征
-            action: 执行的动作
+            action: 执行的动作 (-1: 卖出, 0: 持有, 1: 买入)
             
         Returns:
             策略更新结果
@@ -117,9 +139,13 @@ class RewardUtilizationSystem:
         print(f"🎯 利用reward改进策略: {code}")
         print(f"   Reward: {reward:.4f}, Loss: {loss:.4f}, Action: {action}")
         
+        # 修复：将交易信号映射到数组索引
+        # 交易信号: -1(卖出), 0(持有), 1(买入) -> 数组索引: 0, 1, 2
+        action_index = self._map_action_to_index(action)
+        
         # 1. 存储经验
         # 这里简化next_state为当前state（实际应该是下一时刻的状态）
-        self.store_experience(market_state, action, reward, market_state)
+        self.store_experience(market_state, action_index, reward, market_state)
         
         # 2. 计算策略梯度
         net_reward = reward - loss  # 净奖励

@@ -7,7 +7,7 @@ import torch
 import warnings
 warnings.filterwarnings('ignore')
 from data import DataStorage, BaostockDataWorker 
-from globals import indicators, OCLHVA, Normed_OCLHVA, REWARD, WEEKDAY, WINDOW_SIZE, TUSHARE_MAPPING, BAOSTOCK_MAPPING
+from core.globals import indicators, OCLHVA, Normed_OCLHVA, REWARD, WEEKDAY, WINDOW_SIZE, TUSHARE_MAPPING, BAOSTOCK_MAPPING
 import numpy as np
 
 
@@ -206,7 +206,9 @@ class Preprocessor():
 
         input_dim = self.windowsize*len(d.columns)
         vae = VAE(input_dim)
-        if torch.cuda.is_available(): vae.cuda()
+        # 优先使用GPU加速
+        if torch.cuda.is_available():
+            vae = vae.cuda()
         vae.load_model() 
         def encode(r):
             mu, logvar = vae.encode(r.reshape(input_dim))

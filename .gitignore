@@ -200,3 +200,17 @@ test/
 
 # 图片文件
 reflex.jpeg
+
+# 实验结果文件
+comparison_results/
+experiment_results/
+ablation_results/
+flag_trader_results/
+test_detailed_outputs/
+results/
+
+# CSV数据文件
+*.csv
+
+# JSON结果文件
+*.json

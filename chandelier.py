@@ -17,7 +17,7 @@ from datetime import datetime
 from data import BaostockDataWorker
 from preprocess import Preprocessor
 import pysnooper
-from globals import WINDOW_SIZE
+from core.globals import WINDOW_SIZE
 
 class BaseAgent():
     pass

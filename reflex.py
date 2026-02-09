@@ -9,7 +9,7 @@ import numpy as np
 from agent import Agent
 import test
 from utils import super_smoother
-from globals import WINDOW_SIZE
+from core.globals import WINDOW_SIZE
 
 def prc_reflex_ehlers(data:np.array, length = WINDOW_SIZE):
     # Gently smooth the data in a SuperSmoother

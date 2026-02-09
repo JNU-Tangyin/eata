@@ -1,2 +1,0 @@
-﻿timestamp,ticker,strategy,run_id,success,description,error,lookback,lookahead,stride,depth
-20251218_195510,AAPL,finrl_ppo,1,False,FinRL PPO强化学习策略,Strategy execution failed,30,10,1,200

@@ -17,12 +17,9 @@ logging.getLogger('matplotlib.font_manager').setLevel(logging.ERROR)
 
 
 # 核心改动：直接导入我们改造后的Agent
-from agent import Agent
-from data import DataStorage # 导入数据存储类
-from performance_metrics import TradingMetrics # 导入我们新增的指标计算模块
-
-# 核心改动：直接导入我们改造后的Agent
-from agent import Agent
+from core.agent import Agent
+from core.data import DataStorage # 导入数据存储类
+from core.performance_metrics import TradingMetrics # 导入我们新增的指标计算模块
 
 class Predictor:
     def __init__(self, lookback=100, lookahead=20, stride=2, depth=200):
@@ -55,6 +52,9 @@ def run_eata_core_backtest(
     lookahead: int = 10,
     stride: int = 1,
     depth: int = 300,
+    variant_params: dict = None,
+    pre_configured_agent: Agent = None,
+    variant_mode: str = None,  # 🎯 架构级变体模式标记
 ):
     """在给定单支股票数据上运行 EATA 本体的核心回测逻辑。
 
@@ -63,8 +63,83 @@ def run_eata_core_backtest(
     - 返回值与 baseline 侧对接用：metrics(dict) + portfolio_df(DataFrame[value] 索引为日期)。
     """
 
-    # 初始化 Predictor / Agent
-    predictor = Predictor(lookback=lookback, lookahead=lookahead, stride=stride, depth=depth)
+    # 初始化 Predictor / Agent，支持预配置的Agent实例
+    if pre_configured_agent is not None:
+        print(f"🔄 使用预配置的Agent实例 (变体已应用修改)")
+        predictor = Predictor(lookback=lookback, lookahead=lookahead, stride=stride, depth=depth)
+        predictor.agent = pre_configured_agent
+        print(f"   Agent类型: {type(pre_configured_agent).__name__}")
+        print(f"   Agent修改状态: 已预配置")
+    else:
+        print(f"🔄 创建新的Agent实例")
+        predictor = Predictor(lookback=lookback, lookahead=lookahead, stride=stride, depth=depth)
+    
+    # 🔧 方案1：参数化方法调用 - 提取关键参数用于直接传递
+    variant_profit_loss_weight = None
+    variant_exploration_rate = None
+    
+    print(f"🔧 [方案1] variant_params检查: {variant_params}")
+    
+    if variant_params:
+        print(f"🔧 [方案1] 收到变体参数: {variant_params}")
+        
+        # 提取关键参数用于直接传递
+        variant_profit_loss_weight = variant_params.get('profit_loss_weight')
+        variant_exploration_rate = variant_params.get('exploration_rate')
+        
+        print(f"🔧 [方案1] 提取的关键参数:")
+        print(f"   - profit_loss_weight: {variant_profit_loss_weight}")
+        print(f"   - exploration_rate: {variant_exploration_rate}")
+        
+        # 设置Engine上的变体参数标识，供store_experiences和Agent.predict使用
+        if variant_profit_loss_weight is not None:
+            predictor.agent.engine._variant_profit_loss_weight = variant_profit_loss_weight
+        if variant_exploration_rate is not None:
+            predictor.agent.engine._variant_exploration_rate = variant_exploration_rate
+        
+    # 🎯 架构级变体模式设置：通过环境变量控制
+    if variant_mode:
+        print(f"🔧 [消融实验] 设置变体模式: {variant_mode}")
+        
+        # 设置环境变量启用消融实验模式
+        import os
+        os.environ['ABLATION_EXPERIMENT_MODE'] = 'true'
+        print(f"   ✅ 环境变量ABLATION_EXPERIMENT_MODE已设置为true")
+        
+        # 设置神经网络容器的变体模式（确保网络重建后能恢复）
+        if hasattr(predictor.agent.engine.model, 'p_v_net_ctx'):
+            predictor.agent.engine.model.p_v_net_ctx._variant_mode = variant_mode
+            # 同时设置当前网络实例
+            if hasattr(predictor.agent.engine.model.p_v_net_ctx, 'pv_net'):
+                predictor.agent.engine.model.p_v_net_ctx.pv_net._variant_mode = variant_mode
+            print(f"   ✅ 神经网络层面变体模式已设置: {variant_mode}")
+        else:
+            print(f"   ⚠️ 无法访问神经网络，变体模式设置失败")
+        
+        # 🎯 强制启用消融实验模式（确保隔离方案正确工作）
+        if variant_params:
+            print(f"🔧 [强制] 通过环境变量启用消融实验模式")
+            import os
+            os.environ['ABLATION_EXPERIMENT_MODE'] = 'true'
+        
+        # 仍然使用新的统一参数应用器处理其他参数
+        try:
+            from ablation_study.variant_system import VariantParameterApplier
+            success = VariantParameterApplier.apply_to_agent(predictor.agent, variant_params)
+            
+            if success:
+                print(f"✅ [方案1] 其他变体参数应用成功")
+            else:
+                print(f"⚠️ [方案1] 其他变体参数应用部分失败，但继续执行")
+                
+        except ImportError:
+            # 回退到旧的应用方式
+            print(f"🔄 [方案1] 回退到旧的参数应用方式")
+            from variant_modifier import _apply_variant_modifications
+            _apply_variant_modifications(predictor.agent, variant_params)
+            
+    else:
+        print(f"ℹ️ [方案1] 无变体参数，使用默认配置")
 
     stock_df = stock_df.copy()
     stock_df['date'] = pd.to_datetime(stock_df['date'])
@@ -89,6 +164,7 @@ def run_eata_core_backtest(
     stance = 0  # 1: 多头, -1: 空头, 0: 空仓
     portfolio_values = []
     all_trade_dates = []
+    rl_rewards_history = []  # 收集RL rewards
 
     # 滑动窗口回测
     for i in range(0, num_test_windows, 2):
@@ -101,6 +177,7 @@ def run_eata_core_backtest(
 
         # 调用 Agent 决策
         action, rl_reward = predictor.predict(df=window_df, shares_held=shares)
+        rl_rewards_history.append(rl_reward)  # 收集RL reward
 
         # 交易发生在 lookback 之后的第一天
         trade_day_index = predictor.agent.lookback
@@ -156,6 +233,21 @@ def run_eata_core_backtest(
         benchmark_returns=buy_and_hold_returns.values,
     )
     metrics = metrics_calc.get_all_metrics()
+    
+    # 添加平均RL reward到指标中
+    if rl_rewards_history:
+        # 过滤掉nan和inf值
+        valid_rewards = [r for r in rl_rewards_history if not (np.isnan(r) or np.isinf(r))]
+        if valid_rewards:
+            avg_rl_reward = np.mean(valid_rewards)
+            print(f"📊 平均RL奖励: {avg_rl_reward:.6f} (有效样本: {len(valid_rewards)}/{len(rl_rewards_history)})")
+        else:
+            avg_rl_reward = 0.0
+            print(f"⚠️ 所有RL奖励都是无效值 (nan/inf)，设置为0.0")
+        metrics['Average RL Reward'] = avg_rl_reward
+    else:
+        metrics['Average RL Reward'] = 0.0
+        print(f"⚠️ 没有收集到RL奖励历史，设置为0.0")
 
     return metrics, portfolio_df
 

@@ -14,7 +14,7 @@ from tqdm import trange
 import os
 from pathlib import Path
 from env import StockmarketEnv
-from globals import WINDOW_SIZE , test_result
+from core.globals import WINDOW_SIZE , test_result
 
 
 # "./" will be added in front of each directory

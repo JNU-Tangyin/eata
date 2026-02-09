@@ -7,7 +7,7 @@ from predict import Predictor
 from evaluate import Evaluator
 
 from visualize import WebServer
-from globals import MAIN_PATH
+from core.globals import MAIN_PATH
 import pysnooper
 
 def test_webserver():

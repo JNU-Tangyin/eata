@@ -4,7 +4,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import empyrical as ep
-from globals import summary, test_result
+from core.globals import summary, test_result
 from pathlib import Path
 from functools import partial
 

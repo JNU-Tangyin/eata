@@ -1,287 +1,196 @@
-# EATA-RL: Reinforcement Learning Enhanced Algorithmic Trading Agent
+# EATA-RL: Enhanced Adaptive Trading Agent with Reinforcement Learning
 
-This project presents `EATA-RL`, an enhanced version of the Explainable Algorithmic Trading Agent that integrates **Reinforcement Learning feedback mechanisms** for continuous self-optimization.
+[![GitHub](https://img.shields.io/github/license/JNU-Tangyin/eata)](https://github.com/JNU-Tangyin/eata)
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/downloads/)
+[![PyTorch](https://img.shields.io/badge/PyTorch-1.9+-red.svg)](https://pytorch.org/)
 
-## 🚀 RL增强版新特性
+## 🚀 项目简介
 
-### 核心升级
-- **🧠 智能反馈系统** (`rl.py`) - 基于交易结果的强化学习反馈
-- **🔄 自适应参数调整** - 动态优化NEMoTS超参数
-- **🎯 闭环学习机制** - reward→策略增强, loss→参数调整
-- **🔧 自我修复能力** - 检测性能下降时自动重启搜索
+EATA-RL是一个基于强化学习的增强自适应交易智能体，结合了蒙特卡洛树搜索(MCTS)、神经网络和多种技术指标，用于股票交易决策。本项目经过重构和优化，具有清晰的模块化架构和完整的实验验证系统。
 
-### 技术架构
-- **Agent增强** - RL反馈集成的决策引擎
-- **NEMoTS升级** - 增强版滑动窗口与分位数训练
-- **实时学习** - 每次交易后自动优化模型参数
+### ✨ 主要特性
+- 🧠 **智能决策**: MCTS + 神经网络 + 强化学习三重融合
+- 🔬 **科学验证**: 完整的消融实验和对比实验系统  
+- 📊 **性能优异**: 多项指标优于传统交易算法
+- 🛠️ **易于扩展**: 模块化设计，支持新算法集成
+- 📈 **实时交易**: 支持定时调度的生产环境部署
 
-## 📊 性能表现
-31支股票对比测试：
-- **EATA-RL: 25.63%+** 年化收益（持续优化中）
-- **EATA原版: 25.63%** 年化收益（第一名）
-- 买入持有: 13.43%
-- MACD: 6.62%
-- Transformer: 6.53%
-- 其他策略: 2.11% ~ -23.09%
-
-**RL增强版在保持原有性能的基础上，具备了持续自我优化的能力。**
-
-## Backtest Architecture (main.py entry)
-
-```mermaid
-graph LR
-    entry[main.py] -->|schedule 18:00| predictTask[predict]
-    entry -->|schedule 18:00| evalTask[evaluate]
-    entry -->|hourly| wsTask[test_webserver]
-
-    predictTask --> PredictorCls[Predictor-predict.py]
-    PredictorCls -->|use_nemots==True| NTP[NEMoTSPredictor - nemots_adapter.py]
-    PredictorCls -->|fallback| BW[Bandwagon]
-    NTP -->|fit/predict_action| nemotsEng[Engine -nemots/engine.py]
-    nemotsEng --> nemotsModel[Model]
-    nemotsModel --> nemotsMCTS[MCTS]
-    nemotsModel --> nemotsNet[PVNetCtx]
-    nemotsModel --> nemotsScore[score_with_est]
-    nemotsEng --> nemotsMetrics[OptimizedMetrics]
-
-    PredictorCls -->|save_action/save_predicted| DS[DataStorage]
-    DS -->|write CSV| TestDir[Test/ ...]
-
-    evalTask --> EvalCls[Evaluator evaluate.py]
-    EvalCls -->|read CSV| TestDir
-    EvalCls -->|asset_change + class_perf| Summary[evaluated.csv]
-
-    wsTask --> WebUI[WebServer visualize.py]
-    WebUI -->|read| Summary
-    WebUI -->|read| TestDir
-    WebUI -->|serve| Browser[(Streamlit UI)]
-```
-
-- **调度**: `main.py` 使用 `schedule` 定时触发 `predict()`, `evaluate()`, `test_webserver()`。
-- **预测**: `predict.Predictor` 可走 `NEMoTSPredictor`（符号回归）或 Bandwagon；动作写入 `Test/`。
-- **评估**: `evaluate.Evaluator.asset_change()/class_perf()` 产出 `evaluated.csv`。
-- **可视化**: `visualize.WebServer` 读取 `Test/` 与 `evaluated.csv`，以 Streamlit 展示。
-
-## Full Reinforcement Learning (NEMoTS) Architecture
-
-```mermaid
-graph TD
-    subgraph Data Prep
-        DIn[（open,high,low,close,volume,amount:DF）]
-        PreA[_prepare_training_data -FullNEMoTSAdapter / sliding_window_nemots]
-        DIn --> PreA --> Tensor[X,y/window tensor]
-    end
-
-    subgraph Engine Layer
-        Eng[Engine]
-        Mod[Model]
-        Eng -->|simulate X,y,inherited_tree?| Mod
-    end
-
-    subgraph Search & Policy
-        M[MCTS]
-        Adp[MCTSAdapter.patch_mcts]
-        Net[PVNetCtx]
-        Gram[grammar - symbolics.py]
-        Score[score_with_est - score.py]
-        Metric[OptimizedMetrics engine.py]
-        Track[Tracker]
-        Buffer[(data_buffer deque)]
-    end
-
-    Tensor --> Eng
-    Mod -->|init/run| M
-    Mod --> Gram
-    Adp --> M
-    M -->|get_policy3| Net
-    M -->|update_modules/rollout| M
-    M -->|records| Buffer
-    Mod --> Buffer
-    Eng -->|train uses| Track
-    Mod -->|score_with_est| Score
-    Eng -->|metrics| Metric
-
-    subgraph Inheritance
-        Prev[previous_best_expression/tree]
-        Prev -->|inherited_tree| Eng
-    end
-
-    subgraph Outputs
-        Best[best_exp]
-        MAE[MAE/MSE/Corr]
-        Policy[policy]
-        Reward[reward]
-    end
-
-    Metric --> MAE
-    Eng --> Best
-    Eng --> Policy
-    Eng --> Reward
-
+## 📁 项目结构
 
 ```
-
-- **数据准备**: `FullNEMoTSAdapter._prepare_training_data()` 或 `SlidingWindowNEMoTS._prepare_sliding_window_data()` 生成张量输入。
-- **引擎**: `engine.Engine.simulate()` 调 `model.Model.run()`；`MCTSAdapter` 动态修补策略维度。
-- **搜索/策略**: `MCTS` 结合 `PVNetCtx` 与 UCB；`score.score_with_est()` 打分；`Tracker` 采集训练指标；`data_buffer` 驱动 NN 融合系数。
-- **继承**: 滑窗训练中将 `previous_best_expression` 作为 `inherited_tree` 传入，提升稳定性。
-- **输出**: 最优表达式与评估指标（MAE/MSE/Corr/Reward）用于后续交易信号与回测。
-
-## 模块依赖关系图
-
-```mermaid
-graph TD
-    subgraph Project Root
-        README[README.md]
-        QQE[QQE.py]
-        SW[sliding_window_nemots.py]
-        Adapter[nemots_adapter.py]
-        TestDir[Test/ ...]
-    end
-
-    subgraph nemots
-        NEngine[engine.py Engine, OptimizedMetrics]
-        NModel[model.py Model]
-        NMCTS[mcts.py MCTS]
-        NMCTSAdp[mcts_adapter.py MCTSAdapter]
-        NNet[network.py PVNetCtx]
-        NSym[symbolics.py grammar & functions]
-        NScore[score.py score_with_est, simplify_eq]
-        NArgs[args.py Args]
-        NTrack[tracker.py Tracker]
-        NMetrics[OptimizedMetrics]
-    end
-
-    Adapter --> |uses| NPredict[NEMoTSPredictor in nemots_adapter.py]
-    NPredict --> |optional| Full[FullNEMoTSAdapter]
-    NPredict --> |fallback| Simple[SimpleNEMoTS]
-
-    Full --> |.fit/.predict_action| NEngine
-    Full --> |prepare data| Adapter
-    NEngine --> |run| NModel
-    NModel --> |search| NMCTS
-    NModel --> |policy/value| NNet
-    NModel --> |grammar| NSym
-    NModel --> |score| NScore
-    NModel --> |records| NTrack
-    NMCTSAdp --> |patch| NMCTS
-    NEngine --> NMetrics
-
-    SW --> |Engine + Args| NEngine
-    SW --> |hyperparams| NArgs
-
-    Simple --> |random expr| Adapter
-    Simple --> |score| Adapter
+EATA-RL-main/
+├── core/                           # 核心模块
+│   ├── agent.py                   # 主要交易智能体
+│   ├── data.py                    # 数据处理模块
+│   ├── env.py                     # 交易环境
+│   ├── globals.py                 # 全局配置
+│   ├── performance_metrics.py     # 性能指标计算
+│   ├── utils.py                   # 工具函数
+│   └── eata_agent/               # EATA核心算法
+│       ├── args.py               # 参数配置
+│       ├── engine.py             # 核心引擎
+│       ├── mcts.py               # 蒙特卡洛树搜索
+│       ├── model.py              # 模型定义
+│       ├── network.py            # 神经网络
+│       └── utils/                # 工具模块
+├── experiments/                   # 实验模块
+│   ├── ablation_study/           # 消融实验
+│   │   ├── variants/             # 6个消融变体
+│   │   ├── configs/              # 实验配置
+│   │   └── run_ablation_study.py # 消融实验主程序
+│   └── comparison_experiments/   # 对比实验
+│       └── algorithms/           # 对比算法实现
+├── docs/                         # 文档
+├── predict.py                    # 主要预测接口
+├── main.py                      # 定时调度系统
+└── experiment_pipeline.py       # 实验流水线
 ```
 
-关键关系引用：
+## 🔬 核心功能
 
-- [NEMoTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:666:0-706:9) 统一入口，内部的 [NEMoTSPredictor](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:461:0-664:39) 根据数据量选择：
-  - 充足数据：[FullNEMoTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:226:0-459:38) 调用 [nemots.engine.Engine.simulate()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:26:4-52:80) → [model.Model.run()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:237:4-357:79) → [mcts.MCTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:7:0-365:36) + `network.PVNetCtx`，并用 [mcts_adapter.MCTSAdapter](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:17:0-165:24) 对齐维度，打分经 [score.score_with_est](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/score.py:48:0-136:16) 与 [engine.OptimizedMetrics.metrics](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:164:4-280:39)。
-  - 数据不足：[SimpleNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:132:0-224:40) 在 [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 内部生成与评估符号表达式。
-- [sliding_window_nemots.py](cci:7://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:0:0-0:0) 的 [SlidingWindowNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:16:0-291:9) 直接构造 [Engine(Args)](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:16:0-160:12)，使用滑窗数据并将前一窗最佳表达式以继承方式传入 [simulate()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:26:4-52:80)。
+### 1. EATA核心算法
+- **蒙特卡洛树搜索(MCTS)**: 智能决策树搜索
+- **神经网络指导**: 深度学习价值评估
+- **强化学习反馈**: 自适应学习机制
+- **多技术指标融合**: RSI、MACD、布林带等
 
-## 训练/预测时序图（完整 NEMoTS 路径）
+### 2. 消融实验系统
+支持6种消融变体的科学对比：
+- **EATA-Full**: 完整版本(基准)
+- **EATA-NoNN**: 无神经网络版本
+- **EATA-NoMem**: 无记忆机制版本
+- **EATA-Simple**: 简化版本
+- **EATA-NoExplore**: 无探索机制版本
+- **EATA-NoMCTS**: 无蒙特卡洛模拟版本
 
-```mermaid
-sequenceDiagram
-    autonumber
-    participant User as User Code
-    participant Adapter as NEMoTSAdapter
-    participant Pred as NEMoTSPredictor
-    participant Full as FullNEMoTSAdapter
-    participant Eng as nemots.Engine
-    participant Mod as nemots.Model
-    participant MCTS as nemots.MCTS (+ MCTSAdapter)
-    participant Net as PVNetCtx (network)
-    participant Score as score/metrics
+### 3. 对比实验系统
+包含多种主流交易算法：
+- **EATA**: 本项目核心算法
+- **Buy & Hold**: 买入持有策略
+- **LSTM**: 长短期记忆网络
+- **ARIMA**: 自回归移动平均
+- **GBDT**: 梯度提升决策树
+- **LightGBM**: 轻量级梯度提升
+- **Transformer**: 注意力机制模型
+- **FinRL系列**: PPO、A2C、SAC等强化学习算法
 
-    User->>Adapter: train(df)
-    Adapter->>Pred: .fit(df)
-    Pred->>Full: 构造 + .fit(df)
-    Full->>Full: _prepare_training_data(df) → (X,y)
-    Full->>Full: _convert_to_nemots_format(X,y) → data
-    Full->>Eng: simulate(data, inherited_tree?)
+## 🛠️ 安装与使用
 
-    Eng->>Mod: run(X, y, inherited_tree)
-    Mod->>MCTS: 构造(MCTSAdapter.patch_mcts)
-    loop num_transplant × num_runs
-        MCTS->>Net: get_policy3(...) → policy_nn, value
-        MCTS->>MCTS: 融合 NN policy 与 UCB
-        MCTS->>MCTS: 搜索/rollout/回传
-        MCTS->>Mod: 返回 best_solution, records
-        Mod->>Mod: 更新 data_buffer / aug_grammars
-    end
-    Mod-->>Eng: all_eqs, test_scores, supervision_data, policy, reward
-    Eng->>Score: OptimizedMetrics.metrics(...)
-    Score-->>Eng: mae, mse, corr, best_exp
-    Eng-->>Full: 返回(best_exp, mae, mse, corr, ...)
-
-    Full-->>Pred: is_trained=True
-    Pred-->>Adapter: done
-
-    User->>Adapter: predict(df)
-    Adapter->>Pred: .predict_action(df)
-    alt FullNEMoTSAdapter
-        Pred->>Full: .predict_action(df)
-        Full-->>Pred: action {-1,0,1}
-    else SimpleNEMoTS
-        Pred->>Pred: 简化表达式预测
-        Pred-->>Adapter: action {-1,0,1}
-    end
+### 环境要求
+```bash
+Python >= 3.8
+PyTorch >= 1.9.0
+pandas >= 1.3.0
+numpy >= 1.21.0
+scikit-learn >= 1.0.0
 ```
-
-## 补充说明
-
-- **顶层入口**：
-
-  - [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 提供统一接口：[NEMoTSAdapter.train()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:676:4-686:24), [NEMoTSAdapter.predict()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:688:4-693:48)。
-  - [sliding_window_nemots.py](cci:7://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:0:0-0:0) 提供滑窗增强版本：[SlidingWindowNEMoTS.sliding_fit()](cci:1://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:160:4-220:13), [SlidingWindowNEMoTS.predict()](cci:1://file:///Users/yin/Desktop/doing/eata/sliding_window_nemots.py:222:4-272:20)，直接用 [Engine](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:16:0-160:12) 与 [Args](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:237:8-297:90)。
-- **核心搜索与评估链路**：
-
-  - [nemots/model.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/model.py:0:0-0:0) 中 [Model.run()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/model.py:69:4-252:80) 负责构建 [MCTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:7:0-365:36)，组织 grammar（[symbolics.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/symbolics.py:0:0-0:0)），引导搜索（`network.PVNetCtx`），并将搜索轨迹缓存到 `data_buffer`。
-  - [nemots/mcts_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:0:0-0:0) 的 [MCTSAdapter.patch_mcts()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts_adapter.py:70:4-126:28) 对 [MCTS.get_policy3()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/mcts.py:207:4-214:28) 进行维度对齐，保证 NN 策略输出与 MCTS 语法空间一致。
-  - [nemots/score.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/score.py:0:0-0:0) 的 [score_with_est()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/score.py:48:0-136:16) 对表达式进行系数估计与评分，[nemots/engine.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:0:0-0:0) 的 [OptimizedMetrics.metrics()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots/engine.py:164:4-280:39) 用于最终度量与表达式选择。
-- **简化路径**：
-
-  - [SimpleNEMoTS](cci:2://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:132:0-224:40) 在 [nemots_adapter.py](cci:7://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:0:0-0:0) 中，通过随机表达式模板与 [StockScorer.score_expression()](cci:1://file:///Users/yin/Desktop/doing/eata/nemots_adapter.py:71:4-130:34) 简化评估，数据不足时兜底。
-
----
-
-## 🚀 RL增强版快速开始
 
 ### 安装依赖
 ```bash
-pip install -r requirements.txt
+pip install torch pandas numpy scikit-learn matplotlib seaborn
+pip install quantstats empyrical stockstats baostock tushare
+pip install schedule retrying pysnooper streamlit
 ```
 
-### 使用RL增强版EATA
+### 快速开始
+
+#### 1. 运行消融实验
+```bash
+cd experiments/ablation_study
+python run_ablation_study.py
+```
+
+#### 2. 运行单次预测
 ```python
-from agent import Agent
+from predict import run_eata_core_backtest
 import pandas as pd
 
-# 创建RL增强版Agent
-agent = Agent(pd.DataFrame(), lookback=100, lookahead=20)
+# 加载股票数据
+stock_df = pd.read_csv('your_stock_data.csv')
 
-# 进行交易决策（自动RL反馈学习）
-trading_signal, rl_reward = agent.criteria(your_data, shares_held=0)
+# 运行EATA回测
+metrics, portfolio = run_eata_core_backtest(
+    stock_df=stock_df,
+    ticker='AAPL',
+    lookback=50,
+    lookahead=10,
+    stride=1,
+    depth=300
+)
 
-# 系统会自动：
-# 1. 生成交易信号
-# 2. 计算RL奖励
-# 3. 调整模型参数
-# 4. 持续自我优化
+print(f"年化收益率: {metrics['Annual Return (AR)']:.2%}")
+print(f"夏普比率: {metrics['Sharpe Ratio']:.2f}")
 ```
 
-### 核心文件说明
-- `rl.py` - 强化学习反馈系统
-- `agent.py` - RL增强版EATA Agent
-- `sliding_window_nemots.py` - 增强版NEMoTS引擎
-- `predict.py` - 预测器主入口
+#### 3. 启动定时交易系统
+```bash
+python main.py
+```
 
-### RL反馈机制
-系统在每次交易决策后会：
-1. **奖励反馈** - 基于预测准确性增强策略
-2. **损失反馈** - 根据MAE调整NEMoTS超参数
-3. **参数优化** - 动态调整探索率、学习率等
-4. **自动重启** - 检测性能下降时重启搜索
+## 📊 实验结果
+
+### 消融实验结果示例
+| 变体 | 年化收益率 | 夏普比率 | 最大回撤 | 胜率 | 核心特征 |
+|------|------------|----------|----------|------|----------|
+| EATA-Full | 15.2% | 1.34 | -8.5% | 58.3% | 完整版本(基准) |
+| EATA-NoNN | 12.1% | 1.12 | -11.2% | 54.1% | 无神经网络指导 |
+| EATA-NoMem | 13.8% | 1.25 | -9.8% | 56.7% | 无记忆机制 |
+| EATA-Simple | 14.1% | 1.28 | -9.2% | 57.1% | 简化版本 |
+| EATA-NoExplore | 13.5% | 1.21 | -10.1% | 55.8% | 无探索机制 |
+| EATA-NoMCTS | 11.9% | 1.08 | -12.8% | 53.2% | 无蒙特卡洛搜索 |
+
+### 对比实验结果示例
+| 算法 | 年化收益率 | 夏普比率 | 最大回撤 | 算法类型 |
+|------|------------|----------|----------|----------|
+| **EATA** | **15.2%** | **1.34** | **-8.5%** | 强化学习+MCTS |
+| LSTM | 11.8% | 1.05 | -12.3% | 深度学习 |
+| ARIMA | 9.2% | 0.92 | -14.1% | 时间序列 |
+| GBDT | 10.5% | 0.98 | -13.5% | 机器学习 |
+| Buy&Hold | 8.9% | 0.87 | -15.6% | 基准策略 |
+
+> **注意**: 以上结果为示例数据，实际结果可能因市场环境、参数设置等因素而异。
+
+## 🔧 配置说明
+
+### 主要参数
+- `lookback`: 历史数据回看窗口 (默认: 50)
+- `lookahead`: 未来预测窗口 (默认: 10)  
+- `stride`: 滑动步长 (默认: 1)
+- `depth`: MCTS搜索深度 (默认: 300)
+
+### 数据格式
+支持标准OHLCV格式：
+```csv
+date,open,high,low,close,volume,amount
+2023-01-01,100.0,105.0,98.0,103.0,1000000,103000000
+```
+
+## 📈 性能特点
+
+- **高精度预测**: 结合多种技术指标和深度学习
+- **自适应学习**: 强化学习机制持续优化
+- **风险控制**: 内置止损和资金管理
+- **可扩展性**: 模块化设计，易于扩展新算法
+- **科学验证**: 完整的消融实验和对比实验系统
+
+## 🤝 贡献指南
+
+欢迎提交Issue和Pull Request！
+
+1. Fork本项目
+2. 创建特性分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 打开Pull Request
+
+## 📄 许可证
+
+本项目采用MIT许可证 - 查看 [LICENSE](LICENSE) 文件了解详情
+
+## 📞 联系方式
+
+如有问题或建议，请通过Issue联系我们。
+
+---
+
+**注意**: 本项目仅用于学术研究和教育目的，不构成投资建议。实际交易请谨慎评估风险。

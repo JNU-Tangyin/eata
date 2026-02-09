@@ -1,6 +1,0 @@
-{
-  "finrl_ppo": {
-    "success": false,
-    "description": "FinRL PPO强化学习策略"
-  }
-}
