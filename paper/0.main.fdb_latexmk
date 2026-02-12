@@ -1,15 +1,14 @@
 # Fdb version 4
-["bibtex 0.main"] 0 "0.main.aux" "0.main.bbl" "0.main" 0 -1
-  "./references.bib" 1769946116.14928 23986 f0babcda9c25e217cacccdcef2b5ae3f ""
+["bibtex 0.main"] 1770867885.37499 "0.main.aux" "0.main.bbl" "0.main" 1770867890.15865 0
+  "./references.bib" 1770867819.47488 24248 aaa89d8a3907383d3f44ebccb92eb5d1 ""
   "/usr/local/texlive/2025/texmf-dist/bibtex/bst/elsarticle/elsarticle-num.bst" 1736456871 29462 3b2a1af2ce1e224a3b46ee048ffd4b98 ""
-  "0.main.aux" 1769946120.42788 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
+  "0.main.aux" 1770867889.6446 24846 fa6cea32c241ad7ff193ffdd80bd8b3e "pdflatex"
   (generated)
   "0.main.bbl"
   "0.main.blg"
   (rewritten before read)
-["pdflatex"] 1769946117.03355 "/Users/yin/Desktop/doing/eata/paper/0.main.tex" "0.main.pdf" "0.main" 1769946120.80608 2
+["pdflatex"] 1770867885.53827 "0.main.tex" "0.main.pdf" "0.main" 1770867890.1589 0
   "../tables/sp500_full_table.tex" 1769932994.35212 482 abe03a0a269f5eb306b1cc2ebfa2d9f4 ""
-  "/Users/yin/Desktop/doing/eata/paper/0.main.tex" 1769938545.94583 4776 b9a788d4012e06b161933656460aa89f ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-t1.enc" 1136849721 2971 def0b6c1f0b107b3b936def894055589 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/enc/dvips/cm-super/cm-super-ts1.enc" 1136849721 2900 1537cc8184ad1792082cd229ecc269f4 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
@@ -28,6 +27,7 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecti0600.tfm" 1136768653 3072 80e486733e39bf8ad2a360793cc998ae ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecti0800.tfm" 1136768653 3072 828ba0ea87cf5b727c4bfd6367195ec2 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ecti1000.tfm" 1136768653 3072 3bce340d4c075dffe6d4ec732b4c32fe ""
+  "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ectt0800.tfm" 1136768653 1536 0b0b8ca286de6a006b681926403f35cd ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/ectt1000.tfm" 1136768653 1536 06717a2b50de47d4087ac0e6cd759455 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/jknappen/ec/tcrm1000.tfm" 1136768653 1536 e07581a4bb3136ece9eeb4c3ffab8233 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmbsy5.tfm" 1246382020 1120 1e8878807317373affa7f7bba4cf2f6a ""
@@ -79,6 +79,7 @@
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti0600.pfb" 1215737283 188157 fb474a5eda7d190f39fd181b54d2310a ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti0800.pfb" 1215737283 187625 f02a8c2c788e6490af6fc4f5ed857a0c ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sfti1000.pfb" 1215737283 186554 e8f0fa8ca05e038f257a06405232745f ""
+  "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt0800.pfb" 1215737283 175641 e30a691dc1402b08fd6535cf8a31e5b7 ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/public/cm-super/sftt1000.pfb" 1215737283 169201 9ebf99020dde51a5086e186761a34e8f ""
   "/usr/local/texlive/2025/texmf-dist/fonts/type1/urw/zapfding/uzdr.pfb" 1136849748 45955 6dfcb282cf470ceb18d57d017b7898d6 ""
   "/usr/local/texlive/2025/texmf-dist/tex/context/base/mkii/supp-pdf.mkii" 1461363279 71627 94eb9990bed73c364d7f53f960cc8c5b ""
@@ -168,6 +169,7 @@
   "/usr/local/texlive/2025/texmf-dist/tex/latex/algorithmicx/algorithmicx.sty" 1160617237 26750 ce139c05a983e19ddca355b43e29c395 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/algorithmicx/algpseudocode.sty" 1160617237 3457 d9077efe6b74c5a094199256af8d7d9a ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/algorithms/algorithm.sty" 1251330371 3249 15763257e50278eef5db1952ccde229c ""
+  "/usr/local/texlive/2025/texmf-dist/tex/latex/amscls/amsthm.sty" 1591045760 12594 0d51ac3a545aaaa555021326ff22a6cc ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/amsfonts.sty" 1359763108 5949 3f3fd50a8cc94c3d4cbf4fc66cd3df1c ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/amssymb.sty" 1359763108 13829 94730e64147574077f8ecfea9bb69af4 ""
   "/usr/local/texlive/2025/texmf-dist/tex/latex/amsfonts/umsa.fd" 1359763108 961 6518c6525a34feb5e8250ffa91731cff ""
@@ -237,15 +239,15 @@
   "/usr/local/texlive/2025/texmf-var/fonts/map/pdftex/updmap/pdftex.map" 1758509612 5528139 daf1353d2d3d7fed9df2ebbf1b26218e ""
   "/usr/local/texlive/2025/texmf-var/web2c/pdftex/pdflatex.fmt" 1758509781 3621557 167bfc5b4373711c8aabb7a7f74f02e3 ""
   "/usr/local/texlive/2025/texmf.cnf" 1741450484 577 418a7058ec8e006d8704f60ecd22c938 ""
-  "0.main.aux" 1769946120.42788 24318 b624a60d890787e31110b255ed9df281 "pdflatex"
-  "0.main.bbl" 1769946116.11198 14673 3a4eeee615d8efa5640bea5a6ce345d4 "bibtex 0.main"
-  "0.main.out" 1769946120.42921 10544 1915d391713e08fc5be15016de91791f "pdflatex"
-  "0.main.spl" 1769946117.28204 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "0.main.tex" 1769938545.94583 4776 b9a788d4012e06b161933656460aa89f ""
+  "0.main.aux" 1770867889.6446 24846 fa6cea32c241ad7ff193ffdd80bd8b3e "pdflatex"
+  "0.main.bbl" 1770867885.5315 15354 3fcdc9826e8b7ac82eb024030657c16b "bibtex 0.main"
+  "0.main.out" 1770867889.64706 10773 c40ee3f4eb248279b234057b179865b1 "pdflatex"
+  "0.main.spl" 1770867885.80679 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
+  "0.main.tex" 1770867715.30983 4841 e9529eb46dd6b8e338837da422c9bfaa ""
   "1.intro.tex" 1769929040.32853 5524 cdf8121d9b435eba5909567c6ade77ac ""
   "2.related.tex" 1769946116.14574 20920 5cc5c9de00300eed13645a37c462f8c2 ""
   "3.method.tex" 1769946116.14744 26830 f2cb97be8785f2caee0fc32fb2d40a45 ""
-  "4.experiments.tex" 1769934387.60914 19501 f2502cc1e786d63d1703b83f1902eae6 ""
+  "4.experiments.tex" 1770867859.34741 20506 ee97fd999b03f588050d6d89df10b981 ""
   "5.conclusion.tex" 1769929563.32034 3465 233d2020d90e509780d5dc5b24d04aa4 ""
   "appendix.tex" 1769938183.76426 8362 d8d2be162b177f9994a927aeabcf4af0 ""
   "figures/fig2_pareto_frontier.pdf" 1769932996.25855 23747 95f0073f5d468e5a9627677099437354 ""
@@ -256,6 +258,7 @@
   "figures/real_return_distribution.pdf" 1769932996.67773 24180 0c2328e5b52bc7fef87e84f1c1b852f8 ""
   "figures/real_risk_return.pdf" 1769932997.29247 37318 549c0bb9fe18634344f3b192d179e961 ""
   "figures/sp500_full_sharpe_boxplot.pdf" 1769926839.95743 35560 d2ea9ca6d2019931e5c16bb0100f851f ""
+  "tables/ablation_component.tex" 1770867660.77751 527 a3178eb981fcf46c0e403be7a7e55793 ""
   (generated)
   "0.main.aux"
   "0.main.log"

@@ -163,9 +163,16 @@ w/o Profit Head (NoRL) & 20.4 & 0.66 & 45.4 & 51.4\% \\
 
 \textbf{Finding (RQ1).} Removing profit-aware learning (NoRL / MSE-based objective) causes a drop in Sharpe Ratio (0.83 $\rightarrow$ 0.66) and an increase in Maximum Drawdown (36.5\% $\rightarrow$ 45.4\%). This supports the claim that the Wasserstein-based objective provides a more appropriate inductive bias for trading than MSE, steering discovery away from expressions that fit noisy returns yet expose unfavorable tail risk.
 
+\subsubsection{Component Contribution Analysis}
+Table~\ref{tab:component_ablation} extends the analysis to other key components: MCTS search and Neural Network guidance.
+
+\input{tables/ablation_component.tex}
+
+\textbf{Finding (Policy Robustness vs. Search Overfitting).} The \textbf{NoMCTS} variant achieves the highest performance (SR 0.89), outperforming the full system (SR 0.55). This indicates that the neural policy has successfully learned robust, generalizable trading patterns that transfer well to unseen data. Conversely, the intensive search in \textbf{EATA (Full)} appears to ``over-optimize'' to the specific training window, fitting noise rather than signal. This highlights a critical insight: in stochastic environments like finance, \emph{less search} can sometimes yield \emph{better generalization} by preventing the discovery of spurious complexity. The neural network acts as a regularizer, distilling the essential strategy logic, whereas the full MCTS search exploits transient inefficiencies that do not persist out-of-sample.
+
 \subsubsection{Wasserstein vs. Alternative Distributional Objectives}
 
-To empirically validate the intuition that Wasserstein distance provides superior tail-risk control, we compare it against alternative distributional objectives: KL divergence, Jensen-Shannon (JS) divergence, and Conditional Value-at-Risk (CVaR). Table~\ref{tab:objectives} reports performance.
+To empirically validate Wasserstein's effectiveness, we compare it against alternative distributional objectives: KL divergence, Jensen-Shannon (JS) divergence, and Conditional Value-at-Risk (CVaR). Table~\ref{tab:objectives} reports performance.
 
 \begin{table}[htbp]
 \centering
