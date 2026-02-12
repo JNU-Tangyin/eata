@@ -1,6 +1,6 @@
 """
-EATA-NoNN: 无神经网络引导变体
-移除神经网络先验，设置alpha=0，纯MCTS搜索
+EATA-NoNN: 无神经网络变体
+纯MCTS引导，设置alpha=1.0，移除神经网络
 """
 
 import sys
@@ -14,7 +14,7 @@ import numpy as np
 class EATANoNN:
     """
     无神经网络引导的EATA变体
-    通过设置alpha=0移除神经网络先验，验证神经网络引导的价值
+    通过设置alpha=1.0移除神经网络先验，验证神经网络引导的价值
     """
     
     def __init__(self, df: pd.DataFrame, **kwargs):
@@ -33,11 +33,11 @@ class EATANoNN:
             depth=kwargs.get('depth', 300)
         )
         
-        # 应用消融修改：强制设置alpha=0
+        # 应用消融修改：强制设置alpha=1.0
         self._apply_modifications()
         
         self.modifications = {
-            'alpha': 0.0,
+            'alpha': 1.0,
             'target_file': 'eata_agent/mcts.py',
             'target_line': 264,
             'modification_type': 'parameter_override'
@@ -45,15 +45,15 @@ class EATANoNN:
         
     def _apply_modifications(self):
         """
-        应用消融修改：设置alpha=0移除神经网络引导
+        应用消融修改：设置alpha=1.0移除神经网络引导
         """
         try:
             # 修改Agent内部的MCTS参数
             # 通过修改sliding_window_nemots中的参数传递
             if hasattr(self.agent, 'hyperparams'):
-                # 强制设置alpha为0，移除神经网络引导
-                self.agent.hyperparams.alpha = 0.0
-                print(f"{self.name}: 已设置alpha=0，移除神经网络引导")
+                # 强制设置alpha为1.0，移除神经网络引导
+                self.agent.hyperparams.alpha = 1.0
+                print(f"{self.name}: 已设置alpha=1.0，移除神经网络引导")
             
         except Exception as e:
             print(f"{self.name}: 应用修改时出错: {e}")
@@ -64,7 +64,7 @@ class EATANoNN:
         """
         try:
             print(f"运行{self.name}回测 - {ticker}")
-            print(f"   修改: alpha=0 (无神经网络引导)")
+            print(f"   修改: alpha=1.0 (无神经网络引导，纯MCTS)")
             
             # 导入并使用与对比实验相同的核心回测函数
             import sys
@@ -77,9 +77,9 @@ class EATANoNN:
             # 合并训练和测试数据
             combined_df = pd.concat([train_df, test_df]).reset_index(drop=True)
             
-            # 使用核心回测函数，传入变体参数（只修改alpha）
+            # 使用核心回测函数，传入变体参数（移除神经网络，纯MCTS）
             variant_params = {
-                'alpha': 0.0
+                'alpha': 1.0  # 修复：alpha=1.0表示纯MCTS，移除神经网络
             }
             core_metrics, portfolio_df = run_eata_core_backtest(
                 stock_df=combined_df,
