@@ -1,0 +1,131 @@
+% 2.related.tex - Related Work
+\section{Related Work}
+\label{sec:related}
+
+This section situates EATA at the intersection of (i) empirical algorithmic trading evaluation, (ii) symbolic regression and neural-guided search, and (iii) distributional / risk-sensitive objectives. We organize prior work following a pragmatic taxonomy aligned with our research questions: 
+\textbf{(A)} evaluation and backtesting protocols, \textbf{(B)} symbolic discovery and search algorithms, and \textbf{(C)} distributional metrics and risk-sensitive learning.
+
+%------------------------------------------------------------------------------
+\subsection{Evaluation, Backtesting, and Statistical Validity in Trading}
+
+Empirical algorithmic trading studies typically report risk-adjusted performance metrics derived from classical portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual}. However, in finite samples, Sharpe ratio estimates can have substantial uncertainty and non-Gaussian sensitivity~\cite{lo2002sharpe_stats,ledoit2008sharpe}, and naive benchmark selection can induce multiple-testing and data-snooping bias. Classic econometric procedures such as the reality check~\cite{white2000reality_check} and the superior predictive ability (SPA) test~\cite{hansen2005spa} provide principled baselines for large-scale strategy comparison; related work further emphasizes the need to correct for selection bias and backtest overfitting~\cite{bailey2014deflated_sharpe,bailey2017pbo}. In the broader asset-pricing literature, multiple-testing issues have been documented at scale when large factor libraries are mined~\cite{harvey2016multiple_testing}. Beyond statistical validity, realistic transaction cost modeling is essential because many strategies degrade sharply once implementation frictions are introduced~\cite{keim1997transaction_costs}. These considerations motivate our emphasis on risk-adjusted metrics and robustness checks rather than solely predictive accuracy.
+
+A recurring pitfall in the trading literature is to equate in-sample predictive performance with out-of-sample trading profitability. This mismatch is amplified because the evaluation target (returns) is noisy, heavy-tailed, and regime-dependent~\cite{cont2001empirical}. As a result, small modeling changes can lead to unstable rankings across assets and periods.
+
+From a scientific standpoint, this yields three concrete failure modes.
+\textbf{(i) Metric fragility:} the same strategy can appear superior under one risk-adjusted metric and inferior under another when return distributions are non-Gaussian; this is why robust inference for Sharpe ratios and performance comparisons is essential~\cite{lo2002sharpe_stats,ledoit2008sharpe}.
+\textbf{(ii) Search-induced false discoveries:} when thousands of candidate rules are implicitly tested (e.g., through GP, alpha mining, or hyperparameter sweeps), the top-performing strategy is statistically biased upward; reality-check style tests and overfitting diagnostics were introduced precisely to address this phenomenon~\cite{white2000reality_check,hansen2005spa,bailey2017pbo}.
+\textbf{(iii) Protocol leakage:} evaluation choices such as temporal splits, rebalancing frequency, and transaction cost assumptions can materially change conclusions, which makes reproducibility and explicitly stated protocols non-negotiable.
+
+These issues motivate EATA's methodological stance: rather than treating evaluation as an afterthought, we view objective design and search constraints as part of the validity mechanism that reduces the degrees of freedom available for accidental overfitting.
+
+\textbf{Implication for EATA.} This motivates two design principles used in our framework: (i) constrain the hypothesis space (grammar) to reduce implicit multiple testing, and (ii) align the learning signal with economically meaningful outcomes to avoid proxy-driven improvements.
+
+Finally, we note that algorithmic trading is not only a modeling problem but also a market-structure problem: automated execution and algorithmic strategies can affect liquidity and price dynamics~\cite{hendershott2011does}. This further motivates evaluation protocols that emphasize robustness and auditability.
+
+%------------------------------------------------------------------------------
+\subsection{Interpretable Alpha Discovery and Formulaic Trading Signals}
+
+A long-standing line of work studies human-interpretable, formulaic trading signals and alpha factors. Technical analysis has been extensively surveyed with mixed evidence on profitability and significant sensitivity to market regimes and evaluation protocols~\cite{park2007we}. Recent ``alpha mining'' efforts aim to automatically discover and combine formulaic factors at scale, ranging from genetic programming-based alpha discovery~\cite{chen2020alpha,ren2024alpha} to reinforcement learning and language-model assisted frameworks~\cite{yu2023alphagen,zhao2024alpha,xu2024alphaforge}. These methods reinforce a key methodological point: interpretability does not automatically imply economic usefulness unless the discovery objective is aligned with trading utility.
+
+Alpha discovery systems often make an implicit assumption: a factor that improves a proxy objective (e.g., prediction loss, IC, or a simplified RL reward) will translate into a profitable and robust trading rule. In practice, this assumption breaks under at least three common constraints.
+\textbf{(i) Turnover and costs:} weak predictive signals around zero can generate frequent trading and collapse under realistic friction models~\cite{keim1997transaction_costs}.
+\textbf{(ii) Tail constraints:} many practitioners operate under drawdown limits; factors that occasionally incur large losses can be unacceptable even if mean returns are positive.
+\textbf{(iii) Hypothesis-space inflation:} large factor libraries make false discoveries more likely unless the search is explicitly regularized and the evaluation protocol accounts for multiple testing~\cite{harvey2016multiple_testing,white2000reality_check}.
+
+EATA can be viewed as a ``constrained alpha miner'': it preserves formulaic interpretability but binds discovery to a profit-aware, distribution-sensitive learning signal while using grammar constraints to limit degrees of freedom.
+
+\textbf{Implication for EATA.} We therefore treat the discovery objective (profit-aware, distribution-sensitive) and the hypothesis-space control (grammar constraints) as first-class components rather than implementation details.
+
+%------------------------------------------------------------------------------
+\subsection{Black-Box Learning for Trading and the Interpretability Gap}
+
+Deep learning and reinforcement learning have been extensively applied to trading, including recurrent architectures for financial prediction~\cite{fischer2018deep,chen2015gru}, transformers for multi-scale pattern extraction~\cite{ding2020hierarchical,vaswani2017attention}, and deep RL systems for sequential decision making~\cite{deng2016deep,liu2020finrl}. These models can achieve strong empirical performance, but their inductive biases are largely opaque and they can be sensitive to non-stationarity and evaluation protocol choices.
+
+In addition to neural models, tree ensembles remain highly competitive in financial prediction pipelines due to their sample efficiency and robustness to heterogeneous features. Gradient boosting methods such as XGBoost~\cite{chen2016xgboost} and LightGBM~\cite{ke2017lightgbm} are widely used baselines in practice. However, even when post-hoc explanation tools are applied, ensemble models can yield explanations that are unstable across correlated features or regime shifts. Rule extraction methods such as inTrees~\cite{deng2019interpreting} partially bridge this gap, but they typically explain a fixed predictor rather than optimizing discovery toward interpretable, deployable trading rules.
+
+The black-box literature often assumes that improved predictive capacity will translate into improved trading performance under deployment constraints. However, in finance this assumption is especially brittle because (i) low signal-to-noise ratios amplify overfitting, (ii) regime shifts break stationarity, and (iii) decision-making must satisfy auditability and compliance constraints~\cite{eu2014mifid,cao2022ai,weber2024comprehensive}. Moreover, post-hoc explanation methods (LIME/SHAP) can provide local rationales but may fail robustness and faithfulness requirements, and can be manipulated~\cite{ribeiro2016should,lundberg2017unified,slack2020fooling}. This motivates intrinsically interpretable strategies in which the decision rule is the model.
+
+EATA positions interpretability as a constraint on the hypothesis class and the training signal, rather than a separate explanation layer applied after training.
+
+%------------------------------------------------------------------------------
+\subsection{Symbolic Regression for Time Series: Evolutionary, Grammar-Based, and Neural}
+
+\textbf{Evolutionary and Grammar-Based GP.} Genetic Programming (GP) remains a foundational paradigm for symbolic regression~\cite{koza1994genetic,poli2008field}. Grammar-based GP offers a principled way to encode domain constraints and reduce invalid expressions~\cite{mckay2010grammar}. Modern toolkits such as gplearn~\cite{stephens2016gplearn} and Operon~\cite{burlacu2020operon} improve scalability via efficient evaluation. In computational finance, evolutionary approaches have been widely explored for alpha discovery and rule mining~\cite{chen2002genetic,chen2020alpha}, but they often suffer from bloat and expensive fitness evaluations, especially when the objective requires realistic backtesting.
+
+\textbf{Neural Symbolic Regression.} Recent work incorporates neural guidance to improve sample efficiency and scalability. DSR~\cite{petersen2021deep} uses policy gradients to generate expressions token-by-token, while neural-to-symbolic models based on transformers have demonstrated promising scaling behavior on symbolic tasks~\cite{biggio2021neural,kamienny2022end,valipour2021symbolicgpt}. Comprehensive reviews highlight that a central challenge remains designing objectives that reflect the downstream utility of discovered expressions, rather than only reconstruction error~\cite{makke2024interpretable}.
+
+Beyond direct expression generation, grammar-aware generative models provide another way to impose syntactic constraints while learning expressive priors. For instance, grammar variational autoencoders~\cite{kusner2017grammar} demonstrate how context-free grammars can be used to ensure syntactic validity. Separately, program synthesis and library-learning approaches such as DreamCoder~\cite{ellis2021dreamcoder} learn reusable subroutines that improve sample efficiency and compress the hypothesis space. These ideas conceptually align with EATA's module extraction: instead of learning a latent program prior, we explicitly maintain a bounded library of reusable sub-expressions to preserve auditability.
+
+For time series trading, two practical constraints are often under-emphasized.
+\textbf{(i) Evaluation-dominated cost:} in trading, the expensive part is not parsing expressions but evaluating them under a backtesting protocol (positions, costs, and risk metrics). Methods that generate many candidates without strong pruning are therefore computationally prohibitive.
+\textbf{(ii) Spuriousness under non-stationarity:} without explicit domain constraints, symbolic regression can fit transient correlations that disappear under regime shifts; even when expressions are interpretable, they may not be stable.
+
+Grammar constraints in EATA serve as a structural prior that is both scientific and practical: scientifically, they operationalize domain knowledge and restrict the hypothesis class; practically, they reduce the size of the implicit multiple-testing problem created by search.
+
+\textbf{Implication for EATA.} We explicitly encode financial operators and fixed horizons to trade off expressiveness for robustness and auditability.
+
+%------------------------------------------------------------------------------
+\subsection{Neural-Guided Search and MCTS for Symbolic Discovery}
+
+Monte Carlo Tree Search (MCTS)~\cite{coulom2006efficient,kocsis2006bandit} provides a principled exploration--exploitation trade-off and has been successfully combined with neural policy--value guidance in game-playing systems~\cite{silver2016mastering,silver2017mastering}. In symbolic regression, MCTS-based methods have been explored as an alternative to GP~\cite{white2015programming,cazenave2013monte}, and actor--critic style enhancements have been proposed to improve search efficiency~\cite{lu2021incorporating}. Most relevant to our work is \textbf{NEMoTS} (Neural-Enhanced Monte-Carlo Tree Search)~\cite{xie2024nemots}, which pairs MCTS with policy--value networks for time series symbolic regression. Similarly, \textbf{AlphaCFG}~\cite{yang2026alpha} treats alpha discovery as a grammar-guided generation problem, utilizing a tree-structured linguistic MDP to enforce syntactic validity. EATA shares the neural-guided search paradigm but differentiates itself by explicitly re-architecting the guidance signal toward \emph{profit-aware} objectives (via Wasserstein distance) rather than solely optimizing IC, and by introducing temporal adaptation mechanisms.
+
+More broadly, MCTS has been used as a general-purpose mechanism for symbolic and scientific discovery beyond time series, e.g., for discovering governing equations~\cite{sun2022symbolic}. This line of work highlights an important methodological point: search algorithms benefit from domain priors and stable evaluation signals; otherwise, they can spend most of the budget exploring syntactically valid but semantically uninformative regions.
+
+Existing MCTS-based symbolic regression methods typically optimize predictive fit or benchmark task accuracy; the resulting expressions can be interpretable yet economically weak when deployed as trading rules. Concretely, optimizing MSE can produce forecasts that are accurate around the mean but poorly calibrated in the tails, which is precisely where trading risk is concentrated.
+
+Moreover, in financial markets, two additional boundary conditions matter.
+\textbf{(i) Regime dependence:} expressions discovered on one window can decay when volatility, liquidity, or macro conditions shift.
+\textbf{(ii) Objective mismatch:} even if a symbolic model predicts returns, turning it into a trading rule requires a decision layer; if the discovery objective ignores this layer, the downstream strategy may be unstable.
+
+EATA addresses these gaps by coupling neural-guided MCTS with a profit-aware head and by using sliding-window inheritance to bias search toward reusable substructures that survive across regimes.
+
+\textbf{Implication for EATA.} This motivates our profit head (objective alignment) and inheritance/augmentation mechanisms (non-stationarity and search efficiency).
+
+%------------------------------------------------------------------------------
+\subsection{Distributional Metrics, Optimal Transport, and Risk-Sensitive Learning}
+
+Financial returns are heavy-tailed and asymmetric~\cite{cont2001empirical}, making point-wise regression losses (e.g., MSE) a weak proxy for economic utility. Optimal transport provides a geometrically meaningful way to compare distributions and has been formalized in foundational texts and modern computational treatments~\cite{villani2009optimal,peyre2019computational}. In reinforcement learning, distributional perspectives~\cite{bellemare2017distributional} and risk-sensitive objectives such as CVaR optimization~\cite{chow2015cvar} further motivate designing reward signals that reflect tail risk and distributional shape rather than only mean outcomes. These insights directly motivate our use of Wasserstein distance as a profit-aware training signal.
+
+While risk-sensitive criteria (e.g., CVaR) explicitly target tail losses, they often require careful tuning of tail parameters and can be unstable when tail events are rare. Wasserstein distance provides a complementary mechanism: it compares entire distributions and remains meaningful even when supports differ.
+
+The key design question is not ``which metric is theoretically elegant'' but ``which metric provides a stable learning signal under noisy, heavy-tailed samples.'' In this sense, Wasserstein distance operationalizes a distribution-level inductive bias: it penalizes systematic miscalibration across quantiles and thus discourages strategies that look good in average outcomes but fail under tail events.
+
+\textbf{Implication for EATA.} We use Wasserstein distance to create a profit-aware training signal that remains informative under heavy tails and regime variability.
+
+%------------------------------------------------------------------------------
+\subsection{Explainability, Robustness, and Regulation in Finance}
+
+In high-stakes settings such as finance, interpretability is tied to governance and compliance requirements, including regulatory constraints (e.g., MiFID II~\cite{eu2014mifid}) and broader discussions on explanation rights~\cite{goodman2017european}. While post-hoc explanation methods such as LIME~\cite{ribeiro2016should} and SHAP~\cite{lundberg2017unified} are widely used, their robustness and faithfulness can be challenged, especially under adversarial manipulations~\cite{slack2020fooling}. Furthermore, there is ongoing debate on whether attention mechanisms constitute explanations~\cite{jain2019attention,serrano2019attention,wiegreffe2019attention}. These findings support the argument that intrinsically interpretable symbolic strategies can be preferable for auditability and scientific scrutiny~\cite{rudin2019stop,weber2024comprehensive,cao2022ai}.
+
+From a debate standpoint, the key tension is between \emph{post-hoc transparency} and \emph{intrinsic interpretability}. Post-hoc explanations can provide local insights but may not satisfy robustness or auditability requirements; in contrast, symbolic strategies expose the decision rule directly but risk overfitting unless the hypothesis space and objectives are carefully designed. EATA's design explicitly treats interpretability as a constraint on the hypothesis class (grammar) rather than a visualization layer applied after training.
+
+An emerging complementary direction is to design models that are self-explaining by construction (rather than explained after training), e.g., self-explaining neural networks~\cite{alvarez2018towards}. However, such approaches still require careful definition of what constitutes a faithful explanation and may not yield a globally auditable rule set. In contrast, symbolic expressions provide explicit, globally applicable decision rules that can be inspected and stress-tested.
+
+%------------------------------------------------------------------------------
+\subsection{Positioning of EATA}
+
+\begin{table}[htbp]
+\centering
+\caption{Comparison with Related Approaches}
+\label{tab:comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{Interp.} & \textbf{Neural} & \textbf{Finance} & \textbf{Profit} & \textbf{Stationarity} \\
+\midrule
+LSTM/Transformer & \ding{55} & \ding{51} & \ding{55} & \ding{55} & \ding{51} \\
+FinRL (PPO) & \ding{55} & \ding{51} & \ding{51} & \ding{51} & \ding{51} \\
+GP (Symbolic) & \ding{51} & \ding{55} & \ding{55} & \ding{55} & \ding{55} \\
+Alpha Mining~\cite{chen2020alpha,yu2023alphagen,xu2024alphaforge} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{55} \\
+DSR & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{55} \\
+NEMoTS & \ding{51} & \ding{51} & \ding{55} & \ding{55} & \ding{55} \\
+\textbf{EATA (Ours)} & \ding{51} & \ding{51} & \ding{51} & \ding{51} & \ding{51} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Table~\ref{tab:comparison} compares EATA with representative families across key dimensions. Compared to prior alpha mining and symbolic discovery pipelines, EATA uniquely integrates \emph{neural-guided search} (MCTS + PVNet), \emph{financial operators} (domain grammar), and \emph{profit-aware learning} (distributional reward) under a unified, interpretable framework.
+
+The above literature suggests that the core difficulty is not the absence of interpretable models, nor the absence of powerful search, but the \emph{mismatch between discovery objectives and trading utility} under a large, implicitly tested hypothesis space. EATA's components map directly to these failure modes: the Wasserstein-based profit signal targets distribution-level utility under heavy tails; grammar constraints bound degrees of freedom and improve auditability; neural-guided MCTS improves search efficiency without sacrificing explicit exploration; and sliding-window inheritance provides a pragmatic mechanism for non-stationarity.

@@ -1,0 +1,293 @@
+<mxfile host="app.diagrams.net" modified="2026-02-01T08:33:00.000Z" agent="Cascade" version="22.1.16">
+  <diagram name="EATA Architecture" id="eata-architecture">
+    <mxGraphModel dx="1422" dy="794" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Background -->
+        <mxCell id="bg" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=none;" vertex="1" parent="1">
+          <mxGeometry x="0" y="0" width="1600" height="900" as="geometry" />
+        </mxCell>
+
+        <!-- Phase 1: Data & Protocol -->
+        <mxCell id="phase1" value="Phase 1: Data &amp; Protocol" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=1;fontSize=12;fontStyle=1;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="40" y="80" width="340" height="700" as="geometry" />
+        </mxCell>
+
+        <!-- Sliding Windows -->
+        <mxCell id="window1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="60" y="120" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="window2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d6eaf8;strokeColor=#1f77b4;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="60" y="160" width="280" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="window3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#c6e2f3;strokeColor=#1f77b4;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="60" y="200" width="280" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Input Features -->
+        <mxCell id="input_label" value="Input Features: X = {x_t}_{t=1}^T" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=11;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="60" y="90" width="280" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Sliding Window Label -->
+        <mxCell id="sw_label" value="Sliding Windows" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="60" y="280" width="280" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow to Phase 2 -->
+        <mxCell id="arrow1" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;exitX=1;exitY=0.5;entryX=0;entryY=0.5;" edge="1" parent="1" source="phase1" target="phase2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="400" y="430" as="sourcePoint" />
+            <mxPoint x="450" y="380" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Phase 2: Symbolic Search -->
+        <mxCell id="phase2" value="Phase 2: Symbolic Search" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=1;fontSize=12;fontStyle=1;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="400" y="80" width="340" height="700" as="geometry" />
+        </mxCell>
+
+        <!-- MCTS Tree Container -->
+        <mxCell id="mcts_container" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2c3e50;strokeWidth=0.75;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="420" y="120" width="300" height="280" as="geometry" />
+        </mxCell>
+
+        <!-- MCTS Tree Nodes -->
+        <mxCell id="root_node" value="S" style="ellipse;whiteSpace=wrap;html=1;fillColor=#1f77b4;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#ffffff;" vertex="1" parent="1">
+          <mxGeometry x="545" y="140" width="50" height="50" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node1" value="A" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="470" y="220" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node2" value="B" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="580" y="220" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="node3" value="D" style="ellipse;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="660" y="220" width="40" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Tree Edges -->
+        <mxCell id="edge1" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;exitX=0.25;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="root_node" target="node1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="190" as="sourcePoint" />
+            <mxPoint x="490" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge2" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;exitX=0.5;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="root_node" target="node2">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="190" as="sourcePoint" />
+            <mxPoint x="600" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="edge3" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;exitX=0.75;exitY=1;entryX=0.5;entryY=0;" edge="1" parent="1" source="root_node" target="node3">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="570" y="190" as="sourcePoint" />
+            <mxPoint x="680" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- MCTS Loop -->
+        <mxCell id="mcts_loop" value="" style="shape=curlyBracket;whiteSpace=wrap;html=1;rounded=1;flipH=0;labelPosition=right;verticalLabelPosition=middle;strokeColor=#2c3e50;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="730" y="130" width="20" height="270" as="geometry" />
+        </mxCell>
+
+        <mxCell id="loop_label" value="MCTS Loop&#xa;Selection → Expansion&#xa;→ Simulation → Backprop" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=9;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="755" y="180" width="80" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Module Library -->
+        <mxCell id="module_lib" value="Module Library M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="420" y="420" width="140" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="feedback1" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.5;dashed=1;curved=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="490" y="420" as="sourcePoint" />
+            <mxPoint x="490" y="400" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow to Phase 3 -->
+        <mxCell id="arrow2" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="760" y="430" as="sourcePoint" />
+            <mxPoint x="810" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Phase 3: Neural Guidance -->
+        <mxCell id="phase3" value="Phase 3: Neural Guidance (PVNet)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=1;fontSize=12;fontStyle=1;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="760" y="80" width="340" height="700" as="geometry" />
+        </mxCell>
+
+        <!-- Dual LSTM Encoders -->
+        <mxCell id="encoder1" value="State Encoder&#xa;σ = [r_1, ..., r_l]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="780" y="120" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="encoder2" value="Sequence Encoder&#xa;X = {x_t}" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="950" y="120" width="130" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- MLP Fusion -->
+        <mxCell id="mlp" value="MLP Fusion" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d6eaf8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="880" y="210" width="100" height="50" as="geometry" />
+        </mxCell>
+
+        <!-- Three Heads -->
+        <mxCell id="policy_head" value="Policy Head π&#xa;Action Probabilities" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=9;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="780" y="290" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="value_head" value="Value Head V&#xa;Target: r^acc" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=9;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="910" y="290" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="profit_head" value="Profit Head P&#xa;Target: r^rl&#xa;Wasserstein W_1" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=9;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1040" y="290" width="100" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Feedback to MCTS -->
+        <mxCell id="feedback2" value="Neural Guidance α" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.5;dashed=1;curved=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="830" y="290" as="sourcePoint" />
+            <mxPoint x="760" y="250" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow to Phase 4 -->
+        <mxCell id="arrow3" value="" style="endArrow=classic;html=1;strokeColor=#2c3e50;strokeWidth=0.75;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1120" y="430" as="sourcePoint" />
+            <mxPoint x="1170" y="430" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Phase 4: Evaluation & Signals -->
+        <mxCell id="phase4" value="Phase 4: Evaluation &amp; Signals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=1;fontSize=12;fontStyle=1;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1120" y="80" width="340" height="700" as="geometry" />
+        </mxCell>
+
+        <!-- Coefficient Optimization -->
+        <mxCell id="coeff_opt" value="Coefficient Optimization&#xa;argmin_c ||Eval(e,c) - y||_2" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="120" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <!-- Reward Formulation -->
+        <mxCell id="reward1" value="Accuracy: r^acc = 1/(1+MSE)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="200" width="300" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="reward2" value="Profit-Aware: W_1(D^pred, D^actual)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="250" width="300" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Distribution Plot -->
+        <mxCell id="dist_plot" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#2c3e50;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="310" width="300" height="100" as="geometry" />
+        </mxCell>
+
+        <!-- Distribution Curve -->
+        <mxCell id="dist_curve" value="" style="endArrow=none;html=1;strokeColor=#1f77b4;strokeWidth=1;exitX=0;exitY=0.5;entryX=1;entryY=0.5;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1160" y="360" as="sourcePoint" />
+            <mxPoint x="1420" y="360" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Quantile Lines -->
+        <mxCell id="q25" value="Q_25" style="endArrow=none;html=1;strokeColor=#dc143c;strokeWidth=0.5;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1220" y="410" as="sourcePoint" />
+            <mxPoint x="1220" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="q75" value="Q_75" style="endArrow=none;html=1;strokeColor=#50c878;strokeWidth=0.5;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="1360" y="410" as="sourcePoint" />
+            <mxPoint x="1360" y="310" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Trading Signals -->
+        <mxCell id="signals" value="Trading Signals" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1140" y="430" width="300" height="60" as="geometry" />
+        </mxCell>
+
+        <mxCell id="signal_buy" value="+1 Buy" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1160" y="500" width="80" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="signal_hold" value="0 Hold" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1260" y="500" width="80" height="40" as="geometry" />
+        </mxCell>
+
+        <mxCell id="signal_sell" value="-1 Sell" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fdecec;strokeColor=#dc143c;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="1360" y="500" width="80" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Title -->
+        <mxCell id="title" value="The EATA Framework for Explainable Algorithmic Trading" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=16;fontFamily=Helvetica;fontColor=#2c3e50;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="20" width="1420" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Legend -->
+        <mxCell id="legend" value="Legend" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8f9fa;strokeColor=#2c3e50;strokeWidth=0.75;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="40" y="800" width="1420" height="80" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend1" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#1f77b4;strokeColor=#2c3e50;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="60" y="820" width="20" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend1_text" value="Primary Components" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="90" y="820" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend2" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f4f8;strokeColor=#1f77b4;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="220" y="820" width="20" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend2_text" value="Neural Components" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="250" y="820" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend3" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#50c878;strokeColor=#2c3e50;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="380" y="820" width="20" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend3_text" value="Profit Signals" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="410" y="820" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend4" value="" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#dc143c;strokeColor=#2c3e50;strokeWidth=0.75;" vertex="1" parent="1">
+          <mxGeometry x="540" y="820" width="20" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend4_text" value="Loss Signals" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="570" y="820" width="120" height="20" as="geometry" />
+        </mxCell>
+
+        <mxCell id="legend5" value="" style="endArrow=none;html=1;strokeColor=#2c3e50;strokeWidth=0.5;dashed=1;" edge="1" parent="1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="700" y="840" as="sourcePoint" />
+            <mxPoint x="760" y="840" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+
+        <mxCell id="legend5_text" value="Feedback Connections" style="text;html=1;strokeColor=none;fillColor=none;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontSize=10;fontFamily=Helvetica;fontColor=#2c3e50;" vertex="1" parent="1">
+          <mxGeometry x="770" y="820" width="150" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>

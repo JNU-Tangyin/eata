@@ -1,60 +1,123 @@
-% EATA-RL 论文主文件
-\documentclass[12pt,a4paper]{article}
+\documentclass[final,5p]{elsarticle}
+% \documentclass[preprint,onecolumn]{elsarticle}
 
-% 基础包
-\usepackage[utf8]{inputenc}
+% ============== Packages ==============
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm} % Added for proof and proposition environments
+\newtheorem{proposition}{Proposition} % Define proposition environment
+\usepackage{algorithm}
+\usepackage{algpseudocode}  % Better algorithm support
 \usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
 \usepackage{booktabs}
 \usepackage{multirow}
-\usepackage{amsmath}
-\usepackage{amssymb}
-\usepackage{hyperref}
+% \usepackage{cite}  % Commented out: conflicts with natbib loaded by elsarticle
+\usepackage{subcaption}
+\usepackage{pifont}  % For \ding symbols
+\usepackage{tikz}    % For diagrams
+\usetikzlibrary{shapes,arrows,positioning,fit,backgrounds}
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
 
-% 图表路径
-\graphicspath{{figures/}}
 
-\title{EATA-RL: Enhanced Automated Technical Analysis with Reinforcement Learning}
-\author{Your Name}
-\date{\today}
+\bibliographystyle{elsarticle-num}
+% \bibliographystyle{elsarticle-harv}
+% \bibliographystyle{elsarticle}
+% \biboptions{authoryear}
+% \setcitestyle{authoryear,round} % switch to ``Ren et al. (2019)'' style
 
+% ============== Journal Options ==============
+\journal{Information Sciences}
+
+% ============== Custom Commands ==============
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\etal}{\textit{et al.}}
+\newcommand{\wrt}{w.r.t.}
+\newcommand{\fake}[1]{\textcolor{red}{[FAKE: #1]}}
+
+\newcommand{\ours}{EATA}
+\newcommand{\Yin}[1]{\textcolor{red}{#1}}
+\newcommand{\RA}[1]{\textcolor{black}{#1}}
+\newcommand{\RB}[1]{\textcolor{black}{#1}}
+\newcommand{\RC}[1]{\textcolor{black}{#1}}
+\newcommand{\hidden}[1]{%
+    \textcolor{white}{\fontsize{0.1pt}{0.1pt}\selectfont #1}%
+}
+% ============== Colors ==============
+\definecolor{eataBlue}{HTML}{4169E1}
+\definecolor{profitGreen}{HTML}{50C878}
+\definecolor{riskRed}{HTML}{DC143C}
+\definecolor{baselineGray}{HTML}{808080}
+
+% ============== Document ==============
 \begin{document}
 
-\maketitle
+\begin{frontmatter}
+
+\title{EATA: Explainable Algorithmic Trading Agent via Neural-Guided Symbolic Regression}
+
+% %%% Blinded: authors and affiliations commented out for double-anonymized review
+\author [a]{Jingtong Zhang}
+\author [b]{Xiaoang Yang}
+\author [c]{Yinqi Shi}
+\author [d]{Yin Tang\corref{cor2}} %
+\ead{Corresponding author: Yin Tang (Email: ytang@jnu.edu.cn).}
+\ead[url]{https://orcid.org/0000-0001-7693-7543}
+% Author affiliation
+\affiliation[a]{organization={University of New South Wales},
+            city={Sydney},
+            postcode={2052}, 
+            country={Australia}}
+\affiliation[b]{organization={School of Cybersecurity, Jinan University},
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={511443}, 
+            country={China}}
+\affiliation[c]{organization={Jinan University -- University of Birmingham Joint Institute, Jinan University},
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={511443}, 
+            country={China}}
+\affiliation[d]{organization={School of Management, Jinan University},%Department and Organization
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={510632}, 
+            country={China}}
+
 
 \begin{abstract}
-This paper presents EATA-RL, an enhanced automated technical analysis system...
+Algorithmic trading systems powered by deep learning have achieved remarkable performance but suffer from a critical limitation: lack of interpretability. This opacity hinders trust, regulatory compliance, and strategy refinement. We propose EATA (Explainable Algorithmic Trading Agent), a novel framework that combines Monte Carlo Tree Search (MCTS) with neural network guidance to automatically discover interpretable mathematical expressions for stock price prediction. Our key contributions include: (1) a three-headed Policy-Value-Profit network (PVNet) that jointly optimizes for search guidance, prediction accuracy, and trading profitability; (2) a domain-specific grammar incorporating financial operators such as moving averages, momentum, and volatility indicators; (3) a grammar augmentation mechanism that extracts and reuses high-quality sub-expressions to accelerate search; and (4) a sliding window training scheme with expression inheritance for temporal adaptation. Extensive experiments on \textbf{representative constituent stocks from the S\&P 500} index over a 4-year period (2020--2024) demonstrate that EATA achieves competitive returns compared to state-of-the-art deep learning methods while providing fully interpretable trading rules in the form of mathematical formulas. The discovered expressions reveal meaningful market patterns and can be directly validated by domain experts.
 \end{abstract}
 
-\section{Introduction}
-% 引言
+\begin{keyword}
+Algorithmic Trading, Symbolic Regression, Monte Carlo Tree Search, Explainable AI, Neural-Guided Search
+\end{keyword}
 
-\section{Methodology}
-% 方法论
+\end{frontmatter}
 
-\section{Experiments}
-% 实验部分
+% \maketitle
 
-\subsection{Ablation Study}
-% 消融实验
+% ============== Include Sections ==============
+\input{1.intro}
+\input{2.related}
+\input{3.method}
+\input{4.experiments}
+\input{5.conclusion}
+\section*{Acknowledgment}
+This work was supported by the National Natural Science Foundation of China (No.62272198) and by the Research and Application of Expressway ``1+N'' Electromechanical O\&M Brain Based on Large Model Agents.
 
-% 引用消融实验结果表格
-\input{tables/ablation_results.tex}
+\textbf{Author Contribution}
+Jingtong Zhang: Conceptualization, Methodology, and Writing Original draft preparation; 
+Xiaoang Yang: Software, Data curation, Visualization; 
+Yin Tang: Supervision, Writing- Reviewing and Editing, Management.
 
-% 引用消融实验图表
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=0.8\textwidth]{ablation_performance_comparison.pdf}
-    \caption{Ablation Study Performance Comparison}
-    \label{fig:ablation_comparison}
-\end{figure}
+\textbf{Declaration of generative AI and AI-assisted technologies in the writing process} During the preparation of this work the authors used AI only for proof-reading. After using this tool/service, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
-\section{Results}
-% 结果分析
-
-\section{Conclusion}
-% 结论
-
-\bibliographystyle{plain}
+% ============== Bibliography ==============
 \bibliography{references}
+
+% ============== Appendix ==============
+\input{appendix}
 
 \end{document}

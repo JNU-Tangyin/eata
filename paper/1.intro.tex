@@ -1,0 +1,38 @@
+% 1.intro.tex - Introduction
+\section{Introduction}
+\label{sec:intro}
+
+Algorithmic trading systems powered by deep learning have achieved remarkable performance in financial markets~\cite{fischer2018deep,zhang2020deep}. However, these ``black-box'' models present a fundamental challenge: their decision-making processes remain opaque, hindering trust, regulatory compliance (e.g., MiFID II~\cite{eu2014mifid}), and strategic refinement~\cite{rudin2019stop,weber2024comprehensive,cao2022ai}. This opacity is particularly problematic in finance, where understanding \textit{why} a model fails is crucial for risk management.
+
+Symbolic regression offers a promising alternative by discovering interpretable mathematical expressions that map inputs to outputs~\cite{koza1994genetic,schmidt2009distilling}. Unlike neural networks, symbolic expressions can be directly validated by domain experts and audited by regulators. However, existing symbolic regression approaches face a critical limitation when applied to trading: \textbf{they typically optimize for point-wise prediction accuracy (e.g., MSE), which does not necessarily correlate with trading profitability}.
+
+Consider the following fundamental disconnect: minimizing MSE penalizes all prediction errors equally, regardless of their economic impact. In trading, a small error in predicting a large directional move (strong trend) can be far more costly than a large error during sideways markets. Moreover, financial returns exhibit heavy-tailed distributions with significant skewness and kurtosis~\cite{cont2001empirical}---properties that MSE-based objectives fail to capture.
+
+This observation leads to our \textbf{central research question}: \textit{How can we design a symbolic regression framework that explicitly optimizes for trading profitability rather than simple prediction accuracy?} Answering this requires addressing three sub-questions:
+
+\begin{enumerate}
+    \item[RQ1] \textbf{Objective Design}: What distributional divergence metric can effectively capture the asymmetric, heavy-tailed nature of financial returns?
+    \item[RQ2] \textbf{Search Guidance}: How can neural networks guide symbolic search to discover profitable expressions without sacrificing interpretability?
+    \item[RQ3] \textbf{Empirical Validation}: Can profit-optimized symbolic models achieve risk-adjusted returns competitive with black-box deep learning?
+\end{enumerate}
+
+\noindent Our key insight is that the \textbf{Wasserstein distance} (Earth Mover's Distance) provides a theoretically grounded measure for comparing return distributions that respects both tail risk and directional asymmetry~\cite{villani2009optimal,peyre2019computational}. Unlike KL divergence or MSE, Wasserstein distance measures the minimal ``work'' required to transform one distribution into another, making it sensitive to both the magnitude and location of distributional differences.
+
+Based on this insight, we propose \textbf{EATA} (\textbf{E}xplainable \textbf{A}lgorithmic \textbf{T}rading \textbf{A}gent), a neural-guided symbolic regression framework with three key innovations:
+
+\begin{enumerate}
+    \item \textbf{Profit-Aware Learning}: A three-headed neural network (PVNet) with policy, value, and \textit{profit} heads. The profit head explicitly predicts the Wasserstein-based trading reward, guiding MCTS toward expressions with favorable risk-return profiles.
+    
+    \item \textbf{Domain-Specific Grammar}: A context-free grammar incorporating financial operators (moving averages, momentum, RSI, volatility) with fixed windows, encoding domain knowledge to constrain the search space.
+    
+    \item \textbf{Temporal Adaptation}: A sliding window training scheme with expression inheritance and grammar augmentation, enabling adaptation to non-stationary market conditions.
+\end{enumerate}
+
+We evaluate EATA on \textbf{representative constituent stocks from the S\&P 500} index over a 4-year period (2020--2024), comparing against multiple baselines including state-of-the-art deep learning (LSTM, Transformer), reinforcement learning (PPO), and symbolic regression (GP, NEMoTS~\cite{xie2024nemots}). Results show that EATA achieves a Sharpe ratio of \textbf{0.83}, significantly outperforming the best baseline while providing fully interpretable trading rules. Our main contributions are:
+\begin{enumerate}
+    \item We formalize the symbolic regression objective for trading as a \textbf{distribution matching problem} using Wasserstein distance, bridging the gap between prediction accuracy and economic utility.
+    \item We propose a \textbf{novel neural-guided search framework} with a \textbf{dedicated profit head} that predicts trading rewards, enabling the search to explicitly optimize for profitability.
+    \item We conduct \textbf{extensive empirical validation} on real-world market data with in-depth ablations, demonstrating that profit-aware symbolic regression can compete with black-box deep learning.
+\end{enumerate}
+
+The rest of the paper is organized as follows: Section~\ref{sec:related} reviews related work in algorithmic trading evaluation, symbolic regression, and neural-guided search. Section~\ref{sec:method} presents the EATA framework, including the problem formulation, domain grammar, PVNet, and neural-guided MCTS training. Section~\ref{sec:experiments} reports the experimental setup, baselines, main results, and ablation and robustness analyses. Finally, Section~\ref{sec:conclusion} concludes with limitations and future directions.
