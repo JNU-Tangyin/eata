@@ -207,10 +207,12 @@ experiment_results/
 ablation_results/
 flag_trader_results/
 test_detailed_outputs/
-results/
+# results/  # 允许上传results目录到GitHub
 
-# CSV数据文件
+# CSV数据文件 - 但允许results目录中的CSV
 *.csv
+!results/**/*.csv
 
-# JSON结果文件
+# JSON结果文件 - 但允许results目录中的JSON
 *.json
+!results/**/*.json

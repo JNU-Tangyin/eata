@@ -1,0 +1,1102 @@
+[
+  {
+    "variant": "EATA-Full",
+    "ticker": "BA",
+    "annual_return": 0.6294000644409012,
+    "sharpe_ratio": 1.1568384377267231,
+    "max_drawdown": 0.41963842761186726,
+    "win_rate": 0.5180897250361794,
+    "volatility": 0.5235587934535704,
+    "rl_reward": 0.9769152798151425,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:07:25.784022",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "JNJ",
+    "annual_return": 0.13170852323376492,
+    "sharpe_ratio": 0.6105871601219646,
+    "max_drawdown": 0.22664753822157424,
+    "win_rate": 0.5296671490593343,
+    "volatility": 0.2043573778359848,
+    "rl_reward": 0.9910438973959876,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:17:39.166889",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "KO",
+    "annual_return": -0.08173099903316117,
+    "sharpe_ratio": -0.3435045119292317,
+    "max_drawdown": 0.39204950163444846,
+    "win_rate": 0.5050651230101303,
+    "volatility": 0.2294422551118623,
+    "rl_reward": 0.9899079883031057,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:25:01.066286",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "NVDA",
+    "annual_return": 0.7577636444672247,
+    "sharpe_ratio": 1.33500361669451,
+    "max_drawdown": 0.4977947624632907,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.5014348138021429,
+    "rl_reward": 0.9747692456170933,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:37:17.355186",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "XOM",
+    "annual_return": 0.3366783585461346,
+    "sharpe_ratio": 0.9014949081302167,
+    "max_drawdown": 0.34995035179572026,
+    "win_rate": 0.5397973950795948,
+    "volatility": 0.3796177067696471,
+    "rl_reward": 0.977711355787178,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:45:28.330156",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "JPM",
+    "annual_return": 0.1301353857865719,
+    "sharpe_ratio": 0.485294013315414,
+    "max_drawdown": 0.2764155847630194,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.30864923721853765,
+    "rl_reward": 0.9780430201281757,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:51:34.657468",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "CAT",
+    "annual_return": 0.03475566164895394,
+    "sharpe_ratio": 0.21242104648654336,
+    "max_drawdown": 0.31251111710905494,
+    "win_rate": 0.5296671490593343,
+    "volatility": 0.34017778219511824,
+    "rl_reward": 0.9833218433007205,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T18:59:06.543996",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "COST",
+    "annual_return": 0.6319750520613912,
+    "sharpe_ratio": 2.1686279758853497,
+    "max_drawdown": 0.10771575780920031,
+    "win_rate": 0.5658465991316932,
+    "volatility": 0.2288456395944194,
+    "rl_reward": 0.984524091913017,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T19:16:02.765046",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "NFLX",
+    "annual_return": 0.4907984374320604,
+    "sharpe_ratio": 1.0665529104827411,
+    "max_drawdown": 0.6147626828468618,
+    "win_rate": 0.5050651230101303,
+    "volatility": 0.4455672434412657,
+    "rl_reward": 0.9796925385529496,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T19:32:14.642526",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Full",
+    "ticker": "GE",
+    "annual_return": 0.15723794092431165,
+    "sharpe_ratio": 0.5134877831742092,
+    "max_drawdown": 0.38719601109879836,
+    "win_rate": 0.49782923299565845,
+    "volatility": 0.4055265652648117,
+    "rl_reward": 0.9808910513688074,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T19:42:49.808782",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "BA",
+    "annual_return": 0.42653992943849883,
+    "sharpe_ratio": 0.8994390268742994,
+    "max_drawdown": 0.42004679104144754,
+    "win_rate": 0.5180897250361794,
+    "volatility": 0.5289068327417465,
+    "rl_reward": 0.9726009406906223,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T19:51:50.253900",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "JNJ",
+    "annual_return": 0.051590464532836666,
+    "sharpe_ratio": 0.25155079995911905,
+    "max_drawdown": 0.22664753822157424,
+    "win_rate": 0.5180897250361794,
+    "volatility": 0.20248243564856397,
+    "rl_reward": 0.9435717066681247,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T20:32:12.619016",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "KO",
+    "annual_return": 0.13127673056695355,
+    "sharpe_ratio": 0.5614578646368229,
+    "max_drawdown": 0.22823068427373042,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.23201729998800333,
+    "rl_reward": 0.9885082039319333,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T20:42:00.347854",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "NVDA",
+    "annual_return": 0.5163816561231624,
+    "sharpe_ratio": 1.0359887659781426,
+    "max_drawdown": 0.5268001936965376,
+    "win_rate": 0.5151953690303908,
+    "volatility": 0.505129250947244,
+    "rl_reward": 0.9749230716130696,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T20:55:06.482881",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "XOM",
+    "annual_return": 0.47432663131810404,
+    "sharpe_ratio": 1.1559434849992574,
+    "max_drawdown": 0.3173076321060272,
+    "win_rate": 0.5383502170767004,
+    "volatility": 0.3815893730274676,
+    "rl_reward": 0.9742421196405952,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T21:01:50.611327",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "JPM",
+    "annual_return": 0.12146821160207844,
+    "sharpe_ratio": 0.45733361493704766,
+    "max_drawdown": 0.22513003119845532,
+    "win_rate": 0.516642547033285,
+    "volatility": 0.31445387519373785,
+    "rl_reward": 0.98187882580202,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T21:09:51.993923",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "CAT",
+    "annual_return": -0.00837406155206033,
+    "sharpe_ratio": 0.08746025720673027,
+    "max_drawdown": 0.3466795780211298,
+    "win_rate": 0.5296671490593343,
+    "volatility": 0.340469764108941,
+    "rl_reward": 0.9838960756385069,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T21:17:58.026869",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "COST",
+    "annual_return": 0.6673372462437872,
+    "sharpe_ratio": 2.2581223836640314,
+    "max_drawdown": 0.11335891589495573,
+    "win_rate": 0.5687409551374819,
+    "volatility": 0.22933668754385172,
+    "rl_reward": 0.9809633482175484,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T21:42:08.286075",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "NFLX",
+    "annual_return": 0.6191763711751144,
+    "sharpe_ratio": 1.2521234326133954,
+    "max_drawdown": 0.5592133834901867,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.4462449363104448,
+    "rl_reward": 0.9794437248783688,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T22:27:23.364309",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "GE",
+    "annual_return": -0.022791890185921426,
+    "sharpe_ratio": 0.10383148763733355,
+    "max_drawdown": 0.5349487018438847,
+    "win_rate": 0.5036179450072359,
+    "volatility": 0.41473295642207836,
+    "rl_reward": 0.9529324500541199,
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:02:03.066315",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "BA",
+    "annual_return": 0.15406423799645608,
+    "sharpe_ratio": 0.4986644532121487,
+    "max_drawdown": 0.4743013801278901,
+    "win_rate": 0.4992764109985528,
+    "volatility": 0.525438390078535,
+    "rl_reward": 0.972916944368201,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:02:35.142652",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "JNJ",
+    "annual_return": 0.014882662494646759,
+    "sharpe_ratio": 0.07921996251652783,
+    "max_drawdown": 0.22458534600583824,
+    "win_rate": 0.507959479015919,
+    "volatility": 0.20802675369948168,
+    "rl_reward": 0.9897291347521406,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:03:07.300826",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "KO",
+    "annual_return": -0.06712898896060482,
+    "sharpe_ratio": -0.25660884981380727,
+    "max_drawdown": 0.40553883469894514,
+    "win_rate": 0.5007235890014472,
+    "volatility": 0.2379314876261449,
+    "rl_reward": 0.988766714716971,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:03:41.721374",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "NVDA",
+    "annual_return": -0.13855289122532988,
+    "sharpe_ratio": -0.05656129385040727,
+    "max_drawdown": 0.7022990614107809,
+    "win_rate": 0.49493487698986977,
+    "volatility": 0.5266656531460018,
+    "rl_reward": 0.9714327268646874,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:04:14.276387",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "XOM",
+    "annual_return": -0.06769711370263631,
+    "sharpe_ratio": -0.034852841868311196,
+    "max_drawdown": 0.5136188676618533,
+    "win_rate": 0.516642547033285,
+    "volatility": 0.3907886097092709,
+    "rl_reward": 0.9793928521872544,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:04:46.590344",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "JPM",
+    "annual_return": -0.1785236343324702,
+    "sharpe_ratio": -0.4816468613735138,
+    "max_drawdown": 0.5398675172297386,
+    "win_rate": 0.5007235890014472,
+    "volatility": 0.33402624663845365,
+    "rl_reward": 0.9827769719690429,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:05:18.806271",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "CAT",
+    "annual_return": -0.09183052444367479,
+    "sharpe_ratio": -0.16099698642722032,
+    "max_drawdown": 0.4089029678459656,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.3465133692370145,
+    "rl_reward": 0.9817816033905227,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:05:49.785297",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "COST",
+    "annual_return": 0.401357964375298,
+    "sharpe_ratio": 1.450949535377816,
+    "max_drawdown": 0.12637884563272897,
+    "win_rate": 0.548480463096961,
+    "volatility": 0.23849506406985785,
+    "rl_reward": 0.9867494687711104,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:06:21.170994",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "NFLX",
+    "annual_return": -0.06332011236281476,
+    "sharpe_ratio": 0.053120306768353075,
+    "max_drawdown": 0.6524619642768839,
+    "win_rate": 0.487698986975398,
+    "volatility": 0.48275718838599957,
+    "rl_reward": 0.9769518792892408,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:06:51.702238",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMCTS",
+    "ticker": "GE",
+    "annual_return": -0.2129262925635642,
+    "sharpe_ratio": -0.38975903221856395,
+    "max_drawdown": 0.7004704731347198,
+    "win_rate": 0.47901591895803186,
+    "volatility": 0.4290118060310103,
+    "rl_reward": 0.9778314740908116,
+    "modifications": {
+      "alpha": 1.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:07:24.691211",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "BA",
+    "annual_return": 0.6486719362144537,
+    "sharpe_ratio": 1.1774528792066765,
+    "max_drawdown": 0.41963842761186726,
+    "win_rate": 0.5224312590448625,
+    "volatility": 0.5252256969281525,
+    "rl_reward": 0.9743449653670245,
+    "portfolio_df": "                   value\n2020-03-16  1.132569e+06\n2020-03-17  1.169174e+06\n2020-03-18  1.318071e+06\n2020-03-19  1.346043e+06\n2020-03-20  1.364112e+06\n...                  ...\n2022-12-05  4.599444e+06\n2022-12-06  4.433708e+06\n2022-12-07  4.385751e+06\n2022-12-08  4.449859e+06\n2022-12-09  4.461289e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:18:57.289611",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "JNJ",
+    "annual_return": 0.18903232766541445,
+    "sharpe_ratio": 1.0127675386447315,
+    "max_drawdown": 0.08734880351314303,
+    "win_rate": 0.507959479015919,
+    "volatility": 0.16467053552600672,
+    "rl_reward": 0.9902472820001921,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.000000e+06\n2020-03-19  1.000000e+06\n2020-03-20  1.000000e+06\n...                  ...\n2022-12-05  1.635436e+06\n2022-12-06  1.610922e+06\n2022-12-07  1.620709e+06\n2022-12-08  1.620983e+06\n2022-12-09  1.607629e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:29:07.843172",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "KO",
+    "annual_return": 0.08721587374937956,
+    "sharpe_ratio": 0.4337028503875091,
+    "max_drawdown": 0.1728283554184018,
+    "win_rate": 0.48625180897250364,
+    "volatility": 0.18707315712305222,
+    "rl_reward": 0.9886336756157046,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.000000e+06\n2020-03-19  1.000000e+06\n2020-03-20  1.000000e+06\n...                  ...\n2022-12-05  1.264282e+06\n2022-12-06  1.263685e+06\n2022-12-07  1.265677e+06\n2022-12-08  1.271055e+06\n2022-12-09  1.257709e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:37:55.053673",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "NVDA",
+    "annual_return": 0.2952317008174348,
+    "sharpe_ratio": 0.7200335887926095,
+    "max_drawdown": 0.6580128003504446,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.5150999156660598,
+    "rl_reward": 0.9729553748684379,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.013593e+06\n2020-03-19  1.064318e+06\n2020-03-20  1.028236e+06\n...                  ...\n2022-12-05  1.985908e+06\n2022-12-06  1.911422e+06\n2022-12-07  1.927324e+06\n2022-12-08  2.052742e+06\n2022-12-09  2.032656e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:42:18.480963",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "XOM",
+    "annual_return": 0.5304943064835337,
+    "sharpe_ratio": 1.3466145056432426,
+    "max_drawdown": 0.2235321218628664,
+    "win_rate": 0.507959479015919,
+    "volatility": 0.3456458001998538,
+    "rl_reward": 0.9789270398276101,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.000000e+06\n2020-03-19  1.000000e+06\n2020-03-20  1.000000e+06\n...                  ...\n2022-12-05  3.315024e+06\n2022-12-06  3.222880e+06\n2022-12-07  3.215744e+06\n2022-12-08  3.239633e+06\n2022-12-09  3.212331e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:46:32.645254",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "JPM",
+    "annual_return": -0.03005446919543897,
+    "sharpe_ratio": -0.03818954215771614,
+    "max_drawdown": 0.3817199916509409,
+    "win_rate": 0.47467438494934877,
+    "volatility": 0.28267012137846503,
+    "rl_reward": 0.9805271244485616,
+    "portfolio_df": "                     value\n2020-03-16  1000000.000000\n2020-03-17  1000000.000000\n2020-03-18  1000000.000000\n2020-03-19  1000000.000000\n2020-03-20  1000000.000000\n...                    ...\n2022-12-05   914232.392891\n2022-12-06   915763.381386\n2022-12-07   915137.096870\n2022-12-08   924740.550850\n2022-12-09   919730.062355\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:50:52.879317",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "CAT",
+    "annual_return": 0.2380914042470168,
+    "sharpe_ratio": 0.7983961602080807,
+    "max_drawdown": 0.29378952366525507,
+    "win_rate": 0.5094066570188133,
+    "volatility": 0.29822107872543124,
+    "rl_reward": 0.9830873162871553,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.000000e+06\n2020-03-19  1.000000e+06\n2020-03-20  1.000000e+06\n...                  ...\n2022-12-05  1.837836e+06\n2022-12-06  1.804016e+06\n2022-12-07  1.809468e+06\n2022-12-08  1.824798e+06\n2022-12-09  1.796114e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:55:06.574060",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "COST",
+    "annual_return": 0.35650571224853156,
+    "sharpe_ratio": 1.4120881340243958,
+    "max_drawdown": 0.1461649877142936,
+    "win_rate": 0.5253256150506512,
+    "volatility": 0.2187684798844979,
+    "rl_reward": 0.9871350163887311,
+    "portfolio_df": "                   value\n2020-03-16  1.000000e+06\n2020-03-17  1.000000e+06\n2020-03-18  1.000000e+06\n2020-03-19  1.000000e+06\n2020-03-20  1.000000e+06\n...                  ...\n2022-12-05  2.334260e+06\n2022-12-06  2.298440e+06\n2022-12-07  2.302309e+06\n2022-12-08  2.299682e+06\n2022-12-09  2.307324e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-23T23:59:24.019526",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "NFLX",
+    "annual_return": 0.2662662673173457,
+    "sharpe_ratio": 0.690655157623001,
+    "max_drawdown": 0.4740868848785166,
+    "win_rate": 0.5021707670043415,
+    "volatility": 0.4609915934967722,
+    "rl_reward": 0.9775505095749258,
+    "portfolio_df": "                   value\n2020-03-16  1.025403e+06\n2020-03-17  9.572157e+05\n2020-03-18  9.711728e+05\n2020-03-19  9.171706e+05\n2020-03-20  9.145619e+05\n...                  ...\n2022-12-05  1.913539e+06\n2022-12-06  1.870508e+06\n2022-12-07  1.888014e+06\n2022-12-08  1.899277e+06\n2022-12-09  1.958957e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T00:03:43.663912",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoMem",
+    "ticker": "GE",
+    "annual_return": 0.16544249704357328,
+    "sharpe_ratio": 0.5257170362723886,
+    "max_drawdown": 0.3947508997670218,
+    "win_rate": 0.48914616497829233,
+    "volatility": 0.42053364433641416,
+    "rl_reward": 0.9803211097425614,
+    "portfolio_df": "                   value\n2020-03-16  9.527915e+05\n2020-03-17  1.012875e+06\n2020-03-18  9.442082e+05\n2020-03-19  9.270415e+05\n2020-03-20  9.327637e+05\n...                  ...\n2022-12-05  1.506978e+06\n2022-12-06  1.518014e+06\n2022-12-07  1.513030e+06\n2022-12-08  1.488644e+06\n2022-12-09  1.449840e+06\n\n[692 rows x 1 columns]",
+    "variant_config": "VariantConfig(name='EATA-NoMem', description='无进化记忆变体，skip_memory=True，真正移除历史知识传承机制', profit_loss_weight=None, exploration_rate=None, num_transplant=None, distance_function=None, train_size=32, learning_rate=None, extra_params={'skip_memory': True, 'variant_type': 'no_memory', 'focus': 'no_evolutionary_memory'})",
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T00:07:57.239979",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "BA",
+    "annual_return": 0.37938261490152514,
+    "sharpe_ratio": 0.8394916042360536,
+    "max_drawdown": 0.4005142706021342,
+    "win_rate": 0.492040520984081,
+    "volatility": 0.5184475885446351,
+    "rl_reward": 0.9604116763548779,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T00:25:57.943914",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "JNJ",
+    "annual_return": 0.24760416597755452,
+    "sharpe_ratio": 1.1175816053155558,
+    "max_drawdown": 0.15344430313667518,
+    "win_rate": 0.532561505065123,
+    "volatility": 0.19763340247388503,
+    "rl_reward": 0.9912627084168096,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T00:35:45.505728",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "KO",
+    "annual_return": -0.036582113586335896,
+    "sharpe_ratio": -0.13511744847872223,
+    "max_drawdown": 0.3076736314712109,
+    "win_rate": 0.5036179450072359,
+    "volatility": 0.2289023924174305,
+    "rl_reward": 0.9899183630506209,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T00:44:50.803483",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "NVDA",
+    "annual_return": 0.7699017369960546,
+    "sharpe_ratio": 1.2970981018452492,
+    "max_drawdown": 0.6613221054022275,
+    "win_rate": 0.5412445730824892,
+    "volatility": 0.5347188812431272,
+    "rl_reward": 0.924361193894255,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T01:07:28.109524",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "XOM",
+    "annual_return": -0.07557851791805525,
+    "sharpe_ratio": -0.057739531651801866,
+    "max_drawdown": 0.47555704219055184,
+    "win_rate": 0.49782923299565845,
+    "volatility": 0.38953747229877106,
+    "rl_reward": 0.9538522978672849,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T01:27:27.491428",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "JPM",
+    "annual_return": -0.2882914002960114,
+    "sharpe_ratio": -0.8648326839634776,
+    "max_drawdown": 0.6549903868975191,
+    "win_rate": 0.467438494934877,
+    "volatility": 0.3463768962422358,
+    "rl_reward": 0.9770407844151237,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T01:48:15.794630",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "CAT",
+    "annual_return": 0.10458236443671676,
+    "sharpe_ratio": 0.4110523015633955,
+    "max_drawdown": 0.31251575113415925,
+    "win_rate": 0.5238784370477568,
+    "volatility": 0.311941942055869,
+    "rl_reward": 0.9841388234196495,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T02:04:25.266441",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "COST",
+    "annual_return": 0.07094566638122823,
+    "sharpe_ratio": 0.31919127547675913,
+    "max_drawdown": 0.3119326237335139,
+    "win_rate": 0.5108538350217077,
+    "volatility": 0.2538235109102357,
+    "rl_reward": 0.9613946055226089,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T02:17:08.032047",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "NFLX",
+    "annual_return": 0.5408317328170031,
+    "sharpe_ratio": 1.157009916077631,
+    "max_drawdown": 0.5146152602916795,
+    "win_rate": 0.516642547033285,
+    "volatility": 0.4357066952572955,
+    "rl_reward": 0.9791442230260159,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T02:30:20.331975",
+    "error": ""
+  },
+  {
+    "variant": "EATA-NoExplore",
+    "ticker": "GE",
+    "annual_return": 0.1681148669424506,
+    "sharpe_ratio": 0.5316772190122606,
+    "max_drawdown": 0.4413441665773576,
+    "win_rate": 0.47901591895803186,
+    "volatility": 0.41662639064221674,
+    "rl_reward": 0.961788607675876,
+    "modifications": {
+      "exploration_rate": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 32,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T02:44:01.270501",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "BA",
+    "annual_return": -0.010700497874764903,
+    "sharpe_ratio": 0.21585044195256056,
+    "max_drawdown": 0.555328003742678,
+    "win_rate": 0.500780031201248,
+    "volatility": 0.5508160765276693,
+    "rl_reward": 0.9932298896411336,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T02:51:47.679540",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "JNJ",
+    "annual_return": 0.011207275865107613,
+    "sharpe_ratio": 0.03141717300009501,
+    "max_drawdown": 0.2051792967352529,
+    "win_rate": 0.5023400936037441,
+    "volatility": 0.16816755940328046,
+    "rl_reward": 0.9927995294731963,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:00:52.400314",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "KO",
+    "annual_return": 0.05391014554164597,
+    "sharpe_ratio": 0.2679234863907916,
+    "max_drawdown": 0.20037723747827216,
+    "win_rate": 0.5226209048361935,
+    "volatility": 0.18640291234890652,
+    "rl_reward": 0.9967868142268768,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:09:50.914183",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "NVDA",
+    "annual_return": 0.0030597389517672546,
+    "sharpe_ratio": 0.23547977102385173,
+    "max_drawdown": 0.6677626979163267,
+    "win_rate": 0.516380655226209,
+    "volatility": 0.5321675044101906,
+    "rl_reward": 0.9914003890906236,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:27:19.466523",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "XOM",
+    "annual_return": 0.2929574908172268,
+    "sharpe_ratio": 0.8789730634955585,
+    "max_drawdown": 0.3199358822521243,
+    "win_rate": 0.5522620904836193,
+    "volatility": 0.33275681697763454,
+    "rl_reward": 0.9956481372117637,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:37:32.320607",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "JPM",
+    "annual_return": 0.26272782676186734,
+    "sharpe_ratio": 0.9279006927095608,
+    "max_drawdown": 0.20148306894923337,
+    "win_rate": 0.5273010920436817,
+    "volatility": 0.26854364292294175,
+    "rl_reward": 0.9967139472140288,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:46:27.814554",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "CAT",
+    "annual_return": 0.16485300175666562,
+    "sharpe_ratio": 0.5938725082923694,
+    "max_drawdown": 0.28511634057995416,
+    "win_rate": 0.5335413416536662,
+    "volatility": 0.298576729894692,
+    "rl_reward": 0.9958714114216003,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T03:58:00.632823",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "COST",
+    "annual_return": 0.35493014890850905,
+    "sharpe_ratio": 1.3577888474526516,
+    "max_drawdown": 0.27002159601719744,
+    "win_rate": 0.5538221528861155,
+    "volatility": 0.22814277997202087,
+    "rl_reward": 0.9935491684497331,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T04:08:09.403048",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "NFLX",
+    "annual_return": 0.8650980976442637,
+    "sharpe_ratio": 1.6113574820786996,
+    "max_drawdown": 0.2771108145044539,
+    "win_rate": 0.5335413416536662,
+    "volatility": 0.4297354105711509,
+    "rl_reward": 0.9946050710798616,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T04:13:26.917583",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "GE",
+    "annual_return": -0.12268793652343835,
+    "sharpe_ratio": -0.23547240631142938,
+    "max_drawdown": 0.5479793886693702,
+    "win_rate": 0.49453978159126366,
+    "volatility": 0.3616480106054457,
+    "rl_reward": 0.9938899893140177,
+    "modifications": {
+      "reward_function": "simple_mae",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260223_175440",
+    "timestamp": "2026-02-24T04:24:10.938907",
+    "error": ""
+  }
+]
