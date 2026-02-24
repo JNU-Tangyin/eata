@@ -222,9 +222,25 @@ class MCTS():
 
         A = np.zeros(nA, dtype=float)
         best_action = valid_action[np.argmax(policy_valid)]  # 找到UCT值最高的那个动作。
-        A[best_action] += 0.8  # 将80%的概率分配给最好的动作。 这里可以自己活动调参
-        A[valid_action] += float(0.2 / len(valid_action)) #将剩下20%的概率均匀分配给所有合法动作（包括最好的那个）。
-        return A  # 返回这个探索性策略
+        
+        # 🔧 修复：当exploration_rate=0时，使用纯贪心策略（确定性选择最优动作）
+        # 这确保NoExplore变体真正禁用探索，与Full变体产生不同的决策路径
+        if hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
+            # NoExplore变体：100%选择最优动作（纯利用，无探索）
+            A[best_action] = 1.0
+            
+            # 调试信息：每100次调用打印一次
+            if not hasattr(self, '_greedy_policy_count'):
+                self._greedy_policy_count = 0
+            self._greedy_policy_count += 1
+            if self._greedy_policy_count % 100 == 0:
+                print(f"🎯 [NoExplore] 纯贪心策略 (第{self._greedy_policy_count}次): 100%选择最优动作 {best_action}")
+        else:
+            # 其他变体：探索性策略（80%最优，20%探索）
+            A[best_action] += 0.8  # 将80%的概率分配给最好的动作。
+            A[valid_action] += float(0.2 / len(valid_action)) #将剩下20%的概率均匀分配给所有合法动作（包括最好的那个）。
+        
+        return A  # 返回策略
 #与network的借口哦
     def get_policy3(self, nA, UC, seq, state, network, softmax=True):
         # 功能：调用神经网络获取策略(policy)、价值(value)和盈利预测(profit)。
@@ -251,6 +267,10 @@ class MCTS():
         return self.softmax(np.asarray(ucbs))
 
     def update_modules(self, state, reward, eq):
+        # 🔧 检测 skip_memory 参数：NoMem 变体跳过模块库更新
+        if hasattr(self, '_variant_skip_memory') and self._variant_skip_memory:
+            return  # 跳过模块库更新
+        
         # 功能：维护一个高质量子表达式（module）的列表。 会进行更新
         module = state[5:]  # 从状态字符串中截取模块部分（去掉'f->A,'）
         if state.count(',') <= self.max_module: # 如果模块长度在允许范围内。
@@ -270,6 +290,9 @@ class MCTS():
         # 功能：MCTS的主运行函数，执行完整的“选择-展开-模拟-反向传播”循环。
         network.update_grammar_vocab_name(self.aug_grammars)  # 通知神经网络，词汇表（语法）已经更新。
 
+        # 🔍 调试：打印接收到的参数
+        print(f"🔍 [MCTS.run] 接收参数: use_network={use_network}, alpha={alpha}, exploration_rate={self.exploration_rate}")
+        
         # 动态计算融合系数alpha
         if alpha is None:
             if buffer_size is not None and current_buffer_size is not None:
@@ -280,6 +303,9 @@ class MCTS():
             # 使用变体传入的alpha参数，不进行覆盖
             print(f"   🔧 使用变体指定的 alpha={alpha}")
             pass
+        
+        # 🔍 调试：打印最终使用的alpha
+        print(f"🔍 [MCTS.run] 最终alpha={alpha}, use_network={use_network}")
 
         states = [] # 记录访问过的状态。
         reward_his = []  # 记录每个episode后的最佳奖励历史。
@@ -328,26 +354,68 @@ class MCTS():
 
              # --- 1. 选择 (Selection) --- 这里面具体的过程是可以直接用的
             while not UC:  # 当没有未访问子节点时，持续向下选择 这里子节点都有了访问，这里就可以计算UCT了
-                # 融合policy: alpha*NN + (1-alpha)*UCB1
-                policy_nn, value_nn, profit_nn = self.get_policy3(nA, UC, seq, state, network, softmax=True)
-                policy_ucb = self.get_policy1(nA, state, ntn[0])
+                # 🔧 修复：根据use_network决定策略计算方式
+                if use_network:
+                    # 调用神经网络获取策略
+                    policy_nn, value_nn, profit_nn = self.get_policy3(nA, UC, seq, state, network, softmax=True)
+                    
+                    # 记录经验（用于训练神经网络）
+                    w = 0.5
+                    value_accuracy = float(value_nn.detach() if hasattr(value_nn, 'detach') else value_nn)
+                    value_profit = float(profit_nn.detach() if hasattr(profit_nn, 'detach') else profit_nn)
+                    value_fused_nn = w * value_accuracy + (1 - w) * value_profit
+                    state_records.append(state)
+                    seq_records.append(seq)
+                    policy_records.append(policy_nn)
+                    value_records.append(value_fused_nn)
+                    
+                    # 获取UCB策略并融合
+                    policy_ucb = self.get_policy1(nA, state, ntn[0])
+                    policy = alpha * policy_nn + (1 - alpha) * policy_ucb
+                else:
+                    # NoNN变体：完全不调用神经网络，只使用UCB
+                    # 🔧 修复：初始化value_nn和profit_nn为None，避免后续引用未定义变量
+                    value_nn = None
+                    profit_nn = None
+                    policy_ucb = self.get_policy1(nA, state, ntn[0])
+                    policy = policy_ucb
                 
-                # 🎯 架构级变体注入：仅在消融实验模式下生效
+                # 调试信息
                 import os
                 ablation_mode = os.getenv('ABLATION_EXPERIMENT_MODE', '').lower() == 'true'
-                if ablation_mode and hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
-                    # NoExplore变体：完全依赖神经网络策略，忽略UCB
-                    policy = policy_nn
-                    print(f"🔍 [消融实验] NoExplore变体：使用纯NN策略，忽略UCB")
-                else:
-                    # 默认或其他实验：使用融合策略
-                    policy = alpha * policy_nn + (1 - alpha) * policy_ucb
-                    if ablation_mode:
-                        print(f"🔍 [消融实验] 默认策略：NN权重={alpha:.3f}, UCB权重={1-alpha:.3f}")
-                    # 非消融实验时不输出调试信息，保持原始行为
+                if ablation_mode:
+                    if hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
+                        print(f"🔍 [消融实验] NoExplore变体：exploration_rate=0, UCT只有利用项")
+                    print(f"🔍 [消融实验] 策略融合：NN权重={alpha:.3f}, UCB权重={1-alpha:.3f}")
                 
                 policy = np.clip(policy, 1e-8, 1)  # 防止全零
                 policy = policy / policy.sum()  # 重新归一化
+                
+                # 🔧 修复：NoExplore变体在融合后也应该使用纯贪心策略
+                # 将融合后的概率分布转换为确定性策略（100%选择最优动作）
+                
+                # 调试：检查条件
+                has_attr = hasattr(self, 'exploration_rate')
+                if has_attr:
+                    exp_rate = self.exploration_rate
+                    is_zero = (exp_rate == 0.0)
+                    
+                    if not hasattr(self, '_debug_logged'):
+                        print(f"🔍 [调试] exploration_rate属性存在: {has_attr}, 值: {exp_rate}, 是否为0: {is_zero}")
+                        self._debug_logged = True
+                    
+                    if is_zero:
+                        best_action_idx = np.argmax(policy)
+                        old_policy = policy.copy()
+                        policy = np.zeros(nA)
+                        policy[best_action_idx] = 1.0
+                        
+                        # 调试日志：只打印一次
+                        if not hasattr(self, '_noexplore_greedy_logged'):
+                            print(f"🎯 [NoExplore] 融合后转换为纯贪心：100%选择最优动作 (exploration_rate={exp_rate})")
+                            print(f"   原策略: {old_policy[:min(5, len(old_policy))]}")
+                            print(f"   新策略: {policy[:min(5, len(policy))]}")
+                            self._noexplore_greedy_logged = True
                 
                 try:
                     action = np.random.choice(np.arange(nA), p=policy)  #根据融合后的策略选择一个动作。
@@ -370,27 +438,8 @@ class MCTS():
                         break
                 else: # 如果生成了完整表达式 (done=True)。
                     UC = []  # 强制认为没有未访问节点
-
-
-                    # --- 3. 模拟 (Simulation) ---   这里的模拟是在与没有未访问节点，就不用进行拓展展开，直接模拟计算策略价值等
-                    # 核心改造：融合三个价值评估: 精度(value_nn), 盈利(profit_nn), 随机模拟(rollout)
-                    w = 0.7# 定义精度与盈利的权重，0.5代表各占一半
-                    
-                    if alpha > 0:
-                        value_accuracy = float(value_nn.detach() if hasattr(value_nn, 'detach') else value_nn)
-                        value_profit = float(profit_nn.detach() if hasattr(profit_nn, 'detach') else profit_nn)
-                        # 融合神经网络的两个头
-                        value_fused_nn = w * value_accuracy + (1 - w) * value_profit
-                    else:
-                        value_fused_nn = 0.0
-
-                    if alpha < 1:
-                        value_rollout, _ = self.rollout(num_play, next_state, ntn_next)
-                    else:
-                        value_rollout = 0.0
-                    
-                    # 最终奖励是神经网络融合价值与随机模拟价值的再融合
-                    reward = alpha * value_fused_nn + (1 - alpha) * value_rollout
+                    # 🔧 修复：done=True时，reward已经是self.step()返回的真实得分，不应该重新计算
+                    # 保持reward不变，使用self.score()计算的真实值
                     
                     if reward > best_solution[1]:  # 如果发现了新的全局最优解。
                         self.update_modules(next_state, reward, eq)  # 更新模块库。
@@ -404,42 +453,60 @@ class MCTS():
                     break
 
             if UC:#如果发现了有未访问的子节点的节点
-                # 融合policy
-                policy_nn, value_nn, profit_nn = self.get_policy3(nA, UC, seq, state, network, softmax=True)
-                policy_ucb = self.get_policy1(nA, state, ntn[0])
+                # 🔧 修复：根据use_network决定策略计算方式
+                if use_network:
+                    # 调用神经网络获取策略
+                    policy_nn, value_nn, profit_nn = self.get_policy3(nA, UC, seq, state, network, softmax=True)
+                    
+                    # 记录经验（用于训练神经网络）
+                    w = 0.5
+                    value_accuracy = float(value_nn.detach() if hasattr(value_nn, 'detach') else value_nn)
+                    value_profit = float(profit_nn.detach() if hasattr(profit_nn, 'detach') else profit_nn)
+                    value_fused_nn = w * value_accuracy + (1 - w) * value_profit
+                    state_records.append(state)
+                    seq_records.append(seq)
+                    policy_records.append(policy_nn)
+                    value_records.append(value_fused_nn)
+                    
+                    # 获取UCB策略并融合
+                    policy_ucb = self.get_policy1(nA, state, ntn[0])
+                    policy = alpha * policy_nn + (1 - alpha) * policy_ucb
+                else:
+                    # NoNN变体：完全不调用神经网络，只使用UCB
+                    # 🔧 修复：初始化value_nn和profit_nn为None，避免后续引用未定义变量
+                    value_nn = None
+                    profit_nn = None
+                    policy_ucb = self.get_policy1(nA, state, ntn[0])
+                    policy = policy_ucb
                 
-                # 🎯 架构级变体注入：仅在消融实验模式下生效
+                # 调试信息
                 import os
                 ablation_mode = os.getenv('ABLATION_EXPERIMENT_MODE', '').lower() == 'true'
-                if ablation_mode and hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
-                    # NoExplore变体：完全依赖神经网络策略，忽略UCB
-                    policy = policy_nn
-                    print(f"🔍 [消融实验] NoExplore变体(展开)：使用纯NN策略，忽略UCB")
-                else:
-                    # 默认或其他实验：使用融合策略
-                    policy = alpha * policy_nn + (1 - alpha) * policy_ucb
-                    if ablation_mode:
-                        print(f"🔍 [消融实验] 默认策略(展开)：NN权重={alpha:.3f}, UCB权重={1-alpha:.3f}")
-                    # 非消融实验时不输出调试信息，保持原始行为
+                if ablation_mode:
+                    if hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
+                        print(f"🔍 [消融实验] NoExplore变体(展开)：exploration_rate=0, UCT只有利用项")
+                    print(f"🔍 [消融实验] 策略融合(展开)：NN权重={alpha:.3f}, UCB权重={1-alpha:.3f}")
                 
                 policy = np.clip(policy, 1e-8, 1)  # 防止全零
                 policy = policy / policy.sum()  # 重新归一化
+                
+                # 🔧 修复：NoExplore变体在展开阶段也应该使用纯贪心策略
+                # 将融合后的概率分布转换为确定性策略（100%选择最优动作）
+                if hasattr(self, 'exploration_rate') and self.exploration_rate == 0.0:
+                    best_action_idx = np.argmax(policy)
+                    policy = np.zeros(nA)
+                    policy[best_action_idx] = 1.0
+                    
+                    if ablation_mode and not hasattr(self, '_noexplore_expansion_logged'):
+                        print(f"🎯 [NoExplore] 展开阶段转换为纯贪心：100%选择最优动作")
+                        self._noexplore_expansion_logged = True
                 
                 try:
                     action = np.random.choice(np.arange(nA), p=policy)  #根据融合策略选择一个动作进行展开。
                 except ValueError:
                     action = np.random.choice(np.arange(nA), p=np.full(nA, 1 / nA))
                 next_state, ntn_next, reward, done, eq = self.step(state, action, ntn) # 执行展开。 对未访问的节点 进行展开
-                if eq is not None:  # 如果这一步展开直接生成了完整表达式
-                    state_records.append(state) # 记录数据用于训练
-                    seq_records.append(seq)
-                    policy_records.append(policy)
-                    # 核心改造：此处记录的价值也应该是融合后的价值
-                    w = 0.5 # 保持权重一致
-                    value_accuracy = float(value_nn.detach() if hasattr(value_nn, 'detach') else value_nn)
-                    value_profit = float(profit_nn.detach() if hasattr(profit_nn, 'detach') else profit_nn)
-                    value_fused_nn = w * value_accuracy + (1 - w) * value_profit
-                    value_records.append(value_fused_nn)
+                # 🔧 方案4改进版：已在调用神经网络时记录经验，此处不再重复记录
 
                 if not done:  # 如果展开后还未结束。 要下一步继续选择
                     # 核心改造：融合三个价值评估: 精度(value_nn), 盈利(profit_nn), 随机模拟(rollout)

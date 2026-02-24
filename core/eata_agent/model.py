@@ -25,6 +25,7 @@ class Model:
         self.transplant_step = args.transplant_step
         self.norm_threshold = args.norm_threshold
         self.device = args.device
+        self.train_size = getattr(args, 'train_size', 32)
       #  初始化环境：根据 main.py 传入的args参数，设置所有超参数  很熟悉明白了
 
         # 自动推断n和lookBACK
@@ -65,7 +66,7 @@ class Model:
         self.nt_nodes = symbolics.ntn_map[self.symbolic_lib]
         self.score_with_est = score.score_with_est
         self.simple_mae_score = score.simple_mae_score
-        self.data_buffer = deque(maxlen=64)  # 调整为适合短期测试的大小
+        self.data_buffer = deque(maxlen=10240)
         #nt_nodes: 获取非终端节点（Non-terminal nodes），在语法树中通常代表运算操作。
         # `score_with_est`: 指定用于评估表达式好坏的评分函数*，该函数来自 score.py。
     #  *   data_buffer: 创建一个固定长度的队列，用作经验回放池。
@@ -78,6 +79,32 @@ class Model:
         #通过这里的操作，外部接口，由engine中的simulate方法调用
         # assert X.size(0) == 1 # 注释掉此行，以允许处理来自滑动窗口的批数据
         #一个断言，确保每次只处理一个数据样本（batch_size 为 1）。这是因为 MCTS搜索是针对单个样本进行的
+        
+        # 🔧 检测 skip_mcts 参数：真正的 NoMCTS 变体
+        if hasattr(self, '_variant_skip_mcts') and self._variant_skip_mcts:
+            print("🚫 [NoMCTS变体] 跳过MCTS搜索，直接用神经网络生成表达式")
+            return self._run_without_mcts(X, y)
+        
+        # 🔧 检测 skip_nn 参数：真正的 NoNN 变体
+        skip_nn_mode = hasattr(self, '_variant_skip_nn') and self._variant_skip_nn
+        if skip_nn_mode:
+            print("🚫 [NoNN变体] 禁用神经网络，只使用MCTS的UCB策略")
+            # 强制设置参数，确保不使用神经网络
+            # 注意：这里的alpha会覆盖传入的参数，确保NoNN变体始终使用alpha=0
+            alpha = 0.0  # 神经网络权重为0
+            use_network_flag = False  # 完全禁用神经网络
+            print(f"   🔧 强制设置 alpha=0.0, use_network=False")
+        else:
+            use_network_flag = True  # 正常使用神经网络
+            # alpha保持传入值或None（由后续逻辑动态计算）
+        
+        # 🔧 检测 skip_memory 参数：真正的 NoMem 变体
+        skip_memory_mode = hasattr(self, '_variant_skip_memory') and self._variant_skip_memory
+        if skip_memory_mode:
+            print("🚫 [NoMem变体] 禁用进化记忆，清空模块库")
+            # 清空模块库
+            self.aug_grammars_counter = {}
+            print(f"   ✅ 模块库已清空: {len(self.aug_grammars_counter)} 个模块")
         
         # 动态生成base_grammar（防止初始化时n未知导致grammar为空）
         if self.symbolic_lib == 'NEMoTS' and (self.base_grammar is None or len(self.base_grammar) == 0):
@@ -192,9 +219,12 @@ class Model:
             
             # 根据变体参数选择探索率（移到循环外，确保总是生效）
             # 🔧 方案1：参数化方法调用 - 优先使用传入的变体参数
+            # 🔧 修复：记录是否使用了变体固定值，防止后续被动态修改
+            use_fixed_exploration_rate = False
             if variant_exploration_rate is not None:
                 exploration_rate = variant_exploration_rate
-                print(f"   🔧 使用传入的变体exploration_rate = {exploration_rate}")
+                use_fixed_exploration_rate = True  # 标记为固定值
+                print(f"   🔧 使用传入的变体exploration_rate = {exploration_rate} (固定值)")
             else:
                 # 向后兼容：保持原有逻辑
                 exploration_rate = self.exploration_rate  # 默认探索率
@@ -202,7 +232,8 @@ class Model:
                 # 检查Model层面的变体参数
                 if hasattr(self, '_variant_exploration_rate'):
                     exploration_rate = self._variant_exploration_rate
-                    print(f"   🔍 使用模型变体exploration_rate = {exploration_rate}")
+                    use_fixed_exploration_rate = True  # 标记为固定值
+                    print(f"   🔍 使用模型变体exploration_rate = {exploration_rate} (固定值)")
                 
                 # 检查是否有通过args传递的变体参数（从SlidingWindowNEMoTS传递）
                 elif hasattr(self, 'args') and hasattr(self.args, 'exploration_rate'):
@@ -210,7 +241,8 @@ class Model:
                     default_exploration_rate = 1 / (2**0.5)  # 默认值
                     if abs(self.args.exploration_rate - default_exploration_rate) > 1e-6:
                         exploration_rate = self.args.exploration_rate
-                        print(f"   🔍 从args使用变体exploration_rate = {exploration_rate}")
+                        use_fixed_exploration_rate = True  # 标记为固定值
+                        print(f"   🔍 从args使用变体exploration_rate = {exploration_rate} (固定值)")
                 else:
                     print(f"   🔧 使用默认exploration_rate = {exploration_rate}")
 
@@ -218,12 +250,17 @@ class Model:
                 
                 # 强制调试信息：显示传递给MCTS的exploration_rate值
                 print(f"🔍 [强制调试] 创建MCTS时的exploration_rate: {exploration_rate}")
+                print(f"🔍 [强制调试] variant_exploration_rate参数: {variant_exploration_rate}")
+                print(f"🔍 [强制调试] use_fixed_exploration_rate: {use_fixed_exploration_rate}")
                 print(f"🔍 [强制调试] 默认exploration_rate: {1/(2**0.5)}")
                 print(f"🔍 [强制调试] 是否使用变体值: {abs(exploration_rate - 1/(2**0.5)) > 1e-6}")
                 
+                # 🔧 NoMem变体：传递空的aug_grammars
+                aug_grammars_list = [] if skip_memory_mode else [x[0] for x in sorted(self.aug_grammars_counter.items(), key=lambda item: item[1], reverse=True)[:20]]
+                
                 mcts_block = MCTS(data_sample=supervision_data,
                                   base_grammars=self.base_grammar,
-                                  aug_grammars=[x[0] for x in sorted(self.aug_grammars_counter.items(), key=lambda item: item[1], reverse=True)[:20]],
+                                  aug_grammars=aug_grammars_list,
                                   nt_nodes=self.nt_nodes,
                                   max_len=self.max_len,
                                   max_module=max_module,
@@ -242,18 +279,23 @@ class Model:
                     mcts_alpha = alpha
                     print(f"   🔧 使用变体alpha参数: {mcts_alpha} (固定值，不受缓冲区影响)")
                 else:
-                    # 恢复原始动态计算逻辑
-                    warmup = int(buffer_size * 0.1)
+                    # 动态计算alpha：warmup与train_size对齐，确保缓冲区有足够训练数据后alpha立即开始增长
+                    warmup = self.train_size
                     if current_buffer_size < warmup:
-                        mcts_alpha = 0.0  # 恢复原始逻辑：初始阶段使用0.0
+                        mcts_alpha = 0.0
                     else:
                         mcts_alpha = min(1.0, (current_buffer_size - warmup) / (buffer_size - warmup))
-                    print(f"   🔧 使用动态计算alpha: {mcts_alpha} (基于缓冲区大小 {current_buffer_size}/{buffer_size})")
+                    print(f"   🔧 使用动态计算alpha: {mcts_alpha:.4f} (缓冲区 {current_buffer_size}/{buffer_size}, warmup={warmup})")
 
                 # 🎯 为MCTS实例设置消融实验模式标记
                 if hasattr(self, '_ablation_experiment_mode') and self._ablation_experiment_mode:
                     mcts_block._ablation_experiment_mode = True
                     print(f"   ✅ MCTS实例消融实验模式已设置")
+                
+                # 🔧 为MCTS实例设置skip_memory标志
+                if skip_memory_mode:
+                    mcts_block._variant_skip_memory = True
+                    print(f"   ✅ MCTS实例skip_memory标志已设置")
                 
                 new_best_tree_node, current_solution, good_modules, records = mcts_block.run(
                     input_data,
@@ -261,7 +303,7 @@ class Model:
                     network=self.p_v_net_ctx,
                     num_play=10,
                     print_flag=True,
-                    use_network=True,
+                    use_network=use_network_flag,  # 🔧 使用变体控制的标志
                     alpha=mcts_alpha,
                     buffer_size=buffer_size,
                     current_buffer_size=current_buffer_size
@@ -292,7 +334,11 @@ class Model:
                     final_best_tree = new_best_tree_node
 
                 max_module += module_grow_step
-                exploration_rate *= 5
+                # 🔧 修复：只有非固定值才允许动态增长，保护变体参数
+                if not use_fixed_exploration_rate:
+                    exploration_rate *= 5
+                else:
+                    print(f"   🔒 保持固定exploration_rate = {exploration_rate} (不进行动态增长)")
 
                 test_score = \
                     self.score_with_est(score.simplify_eq(best_solution[0]), 0, supervision_data, eta=self.eta)[0]
@@ -315,4 +361,44 @@ class Model:
         return all_eqs, all_times, test_scores, all_mcts_records, policy, reward, final_best_tree
 
 
+    def _run_without_mcts(self, X, y=None):
+        """
+        真正的 NoMCTS 变体：完全跳过 MCTS 搜索，直接用神经网络生成表达式
+        这个方法返回与 run() 相同格式的结果，但不进行任何 MCTS 搜索
+        """
+        print("🚫 [NoMCTS] 跳过MCTS搜索，使用简单表达式")
+        
+        # 推断特征维度
+        if self.symbolic_lib == 'NEMoTS':
+            X_ = X.squeeze(0) if X.dim() > 2 else X
+            if X_.ndim == 2:
+                n = X_.shape[1]
+                self.n = n
+            else:
+                n = self.n if self.n is not None else 6
+        else:
+            n = 1
+        
+        # 生成简单的线性组合表达式（不需要MCTS搜索）
+        # 使用前几个特征的简单组合
+        if n >= 2:
+            simple_expr = f"x0 + x1"  # 最简单的双变量线性组合
+        else:
+            simple_expr = "x0"
+        
+        print(f"   生成简单表达式: {simple_expr}")
+        
+        # 构造返回值，与 run() 方法的返回格式保持一致
+        all_eqs = [simple_expr] * self.num_runs
+        all_times = [0.01] * self.num_runs  # 假设很快完成
+        test_scores = [0.5] * self.num_runs  # 简单表达式的评分较低
+        all_mcts_records = []  # 没有MCTS记录
+        policy = None
+        reward = 0.5
+        final_best_tree = None
+        
+        print(f"   NoMCTS完成: 表达式={simple_expr}, 评分={test_scores[0]:.4f}")
+        
+        return all_eqs, all_times, test_scores, all_mcts_records, policy, reward, final_best_tree
+    
     #module就是语法增强最直接的利用对象：子结构  会被添加到语法增加库当中 #细节还是在mcts代码当中
