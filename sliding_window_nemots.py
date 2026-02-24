@@ -40,7 +40,7 @@ except ImportError:
 
 class SlidingWindowNEMoTS:
     
-    def __init__(self, lookback: int = 50, lookahead: int = 10, stride: int = 1, depth: int = 300, previous_best_tree=None, **variant_kwargs):
+    def __init__(self, lookback: int = 50, lookahead: int = 10, stride: int = 1, depth: int = 300, previous_best_tree=None, external_engine=None, **variant_kwargs):
         """
         初始化滑动窗口NEMoTS
         
@@ -65,16 +65,20 @@ class SlidingWindowNEMoTS:
         # 从main函数迁移的超参数
         self.hyperparams = self._create_hyperparams()
         
-        # 初始化引擎
-        original_stderr = sys.stderr
-        original_stdout = sys.stdout
-        try:
-            sys.stderr = NullWriter()
-            sys.stdout = NullWriter()
-            self.engine = Engine(self.hyperparams)
-        finally:
-            sys.stderr = original_stderr
-            sys.stdout = original_stdout
+        # 初始化引擎：优先使用外部注入的engine（保持data_buffer持久化）
+        if external_engine is not None:
+            self.engine = external_engine
+            print(f"   🔧 使用外部注入的Engine（data_buffer持久化，当前大小: {len(self.engine.model.data_buffer)}）")
+        else:
+            original_stderr = sys.stderr
+            original_stdout = sys.stdout
+            try:
+                sys.stderr = NullWriter()
+                sys.stdout = NullWriter()
+                self.engine = Engine(self.hyperparams)
+            finally:
+                sys.stderr = original_stderr
+                sys.stdout = original_stdout
         
         # 语法树继承和多样性管理
         self.previous_best_tree = None
@@ -138,7 +142,7 @@ class SlidingWindowNEMoTS:
         args.lr = 1e-5
         args.weight_decay = 0.0001
         args.clip = 5.0
-        args.buffer_size = 64
+        args.buffer_size = 128
         
         # 应用变体参数修改
         if 'alpha' in self.variant_params:

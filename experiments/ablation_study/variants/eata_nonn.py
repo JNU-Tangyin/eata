@@ -7,7 +7,6 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from core.agent import Agent
 import pandas as pd
 import numpy as np
 
@@ -24,18 +23,6 @@ class EATANoNN:
         self.name = "EATA-NoNN"
         self.description = "无神经网络引导 - 移除神经网络先验，纯MCTS搜索"
         
-        # 创建Agent实例
-        self.agent = Agent(
-            df=df,
-            lookback=kwargs.get('lookback', 100),
-            lookahead=kwargs.get('lookahead', 20),
-            stride=kwargs.get('stride', 1),
-            depth=kwargs.get('depth', 300)
-        )
-        
-        # 应用消融修改：强制设置alpha=0.0
-        self._apply_modifications()
-        
         self.modifications = {
             'alpha': 0.0,
             'target_file': 'eata_agent/mcts.py',
@@ -43,21 +30,6 @@ class EATANoNN:
             'modification_type': 'parameter_override'
         }
         
-    def _apply_modifications(self):
-        """
-        应用消融修改：设置alpha=0.0移除神经网络引导
-        """
-        try:
-            # 修改Agent内部的MCTS参数
-            # 通过修改sliding_window_nemots中的参数传递
-            if hasattr(self.agent, 'hyperparams'):
-                # 强制设置alpha为0.0，移除神经网络引导
-                self.agent.hyperparams.alpha = 0.0
-                print(f"{self.name}: 已设置alpha=0.0，移除神经网络引导")
-            
-        except Exception as e:
-            print(f"{self.name}: 应用修改时出错: {e}")
-    
     def run_backtest(self, train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
         """
         运行回测 - 使用与对比实验相同的核心回测逻辑
@@ -77,9 +49,10 @@ class EATANoNN:
             # 合并训练和测试数据
             combined_df = pd.concat([train_df, test_df]).reset_index(drop=True)
             
-            # 使用核心回测函数，传入变体参数（移除神经网络，纯MCTS）
+            # 使用核心回测函数，传入变体参数（真正移除神经网络，纯MCTS）
             variant_params = {
-                'alpha': 0.0  # 恢复：alpha=0.0表示纯MCTS，移除神经网络
+                'skip_nn': True,  # 🔧 完全禁用神经网络
+                'alpha': 0.0,     # 🔧 显式设置alpha=0，确保不使用神经网络
             }
             core_metrics, portfolio_df = run_eata_core_backtest(
                 stock_df=combined_df,

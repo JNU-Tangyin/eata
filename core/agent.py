@@ -75,7 +75,7 @@ class Agent:
         args.lr = 1e-5
         args.weight_decay = 0.0001
         args.clip = 5.0
-        args.buffer_size = 64
+        args.buffer_size = 128
         torch.manual_seed(args.seed)
         np.random.seed(args.seed)
         return args
@@ -350,6 +350,7 @@ class Agent:
                 stride=self.stride,
                 depth=self.depth,
                 previous_best_tree=getattr(self, '_previous_best_tree', None),
+                external_engine=self.engine,
                 **variant_kwargs
             )
 

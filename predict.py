@@ -86,16 +86,37 @@ def run_eata_core_backtest(
         # 提取关键参数用于直接传递
         variant_profit_loss_weight = variant_params.get('profit_loss_weight')
         variant_exploration_rate = variant_params.get('exploration_rate')
+        variant_alpha = variant_params.get('alpha')  # 修复：提取alpha参数
+        variant_skip_mcts = variant_params.get('skip_mcts')  # 🔧 新增：提取skip_mcts参数
+        variant_skip_nn = variant_params.get('skip_nn')  # 🔧 新增：提取skip_nn参数
+        variant_skip_memory = variant_params.get('skip_memory')  # 🔧 新增：提取skip_memory参数
         
         print(f"🔧 [方案1] 提取的关键参数:")
         print(f"   - profit_loss_weight: {variant_profit_loss_weight}")
         print(f"   - exploration_rate: {variant_exploration_rate}")
+        print(f"   - alpha: {variant_alpha}")
+        print(f"   - skip_mcts: {variant_skip_mcts}")
+        print(f"   - skip_nn: {variant_skip_nn}")
+        print(f"   - skip_memory: {variant_skip_memory}")
         
-        # 设置Engine上的变体参数标识，供store_experiences和Agent.predict使用
+        # 设置Agent上的变体参数标识，供criteria()使用
         if variant_profit_loss_weight is not None:
             predictor.agent.engine._variant_profit_loss_weight = variant_profit_loss_weight
         if variant_exploration_rate is not None:
             predictor.agent.engine._variant_exploration_rate = variant_exploration_rate
+            print(f"   ✅ exploration_rate={variant_exploration_rate} 已注入到 engine")
+        if variant_alpha is not None:
+            predictor.agent._variant_alpha = variant_alpha  # 修复：注入alpha到agent
+            print(f"   ✅ alpha={variant_alpha} 已注入到 agent")
+        if variant_skip_mcts is not None:
+            predictor.agent.engine.model._variant_skip_mcts = variant_skip_mcts  # 🔧 新增：注入skip_mcts到model
+            print(f"   ✅ skip_mcts={variant_skip_mcts} 已注入到 model")
+        if variant_skip_nn is not None:
+            predictor.agent.engine.model._variant_skip_nn = variant_skip_nn  # 🔧 新增：注入skip_nn到model
+            print(f"   ✅ skip_nn={variant_skip_nn} 已注入到 model")
+        if variant_skip_memory is not None:
+            predictor.agent.engine.model._variant_skip_memory = variant_skip_memory  # 🔧 新增：注入skip_memory到model
+            print(f"   ✅ skip_memory={variant_skip_memory} 已注入到 model")
         
     # 🎯 架构级变体模式设置：通过环境变量控制
     if variant_mode:

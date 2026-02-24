@@ -43,10 +43,15 @@ class Engine(object):
         # model.run() 现在返回原始的MCTS经验记录 (mcts_records)，传递alpha和exploration_rate参数
         all_eqs, all_times, test_scores, mcts_records, policy, mcts_score, new_best_tree = self.model.run(X, y_tensor, previous_best_tree=previous_best_tree, alpha=alpha, variant_exploration_rate=variant_exploration_rate)
         
-        # 不再在这里自动存储和训练
-        # self.model.data_buffer.extend(supervision_data)
-        # if len(self.model.data_buffer) > self.args.train_size:
-        #     self.train()
+        # 经验已在model.run()内部存入data_buffer，每10次simulate触发一次训练
+        # 🔧 修复：NoNN变体跳过神经网络训练
+        skip_nn_training = hasattr(self.model, '_variant_skip_nn') and self.model._variant_skip_nn
+        if not skip_nn_training:
+            self.global_train_step += 1
+            if len(self.model.data_buffer) >= self.args.train_size and self.global_train_step % 10 == 0:
+                self.train()
+        else:
+            print("   🚫 [NoNN变体] 跳过神经网络训练")
 
         mae, mse, corr, best_exp, top_10_exps, top_10_scores = OptimizedMetrics.metrics(all_eqs, test_scores, y)
 
@@ -57,6 +62,13 @@ class Engine(object):
         """接收由Agent处理过的、包含最终rl_reward的完整经验，并触发训练"""
         self.model.data_buffer.extend(experiences)
         print(f"  [经验池] 存入 {len(experiences)} 条新经验。当前经验池大小: {len(self.model.data_buffer)}")
+        
+        # 🔧 修复：NoNN变体跳过神经网络训练
+        skip_nn_training = hasattr(self.model, '_variant_skip_nn') and self.model._variant_skip_nn
+        if skip_nn_training:
+            print("   🚫 [NoNN变体] 跳过神经网络训练")
+            return
+        
         print(f"🔧 [store_experiences] 检查训练触发条件: {len(self.model.data_buffer)} >= {self.args.train_size} ?")
         if len(self.model.data_buffer) >= self.args.train_size:
             print(f"🔧 [store_experiences] 条件满足，调用train()方法...")

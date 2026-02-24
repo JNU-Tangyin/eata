@@ -7,7 +7,6 @@ import sys
 import os
 sys.path.append(os.path.join(os.path.dirname(__file__), '..', '..', '..'))
 
-from core.agent import Agent
 import pandas as pd
 import numpy as np
 
@@ -24,18 +23,6 @@ class EATANoMCTS:
         self.name = "EATA-NoMCTS"
         self.description = "无蒙特卡洛模拟 - 纯神经网络引导，移除随机模拟"
         
-        # 创建Agent实例
-        self.agent = Agent(
-            df=df,
-            lookback=kwargs.get('lookback', 100),
-            lookahead=kwargs.get('lookahead', 20),
-            stride=kwargs.get('stride', 1),
-            depth=kwargs.get('depth', 300)
-        )
-        
-        # 应用消融修改
-        self._apply_modifications()
-        
         self.modifications = {
             'alpha': 1.0,
             'target_file': 'eata_agent/mcts.py',
@@ -43,20 +30,6 @@ class EATANoMCTS:
             'modification_type': 'parameter_override'
         }
         
-    def _apply_modifications(self):
-        """
-        应用消融修改：设置alpha=1.0移除蒙特卡洛模拟
-        """
-        try:
-            # 修改Agent内部的超参数
-            if hasattr(self.agent, 'hyperparams'):
-                # 设置alpha为1.0，完全依赖神经网络，移除MCTS
-                self.agent.hyperparams.alpha = 1.0
-                print(f"{self.name}: 已设置alpha=1.0，移除蒙特卡洛模拟，纯神经网络")
-            
-        except Exception as e:
-            print(f"{self.name}: 应用修改时出错: {e}")
-    
     def run_backtest(self, train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
         """
         运行回测 - 使用与对比实验相同的核心回测逻辑
@@ -76,9 +49,10 @@ class EATANoMCTS:
             # 合并训练和测试数据
             combined_df = pd.concat([train_df, test_df]).reset_index(drop=True)
             
-            # 使用核心回测函数，传入变体参数（移除MCTS，纯神经网络）
+            # 使用核心回测函数，传入变体参数（真正移除MCTS，纯神经网络）
             variant_params = {
-                'alpha': 1.0  # 恢复：alpha=1.0表示纯神经网络，移除MCTS
+                'skip_mcts': True,  # 🔧 新增：完全跳过MCTS搜索
+                'use_nn_direct': True  # 🔧 新增：直接用神经网络生成表达式
             }
             core_metrics, portfolio_df = run_eata_core_backtest(
                 stock_df=combined_df,

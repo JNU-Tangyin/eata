@@ -25,10 +25,10 @@ class EATANoMem(BaseVariant):
         """
         return VariantConfig(
             name="EATA-NoMem",
-            description="无进化记忆变体，num_transplant=0，移除历史知识传承机制",
-            num_transplant=0,  # 核心参数：禁用移植机制
+            description="无进化记忆变体，skip_memory=True，真正移除历史知识传承机制",
             train_size=32,  # 使用默认训练触发阈值
             extra_params={
+                'skip_memory': True,  # 🔧 新增：完全禁用进化记忆
                 'variant_type': 'no_memory',
                 'focus': 'no_evolutionary_memory'
             }
