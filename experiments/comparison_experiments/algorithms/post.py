@@ -27,9 +27,14 @@ warnings.filterwarnings('ignore')
 class ExperimentPostProcessor:
     """实验后处理器"""
     
-    def __init__(self, results_dir: str = "/Users/zjt/Desktop/EATA-RL-main/comparison_results"):
+    def __init__(self, results_dir: str = None):
+        # 默认使用项目根目录的results/comparison_study/
+        if results_dir is None:
+            project_root = Path(__file__).parent.parent.parent.parent
+            results_dir = project_root / "results" / "comparison_study"
+        
         self.results_dir = Path(results_dir)
-        # 将输出目录都放在 comparison_results 下
+        # 将输出目录都放在 results/comparison_study 下
         self.figures_dir = self.results_dir / "figures"
         self.tables_dir = self.results_dir / "tables"
         self.detailed_dir = self.results_dir / "detailed_outputs"
@@ -1383,8 +1388,8 @@ def main():
     import argparse
     
     parser = argparse.ArgumentParser(description='实验后处理系统')
-    parser.add_argument('--results-dir', default='/Users/zjt/Desktop/EATA-RL-main/comparison_results', 
-                       help='实验结果目录')
+    parser.add_argument('--results-dir', default=None, 
+                       help='实验结果目录（默认使用项目根目录的results/comparison_study/）')
     parser.add_argument('--output-dir', default='.', 
                        help='输出目录')
     

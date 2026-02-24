@@ -325,8 +325,9 @@ def load_csv_stock_data(ticker: str):
     import os
     from pathlib import Path
     
-    # CSV文件路径
-    csv_path = Path(r"D:\下载\分散的20支股票\分散的20支股票") / f"{ticker}.csv"
+    # CSV文件路径 - 使用项目根目录的data文件夹
+    project_root = Path(__file__).resolve().parents[3]
+    csv_path = project_root / "data" / f"{ticker}.csv"
     
     if not csv_path.exists():
         raise FileNotFoundError(f"CSV文件不存在: {csv_path}")

@@ -7,8 +7,8 @@ import os
 from pathlib import Path
 
 # 项目根目录
-PROJECT_ROOT = Path(__file__).parent.parent.parent
-ABLATION_ROOT = PROJECT_ROOT / "ablation_study"
+PROJECT_ROOT = Path(__file__).parent.parent.parent.parent  # 指向EATA-RL-main根目录
+ABLATION_ROOT = PROJECT_ROOT / "experiments" / "ablation_study"
 
 # 数据路径配置
 DATA_PATHS = {
@@ -18,15 +18,15 @@ DATA_PATHS = {
     'stock_data_20': ABLATION_ROOT / "data" / "raw_data" / "stock_data_20.csv",
     'market_indices': ABLATION_ROOT / "data" / "raw_data" / "market_indices.csv",
     # 真实股票数据路径
-    'real_stock_data_dir': Path("d:/下载/分散的20支股票/分散的20支股票")
+    'real_stock_data_dir': PROJECT_ROOT / "data"
 }
 
-# 结果路径配置
+# 结果路径配置 - 统一存放到项目根目录的results/
 RESULT_PATHS = {
-    'raw_results_dir': ABLATION_ROOT / "results" / "raw_results",
-    'csv_results_dir': ABLATION_ROOT / "results" / "csv_results",
-    'processed_results_dir': ABLATION_ROOT / "results" / "processed_results",
-    'figures_dir': ABLATION_ROOT / "results" / "figures"
+    'raw_results_dir': PROJECT_ROOT / "results" / "ablation_study" / "raw_results",
+    'csv_results_dir': PROJECT_ROOT / "results" / "ablation_study" / "csv_results",
+    'processed_results_dir': PROJECT_ROOT / "results" / "ablation_study" / "processed_results",
+    'figures_dir': PROJECT_ROOT / "paper" / "figures"  # 图表直接保存到paper/figures/
 }
 
 # EATA模型默认参数 - 使用与对比实验完全一致的参数

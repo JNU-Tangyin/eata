@@ -335,13 +335,19 @@ class BaselineRunner:
         
         return "\n".join(report)
     
-    def save_results(self, results: Dict, ticker: str, output_dir: str = "comparison_results", 
+    def save_results(self, results: Dict, ticker: str, output_dir: str = None, 
                     params: Dict = None, run_id: int = 1):
         """保存结果到CSV和JSON文件"""
         import os
         import pandas as pd
         import json
         from datetime import datetime
+        from pathlib import Path
+        
+        # 默认使用项目根目录的results/comparison_study/
+        if output_dir is None:
+            project_root = Path(__file__).parent.parent.parent.parent
+            output_dir = str(project_root / "results" / "comparison_study" / "raw_results")
         
         os.makedirs(output_dir, exist_ok=True)
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -468,8 +474,9 @@ class BaselineRunner:
         import os
         import pandas as pd
         
-        # 创建详细输出目录
-        detailed_dir = os.path.join(output_dir, "detailed_outputs")
+        # 创建详细输出目录 - 与raw_results平级
+        # output_dir 是 raw_results/，所以上一级是 comparison_study/
+        detailed_dir = os.path.join(os.path.dirname(output_dir), "detailed_outputs")
         os.makedirs(detailed_dir, exist_ok=True)
         
         for strategy_name, result in results.items():
@@ -766,7 +773,7 @@ def run_parameter_experiments():
                     continue
     
     print(f"\n🎉 参数组合实验完成！")
-    print(f"📁 结果文件保存在: comparison_results/")
+    print(f"📁 结果文件保存在: results/comparison_study/raw_results/")
     print(f"📊 总实验数: {total_experiments}")
     
     # 生成实验汇总统计
@@ -783,7 +790,9 @@ def generate_experiment_summary():
     print(f"\n📊 生成实验汇总统计...")
     print("=" * 80)
     
-    results_dir = Path("comparison_results")
+    # 使用新的results路径
+    project_root = Path(__file__).parent.parent.parent.parent
+    results_dir = project_root / "results" / "comparison_study" / "raw_results"
     if not results_dir.exists():
         print("❌ 结果目录不存在")
         return

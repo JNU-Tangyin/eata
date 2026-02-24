@@ -1,0 +1,60 @@
+% EATA-RL 论文主文件
+\documentclass[12pt,a4paper]{article}
+
+% 基础包
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{hyperref}
+
+% 图表路径
+\graphicspath{{figures/}}
+
+\title{EATA-RL: Enhanced Automated Technical Analysis with Reinforcement Learning}
+\author{Your Name}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+This paper presents EATA-RL, an enhanced automated technical analysis system...
+\end{abstract}
+
+\section{Introduction}
+% 引言
+
+\section{Methodology}
+% 方法论
+
+\section{Experiments}
+% 实验部分
+
+\subsection{Ablation Study}
+% 消融实验
+
+% 引用消融实验结果表格
+\input{tables/ablation_results.tex}
+
+% 引用消融实验图表
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.8\textwidth]{ablation_performance_comparison.pdf}
+    \caption{Ablation Study Performance Comparison}
+    \label{fig:ablation_comparison}
+\end{figure}
+
+\section{Results}
+% 结果分析
+
+\section{Conclusion}
+% 结论
+
+\bibliographystyle{plain}
+\bibliography{references}
+
+\end{document}

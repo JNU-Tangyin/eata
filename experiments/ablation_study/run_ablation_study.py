@@ -124,9 +124,9 @@ class AblationStudyRunner:
 
         
 
-        # 真实股票数据路径
+        # 真实股票数据路径 - 使用配置文件中的路径
 
-        data_path = f"d:/下载/分散的20支股票/分散的20支股票/{ticker}.csv"
+        data_path = DATA_PATHS['real_stock_data_dir'] / f"{ticker}.csv"
 
         
 
