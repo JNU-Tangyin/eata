@@ -1,0 +1,28 @@
+\begin{table}[htbp]
+\centering
+\caption{Main Performance Comparison (Representative S\&P 500 Constituents, N=58 stocks). EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
+\label{tab:main_results}
+\resizebox{0.95\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} & \textbf{Calmar} \\
+\midrule
+MACD & 15.4 & 0.59 & 15.9 & 66\% & 0.97 \\
+DDPG (FinRL) & 10.7 & 0.54 & 17.7 & 70\% & 0.61 \\
+Buy \& Hold & 13.8 & 0.51 & 24.6 & 64\% & 0.56 \\
+A2C (FinRL) & 9.8 & 0.47 & 21.3 & 58\% & 0.46 \\
+PPO (FinRL) & 8.0 & 0.40 & 16.6 & 66\% & 0.48 \\
+SAC (FinRL) & 11.2 & 0.40 & 20.8 & 57\% & 0.54 \\
+GBDT & 11.4 & 0.32 & 20.6 & 52\% & 0.55 \\
+TD3 (FinRL) & 5.7 & 0.24 & 21.2 & 57\% & 0.27 \\
+ARIMA & 8.5 & 0.24 & 25.4 & 58\% & 0.34 \\
+LightGBM & 0.2 & 0.18 & 51.7 & 56\% & 0.00 \\
+Transformer & 3.5 & 0.10 & 10.0 & 54\% & 0.35 \\
+GP & 4.6 & 0.08 & 27.2 & 48\% & 0.17 \\
+LSTM & -7.5 & -0.34 & 26.0 & 36\% & -0.29 \\
+\midrule
+\textbf{EATA (Ours)} & \textbf{17.6}$^{**}$ & \textbf{0.54}$^{**}$ & \textbf{34.0} & \textbf{78.0\%} & \textbf{0.52} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}

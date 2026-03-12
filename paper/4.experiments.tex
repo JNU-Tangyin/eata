@@ -27,7 +27,7 @@ We compare EATA against 7 baselines across four categories:
 \subsubsection{Performance Comparison}
 \textbf{Hypothesis (RQ3).} Profit-aware symbolic strategies can match or exceed black-box baselines in risk-adjusted returns while remaining intrinsically interpretable.
 
-Table~\ref{tab:main_results} reports performance metrics averaged across our evaluation universe. EATA achieves competitive risk-adjusted returns with a \textbf{Sharpe Ratio of 0.54}, demonstrating comparable performance to traditional baselines (MACD, Sharpe 0.56) while maintaining full interpretability through symbolic expressions.
+Table~\ref{tab:main_results} reports performance metrics averaged across our evaluation universe. EATA achieves competitive risk-adjusted returns with a \textbf{Sharpe Ratio of 0.54}, demonstrating comparable performance to traditional baselines (MACD, Sharpe 0.59) while maintaining full interpretability through symbolic expressions.
 
 \begin{table}[htbp]
 \centering
@@ -38,22 +38,25 @@ Table~\ref{tab:main_results} reports performance metrics averaged across our eva
 \toprule
 \textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} & \textbf{Calmar} \\
 \midrule
-MACD & 11.4 & 0.56 & 34.7 & 52\% & 0.33 \\
-Buy \& Hold & 12.6 & 0.51 & 50.3 & 58\% & 0.25 \\
-PPO (FinRL) & 7.8 & 0.40 & 27.8 & 45\% & 0.28 \\
-LightGBM & 10.3 & 0.33 & 44.1 & 54\% & 0.23 \\
-ARIMA & 5.7 & 0.30 & 45.0 & 35\% & 0.13 \\
-GP (Operon) & 1.0 & 0.13 & 36.6 & 51\% & 0.03 \\
-Transformer & 2.0 & 0.09 & 15.9 & 48\% & 0.13 \\
-LSTM & -4.9 & -0.08 & 31.6 & 42\% & -0.15 \\
+MACD & 15.4 & 0.59 & 15.9 & 66\% & 0.97 \\
+DDPG (FinRL) & 10.7 & 0.54 & 17.7 & 70\% & 0.61 \\
+Buy \& Hold & 13.8 & 0.51 & 24.6 & 64\% & 0.56 \\
+A2C (FinRL) & 9.8 & 0.47 & 21.3 & 58\% & 0.46 \\
+PPO (FinRL) & 8.0 & 0.40 & 16.6 & 66\% & 0.48 \\
+SAC (FinRL) & 11.2 & 0.40 & 20.8 & 57\% & 0.54 \\
+GBDT & 11.4 & 0.32 & 20.6 & 52\% & 0.55 \\
+TD3 (FinRL) & 5.7 & 0.24 & 21.2 & 57\% & 0.27 \\
+ARIMA & 8.5 & 0.24 & 25.4 & 58\% & 0.34 \\
+LightGBM & 0.2 & 0.18 & 51.7 & 56\% & 0.00 \\
+Transformer & 3.5 & 0.10 & 10.0 & 54\% & 0.35 \\
+GP & 4.6 & 0.08 & 27.2 & 48\% & 0.17 \\
+LSTM & -7.5 & -0.34 & 26.0 & 36\% & -0.29 \\
 \midrule
-\textbf{EATA (Ours)} & \textbf{17.6}$^{**}$ & \textbf{0.54}$^{**}$ & \textbf{34.0} & \textbf{52.3\%} & \textbf{0.52} \\
+\textbf{EATA (Ours)} & \textbf{17.6}$^{**}$ & \textbf{0.54}$^{**}$ & \textbf{34.0} & \textbf{78.0\%} & \textbf{0.52} \\
 \bottomrule
 \end{tabular}%
 }
 \end{table}
-
-\textbf{Discussion (Robustness).} The monotonic degradation in Table~\ref{tab:costs} is expected: higher costs reduce the effective edge of any strategy with non-zero turnover. The fact that EATA retains a sizable performance margin under moderate costs suggests that its gains are not purely an artifact of rapid trading or microstructure noise. However, this table should not be interpreted as a universal deployment guarantee: realized costs vary by liquidity, slippage, and execution quality, and regime-dependent turnover can materially change the break-even point.
 
 \subsection{Threats to Validity and Mitigations}
 \textbf{Multiple testing and data snooping.} Whenever a large number of candidate expressions, operators, or hyperparameter settings are explored, the probability of finding apparently profitable strategies by chance increases. Classic reality-check style procedures~\cite{white2000reality_check,hansen2005spa} and multiple-testing analyses in asset pricing~\cite{harvey2016multiple_testing} highlight that naive $p$-values can be overly optimistic. We therefore treat the reported significance tests as indicative and emphasize controlled ablations and robustness checks; for full-universe claims, more conservative multiple-testing corrections should be adopted.
