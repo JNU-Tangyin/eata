@@ -222,4 +222,4 @@ test_detailed_outputs/
 *.bbl
 *.fdb_latexmk
 *.aux
-0.main.pdf
+# 0.main.pdf  # 允许上传论文PDF
