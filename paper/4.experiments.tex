@@ -201,24 +201,3 @@ Neural guidance significantly accelerates the discovery of profitable expression
 \caption{Pareto Frontier of Interpretability vs Performance. EATA (blue circles) achieves superior Sharpe Ratios with moderate expression complexity (9-17 AST nodes) compared to Genetic Programming (orange triangles). The dashed line shows EATA's Pareto frontier, demonstrating the optimal trade-off between interpretability and performance. GP mostly degenerates to trivial constant expressions (complexity=1) with lower average performance.}
 \label{fig:pareto}
 \end{figure}
-
-\subsection{Robustness Checks}
-
-\subsubsection{Transaction Costs}
-We evaluate EATA under varying transaction costs (Table~\ref{tab:costs}). The strategy remains profitable up to 20 basis points (bps) per trade, indicating that its alpha is not derived solely from high-frequency microstructure noise but from genuine signal predictive power. This setup follows standard empirical practice in modeling implementation frictions in equity trading~\cite{keim1997transaction_costs}.
-
-\begin{table}[htbp]
-\centering
-\caption{Impact of Transaction Costs (Single-Side bps)}
-\label{tab:costs}
-\resizebox{0.9\columnwidth}{!}{%
-\begin{tabular}{lcccc}
-\toprule
-\textbf{Method} & \textbf{0 bps} & \textbf{5 bps} & \textbf{10 bps} & \textbf{20 bps} \\
-\midrule
-Buy \& Hold & 13.4 & 13.2 & 13.0 & 12.6 \\
-EATA & 26.1 & 23.5 & 21.2 & 16.8 \\
-\bottomrule
-\end{tabular}%
-}
-\end{table}
