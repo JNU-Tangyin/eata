@@ -1,0 +1,17 @@
+\begin{table}[htbp]
+\centering
+\caption{Ablation Study Results: Performance Metrics by Variant}
+\label{tab:ablation_results}
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Variant} & \textbf{Annual Return} & \textbf{Sharpe Ratio} & \textbf{Max Drawdown} & \textbf{Win Rate} \\
+\midrule
+\textbf{EATA-Full} & 32.19% $\pm$ 28.96% & 0.811 $\pm$ 0.686 & 35.85% $\pm$ 14.14% & 52.30% $\pm$ 1.98% \\
+EATA-NoNN & 29.77% $\pm$ 26.90% & 0.806 $\pm$ 0.666 & 34.98% $\pm$ 15.52% & 52.47% $\pm$ 1.79% \\
+EATA-NoMem & 27.47% $\pm$ 20.03% & 0.808 $\pm$ 0.446 & 32.52% $\pm$ 17.42% & 50.45% $\pm$ 1.66% \\
+EATA-NoExplore & 18.81% $\pm$ 31.11% & 0.462 $\pm$ 0.680 & 42.34% $\pm$ 16.09% & 50.65% $\pm$ 2.33% \\
+EATA-Simple & 18.75% $\pm$ 28.34% & 0.589 $\pm$ 0.596 & 35.30% $\pm$ 17.14% & 52.37% $\pm$ 2.06% \\
+EATA-NoMCTS & -2.50% $\pm$ 18.16% & 0.070 $\pm$ 0.557 & 47.48% $\pm$ 19.24% & 50.55% $\pm$ 1.94% \\
+\bottomrule
+\end{tabular}
+\end{table}

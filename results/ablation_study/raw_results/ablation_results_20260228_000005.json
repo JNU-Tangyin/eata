@@ -1,0 +1,23 @@
+[
+  {
+    "variant": "EATA-Full",
+    "ticker": "NVDA",
+    "error": "",
+    "modifications": {},
+    "experiment_id": "20260228_000005",
+    "timestamp": "2026-02-28T00:01:51.396503"
+  },
+  {
+    "variant": "EATA-NoNN",
+    "ticker": "NVDA",
+    "error": "",
+    "modifications": {
+      "alpha": 0.0,
+      "target_file": "eata_agent/mcts.py",
+      "target_line": 264,
+      "modification_type": "parameter_override"
+    },
+    "experiment_id": "20260228_000005",
+    "timestamp": "2026-02-28T00:01:55.393565"
+  }
+]

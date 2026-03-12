@@ -1,0 +1,49 @@
+% Table A.6: EATA Hyperparameters (Based on Code Implementation)
+% Generated from actual code analysis
+% Last updated: 2026-03-12
+
+\begin{table}[htbp]
+\centering
+\caption{EATA Hyperparameters}
+\label{tab:hyperparameters}
+\begin{tabular}{llc}
+\toprule
+\textbf{Category} & \textbf{Parameter} & \textbf{Value} \\
+\midrule
+\multirow{3}{*}{MCTS} 
+& Episodes per iteration ($K$) & 100 \\
+& Max expression length ($L^{\max}$) & 50 \\
+& UCB exploration constant ($C$) & $1/\sqrt{2} \approx 0.707$ \\
+\midrule
+\multirow{3}{*}{Neural Network} 
+& Hidden dimension ($d_h$) & 16 \\
+& Learning rate & $10^{-5}$ \\
+& Batch size & 32 \\
+\midrule
+\multirow{3}{*}{Loss Weights} 
+& $\lambda^\pi$ (Policy) & 1.0 \\
+& $\lambda^V$ (Value) & 1.0 \\
+& $\lambda^P$ (Profit) & 1.0 \\
+\midrule
+\multirow{3}{*}{Training} 
+& Sliding window size ($T^{\text{in}}$) & 100 days \\
+& Lookahead ($H$) & 20 days \\
+& Buffer capacity ($B^{\max}$) & 10,240 \\
+\midrule
+\multirow{3}{*}{Grammar} 
+& Module max length ($L^{\text{mod}}$) & 10 \\
+& Module library size ($M^{\max}$) & 100 \\
+& Quantile thresholds ($Q_{25}, Q_{75}$) & 0.25, 0.75 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% Note: These values are extracted from the actual code implementation.
+% Key differences from original paper table:
+% - UCB constant: 1/√2 ≈ 0.707 (not 1.0)
+% - Hidden dimension: 16 (not 128)
+% - Learning rate: 10^-5 (not 10^-4)
+% - Loss weights: all 1.0 (not normalized to 0.5, 0.3, 0.2)
+% - Sliding window: 100 days (not 252 days)
+% - Lookahead: 20 days (not 5 days)
+% - Buffer capacity: 10,240 (not 10,000)

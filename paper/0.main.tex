@@ -1,0 +1,125 @@
+\documentclass[final,5p]{elsarticle}
+% \documentclass[preprint,onecolumn]{elsarticle}
+
+% ============== Packages ==============
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{amsthm} % Added for proof and proposition environments
+\newtheorem{proposition}{Proposition} % Define proposition environment
+\usepackage{algorithm}
+\usepackage{algpseudocode}  % Better algorithm support
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+% \usepackage{cite}  % Commented out: conflicts with natbib loaded by elsarticle
+\usepackage{subcaption}
+\usepackage{pifont}  % For \ding symbols
+\usepackage{tikz}    % For diagrams
+\usetikzlibrary{shapes,arrows,positioning,fit,backgrounds}
+\usepackage[colorlinks=true,linkcolor=blue]{hyperref}
+
+
+\bibliographystyle{elsarticle-num}
+% \bibliographystyle{elsarticle-harv}
+% \bibliographystyle{elsarticle}
+% \biboptions{authoryear}
+% \setcitestyle{authoryear,round} % switch to ``Ren et al. (2019)'' style
+
+% ============== Journal Options ==============
+\journal{Information Sciences}
+
+% ============== Custom Commands ==============
+\newcommand{\ie}{\textit{i.e.}}
+\newcommand{\eg}{\textit{e.g.}}
+\newcommand{\etal}{\textit{et al.}}
+\newcommand{\wrt}{w.r.t.}
+\newcommand{\fake}[1]{\textcolor{red}{[FAKE: #1]}}
+
+\newcommand{\ours}{EATA}
+\newcommand{\ourslong}{Explainable Algorithmic Trading Agent}
+\newcommand{\Yin}[1]{\textcolor{red}{#1}}
+\newcommand{\RA}[1]{\textcolor{black}{#1}}
+\newcommand{\RB}[1]{\textcolor{black}{#1}}
+\newcommand{\RC}[1]{\textcolor{black}{#1}}
+\newcommand{\hidden}[1]{%
+    \textcolor{white}{\fontsize{0.1pt}{0.1pt}\selectfont #1}%
+}
+% ============== Colors ==============
+\definecolor{eataBlue}{HTML}{4169E1}
+\definecolor{profitGreen}{HTML}{50C878}
+\definecolor{riskRed}{HTML}{DC143C}
+\definecolor{baselineGray}{HTML}{808080}
+
+% ============== Document ==============
+\begin{document}
+
+\begin{frontmatter}
+
+% \title{\ours: \ourslong}
+\title{Bridging Tail-Risk Objectives and Symbolic Search for Transparent Trading}
+
+% %%% Blinded: authors and affiliations commented out for double-anonymized review
+\author [a]{Jingtong Zhang}
+\author [b]{Xiaoang Yang}
+\author [c]{Yinqi Shi}
+\author [d]{Yin Tang\corref{cor2}} %
+\ead{Corresponding author: Yin Tang (Email: ytang@jnu.edu.cn).}
+% \ead[url]{https://orcid.org/0000-0001-7693-7543}
+% Author affiliation
+\affiliation[a]{organization={University of New South Wales},
+            city={Sydney},
+            postcode={2052}, 
+            country={Australia}}
+\affiliation[b]{organization={School of Cybersecurity, Jinan University},
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={511443}, 
+            country={China}}
+\affiliation[c]{organization={Jinan University -- University of Birmingham Joint Institute, Jinan University},
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={511443}, 
+            country={China}}
+\affiliation[d]{organization={School of Management, Jinan University},%Department and Organization
+            % addressline={}, 
+            city={GuangZhou},
+            postcode={510632}, 
+            country={China}}
+
+
+\begin{abstract}
+Profit-seeking yet interpretable trading remains elusive: deep neural predictors excel at accuracy but violate regulatory transparency, whereas symbolic regression yields readable formulas but optimizes proxy objectives misaligned with economic utility. We present \ours~(\ourslong), a neural-guided symbolic regression framework that aligns objective, hypothesis space, and training signal with trading profitability. \ours{} couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search so that accuracy rewards $r^{\text{acc}}$ stabilize search while a Wasserstein-derived profit reward $r^{\text{rl}}$ captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituents from 2020--2024, \ours{} delivers annualized return 17.6\%, Sharpe ratio 0.54, and maximum drawdown 34.0\%, achieving competitive performance with 7 baselines spanning technical indicators, gradient boosting, transformers, and FinRL agents while maintaining full interpretability; transaction-cost and Pareto-frontier analyses confirm robustness. Ablation and objective studies show that removing Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can achieve interpretable trading strategies. Reported metrics are point estimates; comprehensive block-bootstrap, Reality Check, SPA, and deflated-Sharpe analyses are left to future work.
+\end{abstract}
+
+\begin{keyword}
+Algorithmic Trading, Symbolic Regression, Wasserstein Distance, Explainable AI, Optimal Transport, Risk-Sensitive Learning
+\end{keyword}
+
+\end{frontmatter}
+
+% \maketitle
+
+% ============== Include Sections ==============
+\input{1.intro}
+\input{2.related}
+\input{3.method}
+\input{4.experiments}
+\input{5.conclusion}
+\section*{Acknowledgment}
+This work was supported by the National Natural Science Foundation of China (No.62272198) and by the Research and Application of Expressway ``1+N'' Electromechanical O\&M Brain Based on Large Model Agents.
+
+\textbf{Author Contribution}
+Jingtong Zhang: Conceptualization, Methodology, and Writing Original draft preparation; 
+Xiaoang Yang: Software, Data curation, Visualization; 
+Yin Tang: Supervision, Writing- Reviewing and Editing, Management.
+
+\textbf{Declaration of generative AI and AI-assisted technologies in the writing process} During the preparation of this work the authors used AI only for proof-reading. After using this tool/service, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+% ============== Bibliography ==============
+\bibliography{references}
+
+% ============== Appendix ==============
+\input{appendix}
+
+\end{document}

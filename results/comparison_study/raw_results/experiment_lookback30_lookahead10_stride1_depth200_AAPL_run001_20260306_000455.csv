@@ -1,0 +1,2 @@
+﻿timestamp,ticker,strategy,run_id,success,description,lookback,lookahead,stride,depth,total_return,annualized_return,sharpe_ratio,max_drawdown,volatility,num_trades
+20260306_000455,AAPL,eata,1,True,EATA强化学习策略,30,10,1,200,-0.11552787152529298,-0.1886299708708642,-0.6996342137651388,0.17697953817157464,0.25252692727617404,27.0

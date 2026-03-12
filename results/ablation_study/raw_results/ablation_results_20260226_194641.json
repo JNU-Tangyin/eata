@@ -1,0 +1,40 @@
+[
+  {
+    "variant": "EATA-Full",
+    "ticker": "NVDA",
+    "annual_return": 0.7577636444672247,
+    "sharpe_ratio": 1.33500361669451,
+    "max_drawdown": 0.4977947624632907,
+    "win_rate": 0.5195369030390738,
+    "volatility": 0.5014348138021429,
+    "rl_reward": 0.9747692456170933,
+    "modifications": {},
+    "training_info": {
+      "nemots_iterations": 0,
+      "nn_epochs": 0,
+      "backtest_windows": 1
+    },
+    "experiment_id": "20260226_194641",
+    "timestamp": "2026-02-26T19:59:18.733405",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "NVDA",
+    "annual_return": -0.03967844238488327,
+    "sharpe_ratio": 0.15819643938895445,
+    "max_drawdown": 0.6861352948272681,
+    "win_rate": 0.5179407176287052,
+    "volatility": 0.5384450570273218,
+    "rl_reward": 0.9988446742369929,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "experiment_id": "20260226_194641",
+    "timestamp": "2026-02-26T20:16:24.324666",
+    "error": ""
+  }
+]

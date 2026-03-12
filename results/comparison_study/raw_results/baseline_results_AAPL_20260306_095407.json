@@ -1,0 +1,11 @@
+{
+  "eata": {
+    "total_return": 1.069001553382554,
+    "annualized_return": 0.3036303153952147,
+    "sharpe_ratio": 0.9047389096895867,
+    "max_drawdown": 0.22473682121928337,
+    "volatility": 0.33192299152178595,
+    "success": true,
+    "description": "EATA强化学习策略"
+  }
+}

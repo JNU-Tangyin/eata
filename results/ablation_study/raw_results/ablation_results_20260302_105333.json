@@ -1,0 +1,662 @@
+[
+  {
+    "variant": "EATA-Simple",
+    "ticker": "AAPL",
+    "objective": "AVERAGE",
+    "annual_return": 0.12315534224766889,
+    "sharpe_ratio": 0.4262524833250354,
+    "max_drawdown": 0.3072037292619509,
+    "win_rate": 0.4200434153400868,
+    "volatility": 0.2847782154303275,
+    "rl_reward": 0.6826248174174174,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "AAPL",
+        "objective": "MSE",
+        "annual_return": 0.2861388152652835,
+        "sharpe_ratio": 0.8668184227029853,
+        "max_drawdown": 0.34071056889355106,
+        "win_rate": 0.5253256150506512,
+        "volatility": 0.33006350205107143,
+        "rl_reward": 0.9993005623605702
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "AAPL",
+        "objective": "KL",
+        "annual_return": 0.023810907121073477,
+        "sharpe_ratio": 0.14053655892793201,
+        "max_drawdown": 0.2854107136414575,
+        "win_rate": 0.3473227206946454,
+        "volatility": 0.2518900692890451,
+        "rl_reward": 0.19975923113021615
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "AAPL",
+        "objective": "JS",
+        "annual_return": 0.011284613996954906,
+        "sharpe_ratio": 0.09210279907518498,
+        "max_drawdown": 0.2854107136414575,
+        "win_rate": 0.3473227206946454,
+        "volatility": 0.25250305526561934,
+        "rl_reward": 0.5691612361443559
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "AAPL",
+        "objective": "CVAR",
+        "annual_return": 0.17138703260736365,
+        "sharpe_ratio": 0.6055521525940392,
+        "max_drawdown": 0.31728292087133747,
+        "win_rate": 0.4602026049204052,
+        "volatility": 0.3046562351155742,
+        "rl_reward": 0.9622782400345276
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T11:23:14.038169",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "MSFT",
+    "objective": "AVERAGE",
+    "annual_return": -0.20228148060590934,
+    "sharpe_ratio": -0.7244641294497454,
+    "max_drawdown": 0.5919575154634978,
+    "win_rate": 0.42945007235890015,
+    "volatility": 0.293206864877661,
+    "rl_reward": 0.6828845759566765,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "MSFT",
+        "objective": "MSE",
+        "annual_return": -0.05339812739458938,
+        "sharpe_ratio": -0.09739660037792615,
+        "max_drawdown": 0.5339448135182854,
+        "win_rate": 0.48914616497829233,
+        "volatility": 0.3017120869868356,
+        "rl_reward": 0.9962798292944858
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "MSFT",
+        "objective": "KL",
+        "annual_return": -0.239933544474915,
+        "sharpe_ratio": -0.8755480215921346,
+        "max_drawdown": 0.5613227689384062,
+        "win_rate": 0.3849493487698987,
+        "volatility": 0.28836930988728127,
+        "rl_reward": 0.19313572095686235
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "MSFT",
+        "objective": "JS",
+        "annual_return": -0.19578660783438917,
+        "sharpe_ratio": -0.6562687065064902,
+        "max_drawdown": 0.5652362237437906,
+        "win_rate": 0.46599131693198265,
+        "volatility": 0.2957329777628749,
+        "rl_reward": 0.5693445534931828
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "MSFT",
+        "objective": "CVAR",
+        "annual_return": -0.3200076427197438,
+        "sharpe_ratio": -1.2686431893224304,
+        "max_drawdown": 0.707326255653509,
+        "win_rate": 0.37771345875542695,
+        "volatility": 0.28701308487365235,
+        "rl_reward": 0.9727782000821753
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T11:55:02.829790",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "NVDA",
+    "objective": "AVERAGE",
+    "annual_return": 0.4671635026587067,
+    "sharpe_ratio": 0.6862941870090965,
+    "max_drawdown": 0.7160417378338177,
+    "win_rate": 0.5209840810419681,
+    "volatility": 14.085003443314928,
+    "rl_reward": 0.6627056909911733,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "NVDA",
+        "objective": "MSE",
+        "annual_return": 0.4041066870839283,
+        "sharpe_ratio": 0.8768809420506384,
+        "max_drawdown": 0.6341263228875378,
+        "win_rate": 0.5253256150506512,
+        "volatility": 0.5145406171795307,
+        "rl_reward": 0.9954536295367475
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "NVDA",
+        "objective": "KL",
+        "annual_return": 0.07295160062703121,
+        "sharpe_ratio": -0.6782321255719488,
+        "max_drawdown": 1.34404882084888,
+        "win_rate": 0.48914616497829233,
+        "volatility": 54.77832520645866,
+        "rl_reward": 0.13976592113242264
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "NVDA",
+        "objective": "JS",
+        "annual_return": 0.8585422607770024,
+        "sharpe_ratio": 1.5659175271848707,
+        "max_drawdown": 0.2673423168937878,
+        "win_rate": 0.5354558610709117,
+        "volatility": 0.4473069820975475,
+        "rl_reward": 0.5622460304235868
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "NVDA",
+        "objective": "CVAR",
+        "annual_return": 0.533053462146865,
+        "sharpe_ratio": 0.9806104043728258,
+        "max_drawdown": 0.6186494907050655,
+        "win_rate": 0.5340086830680174,
+        "volatility": 0.5998409675239731,
+        "rl_reward": 0.9533571828719362
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T12:24:14.486525",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "GOOG",
+    "objective": "AVERAGE",
+    "annual_return": 0.1056547066579174,
+    "sharpe_ratio": 0.36670789699814077,
+    "max_drawdown": 0.31853223799824854,
+    "win_rate": 0.4645441389290883,
+    "volatility": 0.2887490069322355,
+    "rl_reward": 0.6550362185021219,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "GOOG",
+        "objective": "MSE",
+        "annual_return": 0.29669247505008056,
+        "sharpe_ratio": 0.9387803903583273,
+        "max_drawdown": 0.2951404664241594,
+        "win_rate": 0.5282199710564399,
+        "volatility": 0.30509764627203656,
+        "rl_reward": 0.876702583360223
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "GOOG",
+        "objective": "KL",
+        "annual_return": -0.20945034821975772,
+        "sharpe_ratio": -0.6799298520155242,
+        "max_drawdown": 0.5812555300596834,
+        "win_rate": 0.4182344428364689,
+        "volatility": 0.3061207004391154,
+        "rl_reward": 0.1997474759286002
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "GOOG",
+        "objective": "JS",
+        "annual_return": 0.08978324599063847,
+        "sharpe_ratio": 0.3930059957553086,
+        "max_drawdown": 0.22161989814121688,
+        "win_rate": 0.3849493487698987,
+        "volatility": 0.24360873166197358,
+        "rl_reward": 0.5728459992498108
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "GOOG",
+        "objective": "CVAR",
+        "annual_return": 0.2455934538107083,
+        "sharpe_ratio": 0.8149750538944516,
+        "max_drawdown": 0.17611305736793442,
+        "win_rate": 0.5267727930535456,
+        "volatility": 0.30016894935581645,
+        "rl_reward": 0.9708488154698538
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T13:17:26.101476",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "JPM",
+    "objective": "AVERAGE",
+    "annual_return": 0.06774652145458854,
+    "sharpe_ratio": 0.3216730631225866,
+    "max_drawdown": 0.3329493503563056,
+    "win_rate": 0.45224312590448623,
+    "volatility": 0.271932195636322,
+    "rl_reward": 0.6769903326319688,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "JPM",
+        "objective": "MSE",
+        "annual_return": -0.07072288424121265,
+        "sharpe_ratio": -0.10603393954519559,
+        "max_drawdown": 0.4422323994471316,
+        "win_rate": 0.5123010130246021,
+        "volatility": 0.338721594567706,
+        "rl_reward": 0.9991989658382708
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "JPM",
+        "objective": "KL",
+        "annual_return": 0.10346230255212019,
+        "sharpe_ratio": 0.43045833394685346,
+        "max_drawdown": 0.4064312009076389,
+        "win_rate": 0.42257597684515197,
+        "volatility": 0.26008640201435945,
+        "rl_reward": 0.17040257150827076
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "JPM",
+        "objective": "JS",
+        "annual_return": 0.07274869303675335,
+        "sharpe_ratio": 0.3418355232751207,
+        "max_drawdown": 0.28771935546548594,
+        "win_rate": 0.38060781476121563,
+        "volatility": 0.21369685500419985,
+        "rl_reward": 0.566062483801422
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "JPM",
+        "objective": "CVAR",
+        "annual_return": 0.16549797447069325,
+        "sharpe_ratio": 0.6204323348135677,
+        "max_drawdown": 0.19541444560496568,
+        "win_rate": 0.4934876989869754,
+        "volatility": 0.2752239309590226,
+        "rl_reward": 0.9722973093799117
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T13:43:11.659539",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "BAC",
+    "objective": "AVERAGE",
+    "annual_return": -0.0007300770479519991,
+    "sharpe_ratio": 0.19512628294051537,
+    "max_drawdown": 0.6150965681566912,
+    "win_rate": 0.4598408104196816,
+    "volatility": 0.5171803987648445,
+    "rl_reward": 0.6759757171173599,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "BAC",
+        "objective": "MSE",
+        "annual_return": 0.27020747191471783,
+        "sharpe_ratio": 0.7687631488039549,
+        "max_drawdown": 0.41502666000817673,
+        "win_rate": 0.5383502170767004,
+        "volatility": 0.3765303265987288,
+        "rl_reward": 0.9982630268919745
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "BAC",
+        "objective": "KL",
+        "annual_return": -0.05142777144008659,
+        "sharpe_ratio": 0.44042524537311734,
+        "max_drawdown": 0.9000647117256438,
+        "win_rate": 0.4833574529667149,
+        "volatility": 1.0356880422407666,
+        "rl_reward": 0.1739829287572772
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "BAC",
+        "objective": "JS",
+        "annual_return": -0.008772366571183743,
+        "sharpe_ratio": 0.012310954666310658,
+        "max_drawdown": 0.397118675588696,
+        "win_rate": 0.3545586107091172,
+        "volatility": 0.2531714653339901,
+        "rl_reward": 0.5654455005417129
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "BAC",
+        "objective": "CVAR",
+        "annual_return": -0.2129276420952555,
+        "sharpe_ratio": -0.4409942170813215,
+        "max_drawdown": 0.7481762253042482,
+        "win_rate": 0.4630969609261939,
+        "volatility": 0.40333176088589223,
+        "rl_reward": 0.9662114122784752
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T14:10:15.728519",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "XOM",
+    "objective": "AVERAGE",
+    "annual_return": NaN,
+    "sharpe_ratio": 0.4416850165013216,
+    "max_drawdown": 0.6503946997955374,
+    "win_rate": 0.47467438494934877,
+    "volatility": 21.125774564801198,
+    "rl_reward": 0.6695927802993545,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "XOM",
+        "objective": "MSE",
+        "annual_return": 0.13985730807596886,
+        "sharpe_ratio": 0.4802689213218139,
+        "max_drawdown": 0.3688352973646295,
+        "win_rate": 0.4963820549927641,
+        "volatility": 0.3855730032124403,
+        "rl_reward": 0.9851728583525097
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "XOM",
+        "objective": "KL",
+        "annual_return": 0.2763391732079701,
+        "sharpe_ratio": 0.8656478984674992,
+        "max_drawdown": 0.28867777574030695,
+        "win_rate": 0.49782923299565845,
+        "volatility": 0.31722286199923533,
+        "rl_reward": 0.16898220909530326
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "XOM",
+        "objective": "JS",
+        "annual_return": NaN,
+        "sharpe_ratio": 0.21912506893926867,
+        "max_drawdown": 1.3879514297994837,
+        "win_rate": 0.4081041968162084,
+        "volatility": 83.42642038827506,
+        "rl_reward": 0.5644417676668608
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "XOM",
+        "objective": "CVAR",
+        "annual_return": 0.025501695178271833,
+        "sharpe_ratio": 0.20169817727670436,
+        "max_drawdown": 0.5561142962777293,
+        "win_rate": 0.4963820549927641,
+        "volatility": 0.3738820057180612,
+        "rl_reward": 0.9597742860827445
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T14:33:42.752452",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "JNJ",
+    "objective": "AVERAGE",
+    "annual_return": -0.0036249872589970145,
+    "sharpe_ratio": -0.03401357279197956,
+    "max_drawdown": 0.28397561836377094,
+    "win_rate": 0.49457308248914617,
+    "volatility": 0.20398870524804735,
+    "rl_reward": 0.6826947284730058,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "JNJ",
+        "objective": "MSE",
+        "annual_return": 0.10591776246634277,
+        "sharpe_ratio": 0.4906052254553923,
+        "max_drawdown": 0.21999586088045162,
+        "win_rate": 0.5108538350217077,
+        "volatility": 0.20884655718798945,
+        "rl_reward": 0.9980151466445984
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "JNJ",
+        "objective": "KL",
+        "annual_return": 0.09903065500135178,
+        "sharpe_ratio": 0.48920853493762245,
+        "max_drawdown": 0.1731972167327504,
+        "win_rate": 0.5050651230101303,
+        "volatility": 0.18824265833326448,
+        "rl_reward": 0.18515354177297846
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "JNJ",
+        "objective": "JS",
+        "annual_return": -0.12247443651992151,
+        "sharpe_ratio": -0.6978709035793204,
+        "max_drawdown": 0.3438303220438888,
+        "win_rate": 0.46164978292329956,
+        "volatility": 0.18991566859968115,
+        "rl_reward": 0.5686213099507532
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "JNJ",
+        "objective": "CVAR",
+        "annual_return": -0.09697392998376109,
+        "sharpe_ratio": -0.4179971479816127,
+        "max_drawdown": 0.398879073797993,
+        "win_rate": 0.5007235890014472,
+        "volatility": 0.22894993687125428,
+        "rl_reward": 0.9789889155236928
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T15:32:52.821249",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "KO",
+    "objective": "AVERAGE",
+    "annual_return": 0.020131893556043945,
+    "sharpe_ratio": 0.1212521865998503,
+    "max_drawdown": 0.26603756751847657,
+    "win_rate": 0.5090448625180897,
+    "volatility": 0.23531567849812401,
+    "rl_reward": 0.6856006974714248,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "KO",
+        "objective": "MSE",
+        "annual_return": 0.14364416070978403,
+        "sharpe_ratio": 0.6086844208657428,
+        "max_drawdown": 0.20389807158564038,
+        "win_rate": 0.5180897250361794,
+        "volatility": 0.23210499453257266,
+        "rl_reward": 0.9995835121097637
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "KO",
+        "objective": "KL",
+        "annual_return": -0.05877302813736707,
+        "sharpe_ratio": -0.17647233610249716,
+        "max_drawdown": 0.3391732634604442,
+        "win_rate": 0.5282199710564399,
+        "volatility": 0.26230297174953465,
+        "rl_reward": 0.19262869809500152
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "KO",
+        "objective": "JS",
+        "annual_return": -0.029517113925708882,
+        "sharpe_ratio": -0.06882045842012394,
+        "max_drawdown": 0.2912223886769748,
+        "win_rate": 0.5195369030390738,
+        "volatility": 0.25491923734173966,
+        "rl_reward": 0.5698222424181625
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "KO",
+        "objective": "CVAR",
+        "annual_return": 0.0251735555774677,
+        "sharpe_ratio": 0.12161712005627949,
+        "max_drawdown": 0.22985654635084699,
+        "win_rate": 0.4703328509406657,
+        "volatility": 0.19193551036864903,
+        "rl_reward": 0.9803683372627714
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T15:53:45.003935",
+    "error": ""
+  },
+  {
+    "variant": "EATA-Simple",
+    "ticker": "CAT",
+    "objective": "AVERAGE",
+    "annual_return": -0.06332640201960713,
+    "sharpe_ratio": -0.13885074695752259,
+    "max_drawdown": 0.47739648066622153,
+    "win_rate": 0.4735890014471781,
+    "volatility": 0.3304876882806874,
+    "rl_reward": 0.6750923083617459,
+    "modifications": {
+      "reward_function": "mse",
+      "target_file": "agent.py",
+      "target_line": 167,
+      "modification_type": "function_replacement"
+    },
+    "detailed_results": [
+      {
+        "variant": "EATA-Simple-MSE",
+        "ticker": "CAT",
+        "objective": "MSE",
+        "annual_return": 0.04531874239340539,
+        "sharpe_ratio": 0.24852504987955515,
+        "max_drawdown": 0.3697971432029529,
+        "win_rate": 0.5340086830680174,
+        "volatility": 0.3652055465227247,
+        "rl_reward": 0.993513299569256
+      },
+      {
+        "variant": "EATA-Simple-KL",
+        "ticker": "CAT",
+        "objective": "KL",
+        "annual_return": 0.059157239976554976,
+        "sharpe_ratio": 0.2782327716088461,
+        "max_drawdown": 0.43958024325327605,
+        "win_rate": 0.5007235890014472,
+        "volatility": 0.3320912249770319,
+        "rl_reward": 0.191291965209648
+      },
+      {
+        "variant": "EATA-Simple-JS",
+        "ticker": "CAT",
+        "objective": "JS",
+        "annual_return": -0.18836667431421217,
+        "sharpe_ratio": -0.6128816053161777,
+        "max_drawdown": 0.5247650337059367,
+        "win_rate": 0.3719247467438495,
+        "volatility": 0.29952000422971153,
+        "rl_reward": 0.5667683203977986
+      },
+      {
+        "variant": "EATA-Simple-CVAR",
+        "ticker": "CAT",
+        "objective": "CVAR",
+        "annual_return": -0.1694149161341767,
+        "sharpe_ratio": -0.4692792040023138,
+        "max_drawdown": 0.5754435025027202,
+        "win_rate": 0.487698986975398,
+        "volatility": 0.3251339773932815,
+        "rl_reward": 0.9487956482702811
+      }
+    ],
+    "experiment_id": "20260302_105333",
+    "timestamp": "2026-03-02T16:15:12.606383",
+    "error": ""
+  }
+]

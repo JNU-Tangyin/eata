@@ -1,0 +1,28 @@
+% 1.intro.tex - Introduction
+\section{Introduction}
+\label{sec:intro}
+
+Algorithmic trading stands at a tension point between two competing imperatives: modern deep learning and RL systems achieve state-of-the-art predictive accuracy~\cite{fischer2018deep,zhang2020deep}, yet their opaque inductive biases violate emerging regulatory and governance requirements such as MiFID II~\cite{eu2014mifid} and frustrate risk oversight~\cite{rudin2019stop,weber2024comprehensive,cao2022ai}. Practitioners therefore seek strategies that are both interpretable and robust to regime shifts, especially because financial returns are heavy-tailed and non-stationary~\cite{cont2001empirical}. The scientific question is not merely ``how to explain a black box,'' but \textit{how to discover profit-aligned trading rules whose structure itself is the explanation}.
+
+Existing research offers three partial routes. Black-box DL/RL models provide strong raw performance but little transparency or safety guarantees. Classical symbolic regression and alpha-mining pipelines return readable formulas~\cite{koza1994genetic,schmidt2009distilling}, yet they typically optimize proxy objectives (MSE, IC) divorced from economic utility, amplifying multiple-testing bias and turnover costs. Hybrid grammar-guided systems (e.g., AlphaCFG~\cite{yang2026alpha}, NEMoTS~\cite{xie2024nemots}) constrain the search space, but still inherit point-loss objectives and lack mechanisms for temporal adaptation. These gaps motivate a profit-aware, grammar-disciplined discovery agent.
+
+We therefore pose the \textbf{central research question}: \textit{Can we craft a symbolic regression agent whose objective, hypothesis space, and training signal are jointly aligned with trading profitability under regulatory and regime constraints?} This decomposes into three sub-questions:
+
+\begin{enumerate}
+    \item[RQ1] \textbf{Objective alignment.} Which distributional divergence captures asymmetric tail risk better than point-wise losses, and how should it regularize search without overfitting noise?
+    \item[RQ2] \textbf{Search discipline.} How can neural priors, grammar constraints, and inheritance be fused to explore a large symbolic space while preserving auditability and adapting to market shifts?
+    \item[RQ3] \textbf{Empirical closure.} Under realistic transaction costs and broad S\&P~500 universes, can such an agent deliver risk-adjusted returns comparable to or better than black-box baselines?
+\end{enumerate}
+
+To answer these questions we introduce \ours~(\ourslong). Section~\ref{sec:method} details three interacting innovations: (i) a Wasserstein-guided policy--value--profit network (PVNet) that decouples accuracy reward $r^{\text{acc}}$ from profit-aware reward $r^{\text{rl}}$ and injects the latter into MCTS back-ups; (ii) a finance-grounded, decoupled grammar with discrete window/lag non-terminals, conditional logic, and bounded module libraries that mitigate hypothesis-space inflation; and (iii) a sliding-window pipeline with expression inheritance, module extraction, and quantile consensus signals for temporal adaptation.
+
+Section~\ref{sec:experiments} ties each RQ to targeted evidence: comparison studies on representative S\&P~500 constituents (2020--2024) show \ours{} achieving annualized return \textbf{17.6\%}, Sharpe ratio \textbf{0.54}, and maximum drawdown \textbf{34.0\%} (Table~\ref{tab:main_results}), outperforming 7 baselines spanning technical indicators, LightGBM, FinRL agents, transformers, and GP. Transaction-cost stress tests (Table~\ref{tab:costs}) and Pareto-frontier analyses demonstrate robustness, while ablation and objective studies (Tables~\ref{tab:ablation_loss}--\ref{tab:objectives}) confirm that removing Wasserstein rewards, neural guidance, or grammar augmentation collapses performance, thereby closing RQ1/RQ2. All metrics are reported as point estimates; comprehensive block-bootstrap, Reality Check, SPA, and deflated-Sharpe analyses remain future work.
+
+Our contributions are:
+\begin{enumerate}
+    \item \textbf{Profit-aware symbolic regression.} We formulate trading rule discovery as distribution matching via 1-Wasserstein distance, coupling profit rewards with accuracy stabilizers to control tail risk under heavy-tailed returns.
+    \item \textbf{Neural-guided grammar search with temporal adaptation.} We integrate a three-headed PVNet, grammar constraints, module libraries, and sliding-window inheritance to explore expressive yet auditable hypothesis spaces under regime shifts.
+    \item \textbf{Comprehensive empirical validation.} We provide multi-year, multi-universe experiments, transaction-cost robustness, and ablations that directly answer RQ1--RQ3 and demonstrate competitiveness with black-box baselines.
+\end{enumerate}
+
+Section~\ref{sec:related} situates EATA within evaluation protocols, symbolic discovery, and risk-sensitive learning; Section~\ref{sec:method} elaborates the framework; Section~\ref{sec:experiments} presents the evidence; Section~\ref{sec:conclusion} discusses limitations and future work.

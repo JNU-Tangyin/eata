@@ -1,0 +1,20 @@
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} & \textbf{Calmar} \\
+\midrule
+Buy & Hold & 12.6 & 0.51 & 50.3 & 0% & 0.25 \\
+MACD & 11.4 & 0.56 & 34.7 & 4% & 0.33 \\
+LightGBM & 10.3 & 0.33 & 44.1 & 4% & 0.23 \\
+PPO (FinRL) & 7.8 & 0.40 & 27.8 & 50% & 0.28 \\
+SAC (FinRL) & 5.9 & 0.20 & 10.8 & 50% & 0.54 \\
+ARIMA & 5.7 & 0.30 & 45.0 & 1% & 0.13 \\
+A2C (FinRL) & 5.5 & 0.31 & 22.2 & 50% & 0.25 \\
+TD3 (FinRL) & 4.8 & 0.20 & 11.3 & 50% & 0.43 \\
+DDPG (FinRL) & 4.3 & 0.18 & 11.6 & 50% & 0.37 \\
+Transformer & 2.0 & 0.09 & 15.9 & 6% & 0.13 \\
+GP (Operon) & 1.0 & 0.13 & 36.6 & 8% & 0.03 \\
+LSTM & -4.9 & -0.08 & 31.6 & 4% & -0.15 \\
+\midrule
+\textbf{EATA (Ours)} & \textbf{34.1}$^{**}$ & \textbf{0.96}$^{**}$ & \textbf{34.5} & \textbf{33%} & \textbf{0.99} \\
+\bottomrule
+\end{tabular}
