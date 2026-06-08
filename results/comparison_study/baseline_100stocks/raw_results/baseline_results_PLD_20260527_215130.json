@@ -1,0 +1,65 @@
+{
+  "buy_and_hold": {
+    "total_return": 0.1069321533923302,
+    "annualized_return": 0.07026672445153381,
+    "sharpe_ratio": 0.45350061584669166,
+    "max_drawdown": 0.14992668621700933,
+    "volatility": 0.18947314701469034,
+    "success": true,
+    "description": "买入持有策略"
+  },
+  "macd": {
+    "total_return": -0.050167390191216965,
+    "annualized_return": -0.033818933289767705,
+    "sharpe_ratio": -0.19420471498874006,
+    "max_drawdown": 0.11626237426550233,
+    "volatility": 0.13208293610335423,
+    "success": true,
+    "description": "MACD交叉策略"
+  },
+  "arima": {
+    "total_return": 0.04700347192549459,
+    "annualized_return": 0.031178912306448314,
+    "sharpe_ratio": 0.2567792042269262,
+    "max_drawdown": 0.2114940072348107,
+    "volatility": 0.18952565489050113,
+    "success": true,
+    "description": "ARIMA时间序列预测"
+  },
+  "gp": {
+    "total_return": -0.1849707533147824,
+    "annualized_return": -0.1277819852864659,
+    "sharpe_ratio": -0.6269129241192335,
+    "max_drawdown": 0.2247313264512117,
+    "volatility": 0.18940280887313699,
+    "success": true,
+    "description": "遗传编程策略"
+  },
+  "gbdt": {
+    "total_return": -0.0021394986553988637,
+    "annualized_return": -0.0014498384092539451,
+    "sharpe_ratio": 0.08537249694805613,
+    "max_drawdown": 0.23664357451705795,
+    "volatility": 0.18636471019378273,
+    "success": true,
+    "description": "GBDT梯度提升决策树策略"
+  },
+  "lstm": {
+    "total_return": -0.13790536881248971,
+    "annualized_return": -0.09442866729847288,
+    "sharpe_ratio": -0.43524886054622297,
+    "max_drawdown": 0.3312452635259934,
+    "volatility": 0.18755002013111274,
+    "success": true,
+    "description": "LSTM神经网络策略"
+  },
+  "transformer": {
+    "total_return": -0.13822887958942087,
+    "annualized_return": -0.09465583296344471,
+    "sharpe_ratio": -1.1647562330825507,
+    "max_drawdown": 0.15725340277719407,
+    "volatility": 0.08242332061874139,
+    "success": true,
+    "description": "Transformer模型策略"
+  }
+}

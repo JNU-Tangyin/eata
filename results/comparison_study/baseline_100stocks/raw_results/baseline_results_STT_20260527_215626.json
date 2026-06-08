@@ -1,0 +1,65 @@
+{
+  "buy_and_hold": {
+    "total_return": 0.5266184928476607,
+    "annualized_return": 0.32681970235943814,
+    "sharpe_ratio": 1.6186647726818257,
+    "max_drawdown": 0.09085263064501799,
+    "volatility": 0.18541836066283607,
+    "success": true,
+    "description": "买入持有策略"
+  },
+  "macd": {
+    "total_return": 0.18870934981514376,
+    "annualized_return": 0.12249189092376,
+    "sharpe_ratio": 0.9722196406414252,
+    "max_drawdown": 0.0961779288001501,
+    "volatility": 0.12715558665968127,
+    "success": true,
+    "description": "MACD交叉策略"
+  },
+  "arima": {
+    "total_return": -0.36532684589692155,
+    "annualized_return": -0.2620658779411933,
+    "sharpe_ratio": -1.544434009583223,
+    "max_drawdown": 0.4228040727842861,
+    "volatility": 0.18550391209237846,
+    "success": true,
+    "description": "ARIMA时间序列预测"
+  },
+  "gp": {
+    "total_return": -0.18470582002398428,
+    "annualized_return": -0.12759247875513713,
+    "sharpe_ratio": -0.6395993757283435,
+    "max_drawdown": 0.2610777353656504,
+    "volatility": 0.18622868008772148,
+    "success": true,
+    "description": "遗传编程策略"
+  },
+  "gbdt": {
+    "total_return": -0.1919536308523433,
+    "annualized_return": -0.13444325177679506,
+    "sharpe_ratio": -0.789709450631674,
+    "max_drawdown": 0.3043069958353288,
+    "volatility": 0.16547319921924428,
+    "success": true,
+    "description": "GBDT梯度提升决策树策略"
+  },
+  "lstm": {
+    "total_return": -0.3523947272500225,
+    "annualized_return": -0.2520488250629018,
+    "sharpe_ratio": -1.4819978325724166,
+    "max_drawdown": 0.4178914418530801,
+    "volatility": 0.18437275395629144,
+    "success": true,
+    "description": "LSTM神经网络策略"
+  },
+  "transformer": {
+    "total_return": 0.01744617626604472,
+    "annualized_return": 0.011628165013905623,
+    "sharpe_ratio": 0.45484964857794374,
+    "max_drawdown": 0.02261450380907286,
+    "volatility": 0.02617247278638384,
+    "success": true,
+    "description": "Transformer模型策略"
+  }
+}

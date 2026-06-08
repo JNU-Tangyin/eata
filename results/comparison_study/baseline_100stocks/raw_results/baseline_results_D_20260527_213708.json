@@ -1,0 +1,65 @@
+{
+  "buy_and_hold": {
+    "total_return": -0.012980061554930589,
+    "annualized_return": -0.008695106305929068,
+    "sharpe_ratio": 0.022475356251239892,
+    "max_drawdown": 0.13131551054057244,
+    "volatility": 0.15597443565498204,
+    "success": true,
+    "description": "买入持有策略"
+  },
+  "macd": {
+    "total_return": -0.06597063698514427,
+    "annualized_return": -0.04459405349907852,
+    "sharpe_ratio": -0.39120232756324363,
+    "max_drawdown": 0.0886849250680488,
+    "volatility": 0.10298015801649035,
+    "success": true,
+    "description": "MACD交叉策略"
+  },
+  "arima": {
+    "total_return": 0.5933450185087186,
+    "annualized_return": 0.3653090589881509,
+    "sharpe_ratio": 2.091673143116743,
+    "max_drawdown": 0.11853406745117202,
+    "volatility": 0.15463799502242925,
+    "success": true,
+    "description": "ARIMA时间序列预测"
+  },
+  "gp": {
+    "total_return": -0.24872350886857653,
+    "annualized_return": -0.17399963905205773,
+    "sharpe_ratio": -1.1499716917637601,
+    "max_drawdown": 0.33394598628026295,
+    "volatility": 0.15556693731942808,
+    "success": true,
+    "description": "遗传编程策略"
+  },
+  "gbdt": {
+    "total_return": 0.07466980863598827,
+    "annualized_return": 0.049992804584748196,
+    "sharpe_ratio": 0.41412691835773235,
+    "max_drawdown": 0.11349506229708264,
+    "volatility": 0.14199830246505393,
+    "success": true,
+    "description": "GBDT梯度提升决策树策略"
+  },
+  "lstm": {
+    "total_return": -0.012268798136296888,
+    "annualized_return": -0.008217665957985676,
+    "sharpe_ratio": 0.020556872573130113,
+    "max_drawdown": 0.19416014013481944,
+    "volatility": 0.1511719745183717,
+    "success": true,
+    "description": "LSTM神经网络策略"
+  },
+  "transformer": {
+    "total_return": -0.01662856754297537,
+    "annualized_return": -0.011145986460910695,
+    "sharpe_ratio": -0.07468153974495059,
+    "max_drawdown": 0.09508657876577427,
+    "volatility": 0.09254605707163656,
+    "success": true,
+    "description": "Transformer模型策略"
+  }
+}

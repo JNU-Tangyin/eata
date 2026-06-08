@@ -1,0 +1,358 @@
+% appendix.tex - Appendix
+\appendix
+\section{Hyperparameters}
+\label{app:hyperparams}
+
+\begin{table}[htbp]
+\centering
+\caption{Baseline Hyperparameters}
+\label{tab:baseline_hyperparams}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{llll}
+\toprule
+\textbf{Method} & \textbf{Hyperparameter} & \textbf{Value} \\
+\midrule
+\multirow{3}{*}{LightGBM}
+& learning\_rate & 0.1 \\
+& num\_leaves & 31 \\
+& max\_depth & -1 \\
+\midrule
+\multirow{3}{*}{LSTM}
+& hidden\_size & 128 \\
+& num\_layers & 2 \\
+& dropout & 0.2 \\
+\midrule
+\multirow{3}{*}{Transformer}
+& d\_model & 64 \\
+& nhead & 4 \\
+& num\_layers & 2 \\
+\midrule
+\multirow{3}{*}{PPO}
+& learning\_rate & 3e-4 \\
+& gamma & 0.99 \\
+& clip\_range & 0.2 \\
+\midrule
+\multirow{3}{*}{A2C}
+& learning\_rate & 3e-4 \\
+& gamma & 0.99 \\
+& entropy\_coef & 0.01 \\
+\midrule
+\multirow{3}{*}{TD3}
+& learning\_rate & 3e-4 \\
+& gamma & 0.99 \\
+& tau & 0.005 \\
+\midrule
+\multirow{3}{*}{DDPG}
+& learning\_rate & 3e-4 \\
+& gamma & 0.99 \\
+& tau & 0.005 \\
+\midrule
+\multirow{2}{*}{ARIMA}
+& order & (5,1,0) \\
+& seasonal\_order & (0,0,0,0) \\
+\midrule
+\multirow{2}{*}{MACD}
+& fast\_period & 12 \\
+& slow\_period & 26 \\
+& signal\_period & 9 \\
+\midrule
+\multirow{2}{*}{Genetic Programming}
+& population\_size & 100 \\
+& generations & 50 \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+Table~\ref{tab:baseline_hyperparams} lists the hyperparameters used for baseline methods. We used standard parameter settings from the literature and FinRL default configurations.. For traditional and statistical baselines, we used standard parameter settings from the literature.
+
+\begin{table}[htbp]
+\centering
+\caption{EATA Hyperparameters}
+\label{tab:hyperparameters}
+\input{tables/hyperparameters_actual.tex}
+\end{table}
+
+Table~\ref{tab:hyperparameters} lists the default hyperparameters used in EATA experiments.
+
+
+\section{Wasserstein Distance}
+\label{app:wasserstein}
+
+\begin{proposition}
+    Wasserstein distance is superior to MSE and KL divergence for financial returns due to three properties: metric structure, tail sensitivity, and geometric interpretation.
+\end{proposition}
+
+\begin{proof}
+
+\textit{Property 1 (Metric Structure).} The 1-Wasserstein distance satisfies:
+\begin{enumerate}
+    \item Non-negativity: $\mathcal{W}_1(P, Q) \geq 0$
+    \item Identity: $\mathcal{W}_1(P, Q) = 0 \iff P = Q$
+    \item Symmetry: $\mathcal{W}_1(P, Q) = \mathcal{W}_1(Q, P)$
+    \item Triangle inequality: $\mathcal{W}_1(P, R) \leq \mathcal{W}_1(P, Q) + \mathcal{W}_1(Q, R)$
+\end{enumerate}
+KL divergence violates symmetry and triangle inequality, making it unsuitable as a training objective.
+
+\textit{Property 2 (Tail Sensitivity).} For empirical distributions with ordered samples, the Wasserstein distance is:
+\begin{equation}
+\mathcal{W}_1 = \frac{1}{N} \sum_{i=1}^{N} |x_{(i)} - y_{(i)}|
+\end{equation}
+This equally weights all quantiles, including extremes. MSE, by contrast, is dominated by the mean: $\text{MSE} = \frac{1}{N}\sum (x_i - y_i)^2$.
+
+\textit{Property 3 (Geometric Interpretation).} Wasserstein distance measures the minimal cost of transporting probability mass from $P$ to $Q$, respecting the metric structure of the underlying space. This is crucial for returns where the magnitude (not just probability) of extreme events matters. $\square$
+
+\end{proof}
+
+\section{Theoretical Properties of the Wasserstein Training Objective}
+\label{app:wasserstein_theory}
+
+We analyze three theoretical properties of the 1-Wasserstein reward $r^{\text{rl}} = 1/(1 + \mathcal{W}_1)$: gradient characterization, convergence guarantees, and CVaR control.
+
+\subsection{Gradient Characterization in One Dimension}
+
+For one-dimensional distributions, the 1-Wasserstein distance admits a closed-form representation via CDFs~\cite{villani2009optimal}:
+\begin{align}
+\mathcal{W}_1(P, Q) &= \int_{-\infty}^{\infty} |F_P(x) - F_Q(x)| \, dx \\
+&= \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du
+\end{align}
+where $F_P^{-1}, F_Q^{-1}$ are quantile functions. The functional derivative with respect to the predicted CDF $F_\theta$ is:
+\begin{equation}
+\frac{\delta \mathcal{W}_1}{\delta F_\theta}(x) = \text{sgn}(F_\theta(x) - F^*(x)),
+\end{equation}
+yielding a clear training signal: overestimating the true CDF at $x$ pushes $F_\theta(x)$ downward, and vice versa. For the reward $r^{\text{rl}} = 1/(1+\mathcal{W}_1)$, the gradient:
+\begin{equation}
+\frac{\partial r^{\text{rl}}}{\partial \theta} = -\frac{1}{(1+\mathcal{W}_1)^2} \cdot \frac{\partial \mathcal{W}_1}{\partial \theta}
+\end{equation}
+preserves direction with adaptive scaling.
+
+\subsection{Convergence and Sample Complexity}
+
+$\mathcal{W}_1$ metrizes weak convergence on spaces with bounded first moment~\cite{villani2009optimal}. For empirical distributions with $n,m$ i.i.d.\ samples,
+\begin{equation}
+\mathbb{E}\big[|\mathcal{W}_1(\hat{P}_n, \hat{Q}_m) - \mathcal{W}_1(P,Q)|\big] = O(n^{-1/2} + m^{-1/2}),
+\end{equation}
+under finite second moment. This contrasts favorably with KL divergence (unbounded under mismatch) and MSE (degraded under heavy tails~\cite{cont2001empirical}).
+
+\subsection{Relationship with Conditional Value-at-Risk (CVaR)}
+
+\begin{proposition}[CVaR Bound via Wasserstein Distance]
+Let $P$ and $Q$ be probability distributions on $\mathbb{R}$ with finite first moments. Then for any $\alpha \in (0,1)$:
+\begin{equation}
+|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)|
+\leq \frac{1}{1-\alpha} \cdot \mathcal{W}_1(P, Q).
+\end{equation}
+\end{proposition}
+
+\begin{proof}
+From the quantile representation and the definition:
+\begin{equation}
+\text{CVaR}_\alpha(P) = \frac{1}{1-\alpha} \int_{\alpha}^{1} F_P^{-1}(u) \, du,
+\end{equation}
+we have:
+\begin{align}
+|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)|
+&\leq \frac{1}{1-\alpha} \int_{\alpha}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du \nonumber \\
+&\leq \frac{1}{1-\alpha} \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du \nonumber \\
+&= \frac{1}{1-\alpha} \cdot \mathcal{W}_1(P, Q). \quad \square
+\end{align}
+\end{proof}
+
+For $\alpha = 0.95$, the bound is $20 \cdot \mathcal{W}_1$, so $\mathcal{W}_1 = 0.01$ guarantees $\text{CVaR}_{0.95}$ agreement within 0.2 units. This provides $\alpha$-agnostic tail regularization without explicit CVaR tuning~\cite{chow2015cvar}.
+
+\subsection{Comparison with Alternative Divergences}
+
+\begin{table}[htbp]
+\centering
+\caption{Theoretical Comparison of Distributional Divergences}
+\label{tab:divergence_comparison}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccc}
+\toprule
+\textbf{Property} & $\boldsymbol{\mathcal{W}_1}$ & \textbf{KL} & \textbf{JS} \\
+\midrule
+Symmetric & \checkmark & $\times$ & \checkmark \\
+Triangle inequality (metric) & \checkmark & $\times$ & $\times$ \\
+Well-defined for disjoint supports & \checkmark & $\times$ & $\times$ \\
+Sensitive to geometry of $\mathbb{R}$ & \checkmark & $\times$ & $\times$ \\
+Bounded CVaR gap & \checkmark & $\times$ & $\times$ \\
+Parametric sample complexity (1D) & $O(n^{-1/2})$ & Unbounded & Unbounded \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\section{Additional Discovered Expressions}
+
+\paragraph{Volatility-Adjusted Momentum}
+\begin{multline}
+e = \frac{\text{mom}(x_{\text{close}}, 10)}{\text{vol}(x_{\text{close}}, 20)} \\
+\quad \times \text{ite}\big(\text{ma}(x_{\text{close}}, 5) > \text{ma}(x_{\text{close}}, 20),\, 1,\, 0\big)
+\end{multline}
+\textit{Interpretation:} Momentum normalized by volatility, filtered by trend confirmation (golden cross).
+
+\paragraph{Mean Reversion with Volume}
+\begin{multline}
+e = \big(x_{\text{close}} - \text{ma}(x_{\text{close}}, 20)\big) \\
+\quad \times \frac{x_{\text{volume}}}{\text{ma}(x_{\text{volume}}, 20)}
+\end{multline}
+\textit{Interpretation:} Price deviation scaled by relative volume (higher conviction on high volume).
+
+{\color{red}\textbf{[PLACEHOLDER: Statistical Significance Analysis - Not Yet Implemented]}}
+
+\section{Statistical Significance Analysis}
+\label{app:bootstrap}
+
+{\color{red}\textbf{Note: This section contains placeholder data for future statistical inference experiments.}}
+
+To assess whether EATA's outperformance survives data-snooping concerns, we employ block-bootstrap inference with Reality Check (RC) and Superior Predictive Ability (SPA) tests~\cite{white2000reality_check,hansen2005spa}. We also compute the deflated Sharpe ratio~\cite{bailey2014deflated_sharpe} to correct for multiple-testing bias across strategy variants.
+
+\begin{table}[htbp]
+\centering
+\caption{{\color{red}[PLACEHOLDER DATA]} Statistical Inference: Block-Bootstrap Confidence Intervals and Multiple-Testing Corrections (S\&P 500, N=62 representative stocks, 2013--2018)}
+\label{tab:bootstrap}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lccccc}
+\toprule
+\textbf{Method} & \textbf{SR} & \textbf{95\% Block-Bootstrap CI} & \textbf{RC $p$} & \textbf{SPA $p$} & \textbf{Deflated SR} \\
+\midrule
+\textbf{EATA (Ours)} & 0.76 & {\color{red}[TBD]} & --- & --- & {\color{red}TBD} \\
+NEMoTS & {\color{red}TBD} & {\color{red}[TBD]} & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+LightGBM & {\color{red}TBD} & {\color{red}[TBD]} & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+Buy \& Hold & 0.57 & {\color{red}[TBD]} & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+{\color{red}\textbf{[The following analysis is based on placeholder data and needs to be updated with real experimental results.]}}
+
+The block-bootstrap uses 10,000 resamples with block length = 20 days (monthly) to preserve autocorrelation. Reality Check tests $H_0$: EATA $\leq$ best competitor; $p < 0.05$ rejects, confirming EATA's superiority is not due to data snooping. SPA is a more powerful variant; low $p$-values reinforce the RC conclusion. The deflated Sharpe ratio corrects for selection bias across multiple strategy variants; EATA's deflated SR remains well above zero and above all baselines.
+
+{\color{red}\textbf{[PLACEHOLDER: Hyperparameter Sensitivity Analysis - Not Yet Implemented]}}
+
+\section{Hyperparameter Sensitivity Analysis}
+\label{app:sensitivity}
+
+{\color{red}\textbf{Note: This section contains placeholder data for future hyperparameter sensitivity experiments.}}
+
+We conduct a sensitivity analysis to verify that EATA's performance is not brittle to hyperparameter choices. We vary key hyperparameters across reasonable ranges and report the resulting performance metrics.
+
+\begin{table}[htbp]
+\centering
+\caption{{\color{red}[PLACEHOLDER DATA]} Hyperparameter Sensitivity Analysis (S\&P 500, N=62 stocks)}
+\label{tab:sensitivity}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Parameter} & \textbf{Setting} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} \\
+\midrule
+\multirow{5}{*}{$\eta$ (accuracy--profit balance)}
+& 0.1 (profit-heavy)  & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 0.3                 & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 0.5 (balanced)      & 21.2 & 0.76 & 36.1 \\
+& 0.7                 & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 0.9 (accuracy-heavy)& {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+\midrule
+\multirow{4}{*}{Sliding window size $T^{\text{in}}$ (days)}
+& 50                  & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 100 (default)       & 21.2 & 0.76 & 36.1 \\
+& 150                 & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 200                 & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+\midrule
+\multirow{3}{*}{$\alpha$ guidance schedule}
+& Fixed 0.3 (explore-heavy)  & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& Fixed 0.7 (exploit-heavy)  & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& Adaptive (default)         & 21.2 & 0.76 & 36.1 \\
+\midrule
+\multirow{3}{*}{Learning rate}
+& $10^{-6}$            & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& $10^{-5}$ (default)  & 21.2 & 0.76 & 36.1 \\
+& $10^{-4}$            & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+\midrule
+\multirow{3}{*}{Hidden dimension $d_h$}
+& 8                    & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+& 16 (default)         & 21.2 & 0.76 & 36.1 \\
+& 32                   & {\color{red}TBD} & {\color{red}TBD} & {\color{red}TBD} \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+{\color{red}\textbf{[The following analysis is based on placeholder data and needs to be updated with real experimental results.]}}
+
+Across all non-default configurations tested, we will verify that EATA's performance remains competitive. The sensitivity analysis will confirm whether the Wasserstein profit signal is a robust improvement over pure-accuracy objectives.
+
+\section{Notation and Terminology}
+\label{app:notation}
+
+Table~\ref{tab:notation} summarizes the notation used throughout this paper, following standard mathematical conventions: scalar variables in italic, vectors in bold lowercase, matrices in bold uppercase, and sets in calligraphic font.
+
+\begin{table*}[htbp]
+\centering
+\caption{Notation and Terminology}
+\label{tab:notation}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{clp{8cm}}
+\toprule
+\textbf{Category} & \textbf{Symbol} & \textbf{Description} \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering Data and Time Series}}
+& $\mathbf{X} \in \mathbb{R}^{T \times d}$ & Input time series with $T$ timesteps and $d$ features \\
+& $\mathbf{x}_t \in \mathbb{R}^{d}$ & Feature vector at time $t$ \\
+& $\mathbf{y} \in \mathbb{R}^{H}$ & Target sequence (lookahead horizon $H$) \\
+& $T^{\text{in}}$ & Lookback window size (input sequence length) \\
+& $H$ & Lookahead horizon (prediction length) \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering Grammar}}
+& $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, \mathit{S})$ & Context-free grammar \\
+& $\mathcal{V}$ & Set of non-terminal symbols \\
+& $\Sigma$ & Set of terminal symbols \\
+& $\mathcal{R}$ & Set of production rules \\
+& $\mathit{S}$ & Start symbol \\
+\midrule
+\multirow{4}{*}{\parbox{2cm}{\centering Expressions}}
+& $e$ & A symbolic expression (equation string) \\
+& $\tau$ & A derivation tree \\
+& $\mathcal{M}$ & Module library (high-quality sub-expressions) \\
+& $L^{\max}$ & Maximum expression length \\
+\midrule
+\multirow{5}{*}{\parbox{2cm}{\centering MCTS}}
+& $\mathit{s}$ & State in MCTS (partial derivation) \\
+& $\mathit{a}$ & Action (production rule index) \\
+& $Q(\mathit{s}, \mathit{a})$ & Action-value estimate \\
+& $N(\mathit{s}, \mathit{a})$ & Visit count \\
+& $C$ & Exploration constant \\
+\midrule
+\multirow{6}{*}{\parbox{2cm}{\centering Neural Network}}
+& $f_{\theta}$ & PVPNet with parameters $\theta$ \\
+& $\boldsymbol{\pi}_{\theta}(\mathit{s})$ & Policy head output \\
+& $V_{\theta}(\mathit{s})$ & Value head output \\
+& $P_{\theta}(\mathit{s})$ & Profit head output \\
+& $\alpha$ & Neural guidance weight \\
+& $\omega$ & Value-profit fusion weight \\
+\midrule
+\multirow{6}{*}{\parbox{2cm}{\centering Training}}
+& $\mathcal{B}$ & Experience replay buffer \\
+& $B^{\max}$ & Maximum buffer size \\
+& $B^{\min}$ & Minimum buffer size for training \\
+& $r^{\text{acc}}$ & Accuracy reward (1/MSE) \\
+& $r^{\text{rl}}$ & RL reward from Wasserstein distance \\
+& $r^{\text{mix}}$ & Mixed reward $\eta \cdot r^{\text{acc}} + (1-\eta) \cdot r^{\text{rl}}$ \\
+\midrule
+\multirow{6}{*}{\parbox{2cm}{\centering Hyperparameters}}
+& $\eta$ & Accuracy-profit balance weight \\
+& $d_h$ & Hidden dimension of PVPNet \\
+& $K$ & MCTS episodes per iteration \\
+& $M$ & Grammar augmentation iterations \\
+& $N^{\text{run}}$ & Independent MCTS runs \\
+& $n^{\text{play}}$ & Rollout simulations \\
+\midrule
+\multirow{3}{*}{\parbox{2cm}{\centering Wasserstein}}
+& $\mathcal{W}_1$ & 1-Wasserstein distance \\
+& $P, Q$ & Probability distributions \\
+& $\text{CVaR}_\alpha$ & Conditional Value-at-Risk at level $\alpha$ \\
+\bottomrule
+\end{tabular}%
+}
+\end{table*}

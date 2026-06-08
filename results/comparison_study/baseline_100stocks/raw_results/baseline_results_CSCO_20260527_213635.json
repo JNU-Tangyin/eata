@@ -1,0 +1,65 @@
+{
+  "buy_and_hold": {
+    "total_return": 0.3038138332255962,
+    "annualized_return": 0.194026954224628,
+    "sharpe_ratio": 1.1567898690859943,
+    "max_drawdown": 0.11817653890824514,
+    "volatility": 0.1652512111641204,
+    "success": true,
+    "description": "买入持有策略"
+  },
+  "macd": {
+    "total_return": 0.07479628585817011,
+    "annualized_return": 0.04939623124640269,
+    "sharpe_ratio": 0.48327904381206166,
+    "max_drawdown": 0.13103847467574475,
+    "volatility": 0.11306661832712392,
+    "success": true,
+    "description": "MACD交叉策略"
+  },
+  "arima": {
+    "total_return": 0.10871762584114131,
+    "annualized_return": 0.07142035646340439,
+    "sharpe_ratio": 0.49876510887439857,
+    "max_drawdown": 0.2784173745367079,
+    "volatility": 0.16560766500917157,
+    "success": true,
+    "description": "ARIMA时间序列预测"
+  },
+  "gp": {
+    "total_return": -0.10552218065798158,
+    "annualized_return": -0.07183025326035697,
+    "sharpe_ratio": -0.36792085697494015,
+    "max_drawdown": 0.18274654732842235,
+    "volatility": 0.16564490283021774,
+    "success": true,
+    "description": "遗传编程策略"
+  },
+  "gbdt": {
+    "total_return": -0.09910029461850833,
+    "annualized_return": -0.06825526677951022,
+    "sharpe_ratio": -0.35369296458571886,
+    "max_drawdown": 0.28588524129441345,
+    "volatility": 0.16272136848666607,
+    "success": true,
+    "description": "GBDT梯度提升决策树策略"
+  },
+  "lstm": {
+    "total_return": -0.24312710155226458,
+    "annualized_return": -0.16989179403367405,
+    "sharpe_ratio": -1.0546437220325062,
+    "max_drawdown": 0.3363540474124337,
+    "volatility": 0.16384759388367884,
+    "success": true,
+    "description": "LSTM神经网络策略"
+  },
+  "transformer": {
+    "total_return": -0.012300651799973195,
+    "annualized_return": -0.008239045504936038,
+    "sharpe_ratio": -0.02073647530272696,
+    "max_drawdown": 0.14813133239996362,
+    "volatility": 0.1101408488470629,
+    "success": true,
+    "description": "Transformer模型策略"
+  }
+}

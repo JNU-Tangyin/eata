@@ -1,0 +1,228 @@
+"""
+ARIMA 策略
+基于ARIMA时间序列预测的交易策略
+"""
+
+import pandas as pd
+import numpy as np
+import warnings
+
+# 忽略 urllib3 在 LibreSSL 环境下关于 NotOpenSSL 的兼容性提示
+warnings.filterwarnings("ignore", message="urllib3 v2 only supports OpenSSL 1.1.1+", category=UserWarning)
+warnings.filterwarnings("ignore", category=UserWarning, module="urllib3")
+try:
+    from urllib3.exceptions import NotOpenSSLWarning
+    warnings.filterwarnings("ignore", category=NotOpenSSLWarning)
+except ImportError:
+    pass
+
+# 禁用statsmodels相关警告
+warnings.filterwarnings("ignore", message="Maximum Likelihood optimization failed to converge")
+warnings.filterwarnings("ignore", message="Non-stationary starting autoregressive parameters found")
+warnings.filterwarnings("ignore", message="Non-invertible starting MA parameters found")
+warnings.filterwarnings("ignore", category=UserWarning, module="statsmodels")
+# 禁用statsmodels ConvergenceWarning
+try:
+    from statsmodels.tools.sm_exceptions import ConvergenceWarning
+    warnings.filterwarnings("ignore", category=ConvergenceWarning)
+except ImportError:
+    pass
+warnings.filterwarnings("ignore", message=".*Maximum Likelihood optimization.*")
+warnings.filterwarnings("ignore", message=".*Check mle_retvals.*")
+
+# 禁用NumPy数值计算警告
+warnings.filterwarnings("ignore", message="divide by zero encountered in matmul", category=RuntimeWarning)
+warnings.filterwarnings("ignore", message="overflow encountered in matmul", category=RuntimeWarning) 
+warnings.filterwarnings("ignore", message="invalid value encountered in matmul", category=RuntimeWarning)
+warnings.filterwarnings("ignore", message=".*encountered in.*", category=RuntimeWarning)
+
+try:
+    from .data_utils import run_vectorized_backtest
+except ImportError:
+    import sys
+    import os
+    sys.path.append(os.path.dirname(__file__))
+    from data_utils import run_vectorized_backtest
+
+
+def run_arima_strategy(train_df: pd.DataFrame, test_df: pd.DataFrame, ticker: str):
+    """
+    ARIMA策略 - 基于ETS-SDA原始实现
+    
+    Args:
+        train_df: 训练数据
+        test_df: 测试数据
+        ticker: 股票代码
+        
+    Returns:
+        tuple: (metrics, backtest_results)
+    """
+    print(f"Running ARIMA strategy for {ticker}...")
+    
+    try:
+        # 延迟导入避免死锁，重定向stdout来隐藏darts的导入信息
+        import sys
+        from io import StringIO
+        
+        # 临时重定向stdout
+        old_stdout = sys.stdout
+        sys.stdout = StringIO()
+        
+        try:
+            from statsmodels.tsa.arima.model import ARIMA
+            from statsmodels.tsa.stattools import adfuller
+        finally:
+            # 恢复stdout
+            sys.stdout = old_stdout
+            
+        import numpy as np
+
+        # 忽略 statsmodels 在 ARIMA 初始参数上的非平稳/不可逆警告
+        warnings.filterwarnings(
+            "ignore",
+            message="Non-stationary starting autoregressive parameters found. Using zeros as starting parameters.",
+            category=UserWarning,
+        )
+        warnings.filterwarnings(
+            "ignore",
+            message="Non-invertible starting MA parameters found. Using zeros as starting parameters.",
+            category=UserWarning,
+        )
+        
+        # 1. 准备数据 - 使用纯statsmodels实现
+        print("   Preparing data for statsmodels ARIMA...")
+        train_df = train_df.dropna()
+        test_df = test_df.dropna()
+        
+        # 提取价格序列
+        train_prices = train_df['close'].values
+        test_prices = test_df['close'].values
+        
+        # 数值稳定性处理：使用对数变换
+        if np.any(train_prices <= 0):
+            offset = abs(np.min(train_prices)) + 1
+            train_prices = train_prices + offset
+            test_prices = test_prices + offset
+        
+        train_log_prices = np.log(train_prices)
+        
+        # 2. 训练ARIMA模型
+        print("   Training statsmodels ARIMA model...")
+        
+        # 尝试多个ARIMA参数组合，选择最佳的
+        best_model = None
+        best_aic = float('inf')
+        best_params = None
+        
+        param_combinations = [
+            (1, 1, 1), (2, 1, 2), (1, 1, 0), (0, 1, 1), 
+            (2, 1, 1), (1, 1, 2), (3, 1, 1), (1, 1, 3)
+        ]
+        
+        for p, d, q in param_combinations:
+            try:
+                model = ARIMA(train_log_prices, order=(p, d, q))
+                fitted_model = model.fit()
+                aic = fitted_model.aic
+                if aic < best_aic:
+                    best_aic = aic
+                    best_model = fitted_model
+                    best_params = (p, d, q)
+                    print(f"   Better model found: ARIMA{best_params} with AIC={aic:.2f}")
+            except Exception as e:
+                continue
+        
+        if best_model is None:
+            # 如果所有参数都失败，使用简单的(1,1,1)
+            print("   Using fallback ARIMA(1,1,1)...")
+            model = ARIMA(train_log_prices, order=(1, 1, 1))
+            best_model = model.fit()
+            best_params = (1, 1, 1)
+        
+        # 3. 预测
+        print("   Making predictions...")
+        n_periods = len(test_df)
+        forecast = best_model.forecast(steps=n_periods)
+        
+        # 4. 生成信号
+        df_arima = test_df.copy()
+        
+        # 将对数变换的预测结果转换回原始价格
+        predicted_log_prices = forecast
+        predicted_prices = np.exp(predicted_log_prices)
+        
+        # 如果之前添加了offset，需要减去
+        if np.any(train_prices <= 0):
+            predicted_prices = predicted_prices - offset
+            
+        df_arima['predicted_close'] = predicted_prices
+        
+        # 信号生成：ARIMA使用一次性预测，在训练结束后预测所有测试期
+        # 这是学术界标准做法，不是数据泄露
+        df_arima['signal'] = np.where(
+            df_arima['predicted_close'] > df_arima['close'], 1, -1
+        )
+        df_arima['signal'] = df_arima['signal'].fillna(0)
+        
+        # 5. 运行回测
+        metrics, backtest_results = run_vectorized_backtest(df_arima, signal_col='signal')
+        
+        print(f"✅ ARIMA strategy completed for {ticker}")
+        print(f"   Total Return: {metrics['total_return']:.2%}")
+        print(f"   Annualized Return: {metrics['annualized_return']:.2%}")
+        print(f"   Sharpe Ratio: {metrics['sharpe_ratio']:.2f}")
+        print(f"   Max Drawdown: {metrics['max_drawdown']:.2%}")
+        
+        return metrics, backtest_results
+        
+    except Exception as e:
+        print(f"❌ ARIMA strategy failed for {ticker}: {e}")
+        # 返回默认结果
+        performance_metrics = pd.Series({
+            'annualized_return': 0,
+            'sharpe_ratio': 0,
+            'max_drawdown': 0,
+            'total_return': 0,
+            'num_trades': 0
+        })
+        equity_curve = pd.DataFrame({
+            'date': test_df['date'], 
+            'portfolio_value': 1.0
+        })
+        return performance_metrics, equity_curve
+
+
+if __name__ == '__main__':
+    # 测试代码
+    from data_utils import add_technical_indicators
+    
+    # 创建测试数据
+    np.random.seed(42)
+    dates = pd.date_range('2020-01-01', periods=200, freq='B')
+    prices = [100]
+    for _ in range(len(dates)-1):
+        prices.append(prices[-1] * (1 + np.random.normal(0, 0.02)))
+    
+    df = pd.DataFrame({
+        'date': dates,
+        'ticker': 'TEST',
+        'open': [p * 0.99 for p in prices],
+        'high': [p * 1.02 for p in prices],
+        'low': [p * 0.98 for p in prices],
+        'close': prices,
+        'volume': np.random.randint(1000000, 10000000, len(dates))
+    })
+    
+    df = add_technical_indicators(df)
+    
+    # 分割数据
+    split_idx = int(len(df) * 0.8)
+    train_df = df.iloc[:split_idx]
+    test_df = df.iloc[split_idx:]
+    
+    try:
+        metrics, _ = run_arima_strategy(train_df, test_df, 'TEST')
+        print("ARIMA strategy test completed!")
+    except Exception as e:
+        print(f"ARIMA test failed: {e}")
+        print("This is expected if darts is not installed properly")

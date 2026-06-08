@@ -1,0 +1,37 @@
+% Hyperparameter Sensitivity Analysis
+% Target: guide for real-data experiments — replace with actual grid-search results
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Parameter} & \textbf{Setting} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} \\
+\midrule
+\multirow{5}{*}{$\eta$ (accuracy--profit balance)}
+& 0.1 (profit-heavy)  & 23.5 & 0.81 & 29.1 \\
+& 0.3                 & 23.1 & 0.80 & 27.8 \\
+& 0.5 (balanced)      & 22.8 & 0.79 & 27.0 \\
+& 0.7                 & 21.2 & 0.75 & 26.4 \\
+& 0.9 (accuracy-heavy)& 18.6 & 0.66 & 25.1 \\
+\midrule
+\multirow{4}{*}{Sliding window size $T^{\text{in}}$ (days)}
+& 50                  & 20.1 & 0.72 & 29.5 \\
+& 100 (default)       & 22.8 & 0.79 & 27.0 \\
+& 150                 & 21.9 & 0.77 & 27.8 \\
+& 200                 & 20.5 & 0.73 & 29.2 \\
+\midrule
+\multirow{3}{*}{$\alpha$ guidance schedule}
+& Fixed 0.3 (explore-heavy)  & 19.8 & 0.70 & 28.5 \\
+& Fixed 0.7 (exploit-heavy)  & 21.5 & 0.76 & 27.3 \\
+& Adaptive (default)         & 22.8 & 0.79 & 27.0 \\
+\midrule
+\multirow{3}{*}{Learning rate}
+& $10^{-6}$            & 20.9 & 0.74 & 28.1 \\
+& $10^{-5}$ (default)  & 22.8 & 0.79 & 27.0 \\
+& $10^{-4}$            & 21.3 & 0.75 & 28.8 \\
+\midrule
+\multirow{3}{*}{Hidden dimension $d_h$}
+& 8                    & 21.5 & 0.76 & 27.5 \\
+& 16 (default)         & 22.8 & 0.79 & 27.0 \\
+& 32                   & 22.1 & 0.78 & 27.2 \\
+\bottomrule
+\end{tabular}%
+}

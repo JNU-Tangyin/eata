@@ -1,0 +1,362 @@
+[
+  {
+    "ticker": "AAPL",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "AAPL",
+    "method": "GP",
+    "expression": "div(sub(X0, X0), add(0.393, 0.741))",
+    "complexity": 7,
+    "sharpe_ratio": -0.878784757761021,
+    "annualized_return": -0.2612310756252417,
+    "max_drawdown": 0.932156841885166
+  },
+  {
+    "ticker": "AMD",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.3459093906753304,
+    "annualized_return": 0.06329737223130127,
+    "max_drawdown": 0.5877068867699742
+  },
+  {
+    "ticker": "AMD",
+    "method": "GP",
+    "expression": "div(sub(X0, X0), add(X0, X0))",
+    "complexity": 7,
+    "sharpe_ratio": -0.8494806401060477,
+    "annualized_return": -0.5033689031148667,
+    "max_drawdown": 0.9991758192730243
+  },
+  {
+    "ticker": "AMT",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.07499001524562458,
+    "annualized_return": -0.0021511161668212875,
+    "max_drawdown": 0.359244653282979
+  },
+  {
+    "ticker": "AMT",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.42585835963039176,
+    "annualized_return": -0.15086880445079054,
+    "max_drawdown": 0.6739239013699028
+  },
+  {
+    "ticker": "BA",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "BA",
+    "method": "GP",
+    "expression": "div(sub(X0, X0), X0)",
+    "complexity": 5,
+    "sharpe_ratio": -0.40902312390208395,
+    "annualized_return": -0.20457897482368492,
+    "max_drawdown": 0.9277218355320476
+  },
+  {
+    "ticker": "BAC",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.7756976202485419,
+    "annualized_return": 0.2695778634110235,
+    "max_drawdown": 0.40333246126375444
+  },
+  {
+    "ticker": "BAC",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.5015158647771932,
+    "annualized_return": -0.1832652651675356,
+    "max_drawdown": 0.9032640329975561
+  },
+  {
+    "ticker": "BHP",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": -0.3208252682138722,
+    "annualized_return": -0.15572085891930387,
+    "max_drawdown": 0.6785950895551844
+  },
+  {
+    "ticker": "BHP",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.17833136322237336,
+    "annualized_return": -0.11822817889462822,
+    "max_drawdown": 0.8884103990071724
+  },
+  {
+    "ticker": "CAT",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "CAT",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.40943968708424333,
+    "annualized_return": -0.144536002856533,
+    "max_drawdown": 0.8739612525850423
+  },
+  {
+    "ticker": "COST",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "COST",
+    "method": "GP",
+    "expression": "div(sub(X0, X0), X0)",
+    "complexity": 5,
+    "sharpe_ratio": -0.8654048689784573,
+    "annualized_return": -0.1982084163024289,
+    "max_drawdown": 0.8302619416481813
+  },
+  {
+    "ticker": "DE",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "DE",
+    "method": "GP",
+    "expression": "div(div(sub(X0, X0), add(0.393, mul(-0.606, 0.292))), 0.741)",
+    "complexity": 11,
+    "sharpe_ratio": -0.7164079696897147,
+    "annualized_return": -0.21413466327425545,
+    "max_drawdown": 0.9195900869913366
+  },
+  {
+    "ticker": "EQIX",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "EQIX",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.49143366141674766,
+    "annualized_return": -0.17994114478651457,
+    "max_drawdown": 0.7030235148598923
+  },
+  {
+    "ticker": "GE",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "GE",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": 0.014083574180943512,
+    "annualized_return": -0.04831254281647024,
+    "max_drawdown": 0.7649343067734449
+  },
+  {
+    "ticker": "GOOG",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": -0.728215123243123,
+    "annualized_return": -0.22472924510008274,
+    "max_drawdown": 0.7596751625574851
+  },
+  {
+    "ticker": "GOOG",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.5062688745214161,
+    "annualized_return": -0.19721492846500543,
+    "max_drawdown": 0.7264728125946921
+  },
+  {
+    "ticker": "JNJ",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "JNJ",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.6254350170855842,
+    "annualized_return": -0.11654298432401367,
+    "max_drawdown": 0.7546951609956674
+  },
+  {
+    "ticker": "JPM",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 1.03434516487843,
+    "annualized_return": 0.32356809559592814,
+    "max_drawdown": 0.3920844548903867
+  },
+  {
+    "ticker": "JPM",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.5136761464764268,
+    "annualized_return": -0.1672480789896965,
+    "max_drawdown": 0.8215500517849481
+  },
+  {
+    "ticker": "KO",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "KO",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.3499200766066124,
+    "annualized_return": -0.07604655407124405,
+    "max_drawdown": 0.5995298226013898
+  },
+  {
+    "ticker": "MSFT",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": -0.17854478878266136,
+    "annualized_return": -0.08484284616411486,
+    "max_drawdown": 0.5546652127877518
+  },
+  {
+    "ticker": "MSFT",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.941993541091364,
+    "annualized_return": -0.2639139998396993,
+    "max_drawdown": 0.9255870559926733
+  },
+  {
+    "ticker": "NFLX",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.7027959577147769,
+    "annualized_return": 0.2620175952168149,
+    "max_drawdown": 0.4869722387228643
+  },
+  {
+    "ticker": "NFLX",
+    "method": "GP",
+    "expression": "div(sub(X0, X0), 0.741)",
+    "complexity": 5,
+    "sharpe_ratio": -0.2684939683625337,
+    "annualized_return": -0.21663594553005783,
+    "max_drawdown": 0.782133292678937
+  },
+  {
+    "ticker": "NVDA",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 1.1123871443305329,
+    "annualized_return": 0.5920307994729836,
+    "max_drawdown": 0.6068111253602498
+  },
+  {
+    "ticker": "NVDA",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.6811329839516791,
+    "annualized_return": -0.38737147806505046,
+    "max_drawdown": 0.95178205552541
+  },
+  {
+    "ticker": "SCHW",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 1.3995312446053376,
+    "annualized_return": 0.6073812565345886,
+    "max_drawdown": 0.2683219201306113
+  },
+  {
+    "ticker": "SCHW",
+    "method": "GP",
+    "expression": "mul(X0, sub(X0, X0))",
+    "complexity": 5,
+    "sharpe_ratio": -0.5327672050001934,
+    "annualized_return": -0.21725475859372168,
+    "max_drawdown": 0.8832082499988372
+  },
+  {
+    "ticker": "XOM",
+    "method": "EATA",
+    "expression": "unknown",
+    "complexity": 20,
+    "sharpe_ratio": 0.0,
+    "annualized_return": 0.0,
+    "max_drawdown": 0.0
+  },
+  {
+    "ticker": "XOM",
+    "method": "GP",
+    "expression": "sub(X0, X0)",
+    "complexity": 3,
+    "sharpe_ratio": -0.20354693039247695,
+    "annualized_return": -0.08463295185878716,
+    "max_drawdown": 0.8157653679578024
+  }
+]
