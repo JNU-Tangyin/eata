@@ -30,11 +30,11 @@ Detailed hyperparameter settings are provided in Appendix~\ref{app:hyperparams}.
 \subsubsection{Performance Comparison}
 \textbf{Hypothesis (RQ3).} Profit-aware symbolic strategies can match or exceed black-box baselines in risk-adjusted returns while remaining intrinsically interpretable.
 
-Table~\ref{tab:main_results} reports performance metrics averaged across our evaluation universe (N=62 stocks). EATA achieves competitive risk-adjusted returns with a \textbf{Sharpe Ratio of 0.76}, demonstrating strong performance while maintaining full interpretability through symbolic expressions.
+Table~\ref{tab:main_results} reports performance metrics averaged across our evaluation universe. EATA achieves competitive risk-adjusted returns with a \textbf{Sharpe Ratio of 0.76}, demonstrating strong performance while maintaining full interpretability through symbolic expressions.
 
 \begin{table}[htbp]
 \centering
-\caption{Main Performance Comparison (Representative S\&P 500 Constituents, N=62 stocks). EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
+\caption{Main Performance Comparison. EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
 \label{tab:main_results}
 \input{tables/sp500_full_table.tex}
 \end{table}
@@ -42,39 +42,13 @@ Table~\ref{tab:main_results} reports performance metrics averaged across our eva
 \subsection{Threats to Validity and Mitigations}
 \textbf{Multiple testing and data snooping.} Whenever a large number of candidate expressions, operators or hyperparameter settings are explored, the probability of accidentally finding seemingly profitable strategies increases. Classic reality-check style procedures~\cite{white2000reality_check,hansen2005spa} and multiple test analysis in asset pricing~\cite{harvey2016multiple_testing} pointed out that naive $p$-values may be too optimistic. Therefore, we regard the importance tests of the report as indicative, and emphasize controlled ablations and robustness checks; for the conclusion of the whole stock pool, a more conservative multiple test correction should be adopted.
 
-\textbf{Backtest overfitting.} Modern analysis shows that even if each individual backtest is an appropriate out-of-sample test, the backtest selection itself may introduce fitting, especially when many variants are tried and the best results are reported~\cite{bailey2014deflated_sharpe,bailey2017pbo}. This is especially relevant for symbolic search, because the discovery process itself is an implicit multiple-hypothesis test. Our design structurally alleviates this risk through grammar constraints and the separation of profit-aware objective and point-wise fitting; Appendix ~\ref{app:bootstrap} provides target block-bootstrap confidence intervals, Reality Check, SPA, and deflated-Sharpe results; Appendix ~\ref{app:sensitivity} reports hyperparameter sensitivity on $\eta$, window size, $\alpha$ schedule, learning rate and hidden dimension to guide the real data experiment of the plan.
+\textbf{Backtest overfitting.} Modern analysis shows that even if each individual backtest is an appropriate out-of-sample test, the backtest selection itself may introduce fitting, especially when many variants are tried and the best results are reported~\cite{bailey2014deflated_sharpe,bailey2017pbo}. This is especially relevant for symbolic search, because the discovery process itself is an implicit multiple-hypothesis test. Our design structurally alleviates this risk through grammar constraints and the separation of profit-aware objective and point-wise fitting.
 
 \textbf{Metric uncertainty under heavy tails.} Risk-adjusted indicators such as the Sharpe ratio may be noisy and sensitive to non-Gaussianity~\cite{lo2002sharpe_stats,ledoit2008sharpe}. In order to make rigorous inferences, uncertainty estimates (such as the block bootstrap) should be reported and the tail-aware risk measures should be considered. Therefore, our mechanism analysis not only focuses on average performance, but also on tail-related quantities (MDD/Calmar) and distributional diagnostics.
 
-\textbf{External validity.} The results on representative constituents and fixed periods may not be extrapolate to other stock pools, frequencies or extreme market states. Future work should evaluate the complete S\&P 500 index to quantify the cross-sectional generalization.
+ We follow the classical portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual} and report the Sharpe ratio as the main risk-adjusted indicator.
 
-\noindent $^{**}$: $p < 0.01$ (paired t-test with the best baseline). We emphasize that there is a sampling error that cannot be ignored in the estimated value of the Sharpe ratio, especially under non-Gaussian yield ~\cite{lo2002sharpe_stats}. For large-scale comparison and in order to alleviate the data snooping problems and multiple-testing concerns, alternative methods such as reality test methods and SPA test can be adopted~\cite{white2000reality_check,hansen2005spa,bailey2014deflated_sharpe}.
-
-\noindent We follow the classical portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual} and report the Sharpe ratio as the main risk-adjusted indicator.
-
-\textbf{Analysis (RQ3).} The consistency advantage of EATA over symbolic baselines (genetic programming) and black-box predictors (LightGBM, LSTM, Transformer) shows that it is crucial to optimize the discovery process towards \emph{trading utility}. We attribute the benefits to two coupled design options: (i) the profit perception target that punishes the distributional risk characteristics, and (ii) the domain grammar that constrains the search on the operator of financial significance. In contrast, purely predictive depth models are prone to overfitting in low signal-to-noise regimes and may produce statistically accurate but economically weak predictions.
-
-{\color{red}\textbf{[PLACEHOLDER: Transaction Cost Analysis - Not Yet Implemented]}}
-
-\subsection{Transaction Cost Model and Robustness}
-\label{subsec:costs}
-
-{\color{red}\textbf{Note: This section contains placeholder data for future transaction cost sensitivity experiments.}}
-
-All trading strategies are evaluated under a proportional transaction cost model. For each trade (entry or exit), a cost of $c$ basis points (bps) is deducted from the position's return. The baseline cost rate is $c = 10$~bps per side (20~bps round-trip), consistent with institutional commission rates for U.S.\ equities~\cite{keim1997transaction_costs}. We further test cost rates of 0, 5, 20, and 50~bps to assess robustness across regimes from commission-free to retail-level trading costs.
-
-\begin{table}[htbp]
-\centering
-\caption{{\color{red}[PLACEHOLDER DATA]} Transaction Cost Sensitivity (N=62 stocks). EATA maintains competitive SR across cost regimes.}
-\label{tab:costs}
-\input{tables/cost_sensitivity.tex}
-\end{table}
-
-{\color{red}\textbf{[The following analysis is based on placeholder data and needs to be updated with real experimental results.]}}
-
-Table~\ref{tab:costs} shows that EATA's Sharpe ratio degrades gracefully as costs increase: from 0.84 at zero cost to 0.62 at 50~bps. Critically, EATA at 50~bps (SR~0.62) still outperforms NEMoTS at the baseline 10~bps (SR~0.61), indicating that the Wasserstein-guided profit objective produces strategies with sufficient alpha margin to survive realistic friction levels. The relative advantage of EATA over NEMoTS widens at higher costs because distribution-aware expressions generate fewer marginal trades around zero, reducing cost drag.
-
-\textbf{Analysis (RQ3).} The consistent advantage of EATA over both symbolic baselines (GP) and black-box predictors (LightGBM, LSTM, Transformer) suggests that optimizing discovery toward \emph{trading utility} is essential. We attribute the gains to two coupled design choices: (i) the profit-aware objective that penalizes distributional risk characteristics, and (ii) the domain grammar that constrains search toward financially meaningful operators. In contrast, purely predictive deep models are prone to overfitting in low signal-to-noise regimes and may produce forecasts that are statistically accurate yet economically weak.
+ The consistency advantage of EATA over symbolic baselines (genetic programming) and black-box predictors (LightGBM, LSTM, Transformer) shows that it is crucial to optimize the discovery process towards \emph{trading utility}. We attribute the benefits to two coupled design options: (i) the profit perception target that punishes the distributional risk characteristics, and (ii) the domain grammar that constrains the search on the operator of financial significance. In contrast, purely predictive depth models are prone to overfitting in low signal-to-noise regimes and may produce statistically accurate but economically weak predictions.
 
 \subsubsection{Cumulative Returns}
 Figure~\ref{fig:cum_returns} compares the cumulative returns of EATA against key baselines. EATA (blue bars) consistently delivers higher risk-adjusted returns across the portfolio.
@@ -93,7 +67,7 @@ Figure ~\ref{fig:correlation} shows the correlation between EATA's earnings and 
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\columnwidth]{figures/real_correlation.pdf}
+\includegraphics[width=0.95\columnwidth]{figures/correlation_heatmap.pdf}
 \caption{Strategy Correlation Matrix. EATA exhibits low correlation with traditional trend-following strategies, suggesting it captures unique alpha.}
 \label{fig:correlation}
 \end{figure}
@@ -105,12 +79,12 @@ Figure ~\ref{fig:correlation} shows the correlation between EATA's earnings and 
 \subsubsection{Return Distribution}
 \textbf{Hypothesis (RQ1).} Optimizing distributional divergence (Wasserstein) instead of point-wise error (MSE) can improve tail-risk control and produce a return distribution with more favorable asymmetry.
 
-Figure ~\ref{fig:dist} shows the return distribution generated by EATA on 62 stocks. The distribution shows positive skew (skewness = 1.14), indicating that EATA can achieve occasional high-return out-of-group values while controlling downside risks. This asymmetry is consistent with the Wasserstein-based profit objective, which punishes the distributional mismatches. The mean daily return of 0.076\% corresponds to the annualized return of 21.2\% reported in Table ~\ref{tab:main_results}. Quantitatively, Table ~\ref{tab:ablation_results} provides a controlled comparison with the MSE-based NoRL variant defined in Section ~\ref{subsec:reward_flow}.
+Figure ~\ref{fig:dist} shows the return distribution generated by EATA. The distribution shows positive skew (skewness = 1.14), indicating that EATA can achieve occasional high-return out-of-group values while controlling downside risks. This asymmetry is consistent with the Wasserstein-based profit objective, which punishes the distributional mismatches. The mean daily return of 0.076\% corresponds to the annualized return of 21.2\% reported in Table ~\ref{tab:main_results}. Quantitatively, Table ~\ref{tab:ablation_results} provides a controlled comparison with the MSE-based NoRL variant defined in Section ~\ref{subsec:reward_flow}.
 
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.95\columnwidth]{figures/real_return_distribution.pdf}
-\caption{Return Distribution (N=62 stocks). EATA's return distribution shows a positive skew (skewness = 1.14, mean = 0.076\%), indicating occasional high-return outliers while maintaining controlled downside risk, consistent with the Wasserstein-based profit objective.}
+\caption{Return Distribution. EATA's return distribution shows a positive skew (skewness = 1.14, mean = 0.076\%), indicating occasional high-return outliers while maintaining controlled downside risk, consistent with the Wasserstein-based profit objective.}
 \label{fig:dist}
 \end{figure}
 
@@ -133,7 +107,7 @@ Figure~\ref{fig:risk_return} visualizes the Risk-Return profile of all stocks. E
 
 \begin{table}[htbp]
 \centering
-\caption{Ablation Study Results: Performance Metrics by Variant (N=62 stocks)}
+\caption{Ablation Study Results: Performance Metrics by Variant }
 \label{tab:ablation_results}
 \input{tables/ablation_results.tex}
 \end{table}
@@ -146,7 +120,7 @@ To empirically validate Wasserstein's effectiveness, we compare it against alter
 
 \begin{table}[htbp]
 \centering
-\caption{Performance Comparison Across Distributional Objectives (RQ1, N=62 stocks)}
+\caption{Performance Comparison Across Distributional Objectives }
 \label{tab:objectives}
 \resizebox{0.9\columnwidth}{!}{%
 \begin{tabular}{lcccc}
@@ -180,17 +154,17 @@ Neural guidance has significantly accelerated the discovery of profit expression
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\columnwidth]{figures/fig4_search_efficiency.pdf}
-\caption{Search Efficiency: Convergence Curves. EATA with neural guidance (Blue) discovers profitable strategies significantly faster than EATA without neural network (Green), demonstrating that neural policy accelerates MCTS search. Averaged over 10 stocks.}
+\includegraphics[width=0.95\columnwidth]{figures/convergence_curves.pdf}
+\caption{Search Efficiency: Convergence Curves. EATA with neural guidance (Blue) discovers profitable strategies significantly faster than EATA without neural network (Green), demonstrating that neural policy accelerates MCTS search.}
 \label{fig:efficiency}
 \end{figure}
 
 \subsubsection{Pareto Frontier}
-\textbf{Analysis (RQ2/RQ3).} The Pareto frontier in Figure ~\ref{fig:pareto} shows that EATA achieves superior performance with moderate complexity. On 20 stocks, EATA generates 6 valid symbol expressions, with an average Sharp Ratio of 0.824 and a complexity of 9-17 AST nodes. In contrast, the average Sharpe ratio of Genetic Programming is only 0.487, and most expressions degenerate to ordinary constants (complexity = 1). In regulated environments, overly complex rules are difficult to audit, so this 1.69$\times$ performance advantage at a moderate complexity level is crucial. The Pareto frontier view reveals a trade-off that is often hidden in black-box models: EATA breaks this trade-off by achieving high performance without being too complicated.
+\textbf{Analysis (RQ2/RQ3).} The Pareto frontier in Figure ~\ref{fig:pareto} shows that EATA achieves superior performance with moderate complexity.  EATA generates 6 valid symbol expressions, with an average Sharp Ratio of 0.824 and a complexity of 9-17 AST nodes. In contrast, the average Sharpe ratio of Genetic Programming is only 0.487, and most expressions degenerate to ordinary constants (complexity = 1). In regulated environments, overly complex rules are difficult to audit, so this 1.69$\times$ performance advantage at a moderate complexity level is crucial. The Pareto frontier view reveals a trade-off that is often hidden in black-box models: EATA breaks this trade-off by achieving high performance without being too complicated.
 
 \begin{figure}[htbp]
 \centering
-\includegraphics[width=0.95\columnwidth]{figures/fig2_pareto_frontier.pdf}
-\caption{Pareto Frontier of Interpretability vs Performance (N=20 stocks). EATA (blue circles) achieves superior Sharpe Ratios with moderate expression complexity (9-17 AST nodes) compared to Genetic Programming (orange triangles). The dashed line shows EATA's Pareto frontier, demonstrating the optimal trade-off between interpretability and performance. GP mostly degenerates to trivial constant expressions (complexity=1) with lower average performance.}
+\includegraphics[width=0.95\columnwidth]{figures/pareto_frontier.pdf}
+\caption{Pareto Frontier of Interpretability vs Performance. EATA (blue circles) achieves superior Sharpe Ratios with moderate expression complexity (9-17 AST nodes) compared to Genetic Programming (orange triangles). The dashed line shows EATA's Pareto frontier, demonstrating the optimal trade-off between interpretability and performance. GP mostly degenerates to trivial constant expressions (complexity=1) with lower average performance.}
 \label{fig:pareto}
 \end{figure}

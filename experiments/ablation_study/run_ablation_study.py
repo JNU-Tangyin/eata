@@ -82,13 +82,13 @@ class AblationStudyRunner:
 
         
 
-        # 运行所有消融变体（不包括EATA-Full主实验）
+        # 只运行EATA-NoNN变体（用于快速生成收敛曲线数据）
         self.variants = {
             'EATA-NoNN': EATANoNN,
-            'EATA-NoMem': EATANoMem,
-            'EATA-Simple': EATASimple,
-            'EATA-LowExplore': EATANoExplore,  # 使用NoExplore代替LowExplore
-            'EATA-NoMCTS': EATANoMCTS,
+            # 'EATA-NoMem': EATANoMem,
+            # 'EATA-Simple': EATASimple,
+            # 'EATA-LowExplore': EATANoExplore,
+            # 'EATA-NoMCTS': EATANoMCTS,
         }
 
         
@@ -213,25 +213,27 @@ class AblationStudyRunner:
 
         """
 
-        加载所有100支股票的真实数据
+        加载62支股票的真实数据（Batch4_SP500和data目录的交集）
 
         """
 
-        print("加载100支股票的真实数据...")
+        print("加载62支股票的真实数据（Batch4_SP500和data目录的交集）...")
 
         
 
-        # 从selected_100_stocks.txt读取股票列表
+        # 从common_62_stocks.txt读取股票列表（Batch4_SP500和data的交集）
         project_root = Path(__file__).resolve().parents[2]
-        stocks_file = project_root / "experiments" / "comparison_experiments" / "selected_100_stocks.txt"
+        stocks_file = project_root / "experiments" / "ablation_study" / "common_62_stocks.txt"
         
         if stocks_file.exists():
             with open(stocks_file, 'r', encoding='utf-8') as f:
                 stock_tickers = [line.strip() for line in f if line.strip() and not line.startswith('#')]
+            print(f"   ✅ 从 common_62_stocks.txt 加载股票列表")
         else:
-            # 如果文件不存在，从data目录读取
+            print(f"   ❌ 找不到 common_62_stocks.txt，使用备用方案")
+            # 备用：从data目录读取前62支
             data_dir = project_root / "data"
-            stock_tickers = sorted([f.stem for f in data_dir.glob("*.csv")])
+            stock_tickers = sorted([f.stem for f in data_dir.glob("*.csv")])[:62]
         
         print(f"   总股票数: {len(stock_tickers)}")
 

@@ -15,10 +15,20 @@ import warnings
 warnings.filterwarnings('ignore')
 plt.rcParams['figure.max_open_warning'] = 0  # 隐藏matplotlib图形数量警告
 
-# 设置中文字体和样式
-plt.rcParams['font.sans-serif'] = ['SimHei', 'Arial Unicode MS', 'DejaVu Sans']
-plt.rcParams['axes.unicode_minus'] = False
-sns.set_style("whitegrid")
+# Nature期刊标准字体和样式设置
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
+    "axes.unicode_minus": False,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+    "font.size": 9,
+    "axes.spines.right": False,
+    "axes.spines.top": False,
+    "axes.linewidth": 0.8,
+    "legend.frameon": False,
+})
+sns.set_style("white")
 
 class ResultVisualizer:
     """

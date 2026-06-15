@@ -17,13 +17,10 @@ from eata import run_eata_strategy
 from gp import run_gp_strategy
 from utils.expression_complexity import count_ast_nodes
 
-# 股票列表（使用对比实验中的股票）
-STOCKS = [
-    'AAPL', 'AMD', 'AMT', 'BA', 'BAC', 
-    'BHP', 'CAT', 'COST', 'DE', 'EQIX',
-    'GE', 'GOOG', 'JNJ', 'JPM', 'KO',
-    'MSFT', 'NFLX', 'NVDA', 'SCHW', 'XOM'
-]
+# 股票列表（使用62支股票）
+STOCKS = []
+with open('../results/comparison_study/common_stocks_for_finrl.txt') as f:
+    STOCKS = [line.strip() for line in f if line.strip()]
 
 def load_stock_data(ticker):
     """加载股票数据"""

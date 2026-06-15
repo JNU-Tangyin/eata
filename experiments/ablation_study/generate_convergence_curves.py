@@ -11,6 +11,20 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from pathlib import Path
+
+# Nature期刊标准字体和样式设置
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
+    "axes.unicode_minus": False,
+    "svg.fonttype": "none",
+    "pdf.fonttype": 42,
+    "font.size": 9,
+    "axes.spines.right": False,
+    "axes.spines.top": False,
+    "axes.linewidth": 0.8,
+    "legend.frameon": False,
+})
 from datetime import datetime
 import time
 
@@ -155,94 +169,128 @@ def generate_convergence_plot(all_data, output_dir):
     print(f"   PDF: {pdf_file}")
     print(f"   PNG: {png_file}")
 
-def main():
-    """主函数 - 使用现有的100股票消融实验数据"""
+def generate_figure6_from_real_data():
+    """使用真实convergence_history数据生成Figure 6"""
+    import json
     
     print("="*80)
-    print("生成搜索效率收敛曲线（使用现有数据）")
+    print("生成Figure 6: 搜索效率收敛曲线")
     print("="*80)
     
     project_root = Path(__file__).parent.parent.parent
     
-    # 读取62支重叠股票的数据
-    overlap_full_file = project_root / 'overlap_62stocks_full.csv'
-    overlap_ablation_file = project_root / 'overlap_62stocks_ablation.csv'
+    # 1. 加载EATA-Full数据
+    eata_full_dir = project_root / 'results' / 'eata_full_62stocks'
+    full_convergence = []
     
-    print(f"读取重叠股票数据文件...")
-    df_full = pd.read_csv(overlap_full_file)
-    df_ablation = pd.read_csv(overlap_ablation_file)
+    for conv_file in sorted(eata_full_dir.glob('*_convergence.json')):
+        with open(conv_file) as f:
+            data = json.load(f)
+        conv_hist = data.get('convergence_history', [])
+        if conv_hist:
+            full_convergence.append(conv_hist)
     
-    # 获取EATA-Full数据（62支重叠股票）
-    full_avg_sharpe = df_full['Sharpe Ratio'].mean()
-    print(f"EATA-Full 平均Sharpe: {full_avg_sharpe:.4f} (基于{len(df_full)}支股票)")
+    print(f"✅ EATA-Full: {len(full_convergence)} 支股票")
     
-    # 获取EATA-NoNN数据（62支重叠股票）
-    nonn_data = df_ablation[df_ablation['variant'] == 'EATA-NoNN']
-    nonn_avg_sharpe = nonn_data['sharpe_ratio'].mean()
-    print(f"EATA-NoNN 平均Sharpe: {nonn_avg_sharpe:.4f} (基于{len(nonn_data)}支股票)")
+    # 2. 加载EATA-NoNN数据
+    nonn_file = project_root / 'results' / 'ablation_study' / 'raw_results' / 'ablation_results_20260608_190120.json'
+    with open(nonn_file) as f:
+        nonn_data = json.load(f)
     
-    # 构造数据格式以匹配原有的generate_convergence_plot函数
-    all_data = [
-        {
-            'variant': 'EATA-Full',
-            'ticker': row['Ticker'],
-            'final_sharpe': row['Sharpe Ratio'],
-            'total_time': 3000  # 假设平均50分钟
-        }
-        for _, row in df_full.iterrows()
-    ]
+    nonn_convergence = []
+    for item in nonn_data:
+        if item.get('variant') == 'EATA-NoNN':
+            conv_hist = item.get('convergence_history', [])
+            if conv_hist:
+                nonn_convergence.append(conv_hist)
     
-    all_data.extend([
-        {
-            'variant': 'EATA-NoNN',
-            'ticker': row['ticker'],
-            'final_sharpe': row['sharpe_ratio'],
-            'total_time': 3600  # 假设平均60分钟（NoNN更慢）
-        }
-        for _, row in nonn_data.iterrows()
-    ])
+    print(f"✅ EATA-NoNN: {len(nonn_convergence)} 支股票")
     
-    # 生成收敛曲线图
-    if all_data:
-        output_dir = Path(__file__).parent.parent.parent / 'paper' / 'figures'
-        output_dir.mkdir(parents=True, exist_ok=True)
-        
-        generate_convergence_plot(all_data, output_dir)
-        
-        # 保存原始数据
-        results_df = pd.DataFrame([
-            {
-                'variant': d['variant'],
-                'ticker': d['ticker'],
-                'final_sharpe': d['final_sharpe'],
-                'total_time': d['total_time']
-            }
-            for d in all_data
-        ])
-        
-        csv_file = output_dir.parent / 'tables' / 'convergence_data.csv'
-        results_df.to_csv(csv_file, index=False)
-        print(f"\n✅ 原始数据已保存: {csv_file}")
-        
-        # 打印汇总统计
-        print(f"\n{'='*80}")
-        print("汇总统计")
-        print(f"{'='*80}")
-        
-        for variant_name in ['EATA-Full', 'EATA-NoNN']:
-            variant_results = results_df[results_df['variant'] == variant_name]
-            if len(variant_results) > 0:
-                avg_sharpe = variant_results['final_sharpe'].mean()
-                avg_time = variant_results['total_time'].mean()
-                print(f"\n{variant_name}:")
-                print(f"  平均Sharpe Ratio: {avg_sharpe:.4f}")
-                print(f"  平均运行时间: {avg_time:.1f}秒 ({avg_time/60:.1f}分钟)")
-    else:
-        print("\n⚠️ 没有成功的实验结果")
+    # 3. 计算平均收敛曲线
+    def compute_average_convergence(conv_list):
+        if not conv_list:
+            return [], []
+        min_len = min(len(c) for c in conv_list)
+        aligned = [c[:min_len] for c in conv_list]
+        mean_conv = np.mean(aligned, axis=0)
+        std_conv = np.std(aligned, axis=0)
+        return mean_conv, std_conv
+    
+    full_mean, full_std = compute_average_convergence(full_convergence)
+    nonn_mean, nonn_std = compute_average_convergence(nonn_convergence)
+    
+    print(f"平均长度: Full={len(full_mean)}, NoNN={len(nonn_mean)}")
+    
+    # 4. 绘制图表（改进版：更清晰的视觉效果）
+    fig = plt.figure(figsize=(12, 6))
+    
+    # 主图
+    ax = plt.subplot(1, 1, 1)
+    
+    colors = {
+        'EATA-Full': '#4169E1',   # Royal Blue
+        'EATA-NoNN': '#DC143C',   # Crimson Red
+    }
+    
+    # EATA-Full
+    x_full = np.arange(len(full_mean))
+    ax.plot(x_full, full_mean, 
+            label='EATA-Full', 
+            linewidth=3.0, 
+            color=colors['EATA-Full'],
+            alpha=0.95,
+            linestyle='-')
+    ax.fill_between(x_full, full_mean - full_std, full_mean + full_std, 
+                    alpha=0.2, color=colors['EATA-Full'])
+    
+    # EATA-NoNN
+    x_nonn = np.arange(len(nonn_mean))
+    ax.plot(x_nonn, nonn_mean, 
+            label='EATA-NoNN', 
+            linewidth=3.0, 
+            color=colors['EATA-NoNN'],
+            alpha=0.95,
+            linestyle='--',  # 使用虚线以区分
+            dashes=(5, 3))
+    ax.fill_between(x_nonn, nonn_mean - nonn_std, nonn_mean + nonn_std, 
+                    alpha=0.2, color=colors['EATA-NoNN'])
+    
+    # 调整Y轴范围，聚焦数据区域
+    y_min = min(full_mean.min(), nonn_mean.min()) - 0.05
+    y_max = max(full_mean.max(), nonn_mean.max()) + 0.05
+    ax.set_ylim([y_min, y_max])
+    
+    ax.set_xlabel('Window Index', fontsize=14, fontweight='bold')
+    ax.set_ylabel('Best Reward (Sharpe Ratio)', fontsize=14, fontweight='bold')
+    ax.legend(fontsize=13, loc='upper right', framealpha=0.95, 
+             edgecolor='black', fancybox=True, shadow=True)
+    ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.8)
+    ax.tick_params(axis='both', labelsize=12)
+    ax.set_facecolor('white')
+    fig.patch.set_facecolor('white')
+    
+    plt.tight_layout()
+    
+    # 保存
+    output_dir = project_root / 'paper' / 'figures'
+    output_dir.mkdir(parents=True, exist_ok=True)
+    
+    plt.savefig(output_dir / 'convergence_curves.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / 'convergence_curves.png', dpi=300, bbox_inches='tight')
+    plt.close()
+    
+    print(f"\n✅ 收敛曲线已保存到: {output_dir}")
+    print(f"  - convergence_curves.pdf")
+    print(f"  - convergence_curves.png")
     
     print(f"\n{'='*80}")
-    print("实验完成！")
+    print("完成！")
     print(f"{'='*80}")
+
+
+def main():
+    """主函数"""
+    generate_figure6_from_real_data()
 
 if __name__ == '__main__':
     main()

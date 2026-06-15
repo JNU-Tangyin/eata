@@ -562,6 +562,10 @@ class BaselineRunner:
                             else:
                                 detailed_data['买卖信号'] = 0  # 默认持有
                         
+                        # 🔧 重要：保存portfolio_value列（用于生成相关性矩阵等图表）
+                        if 'portfolio_value' in backtest_df.columns:
+                            detailed_data['portfolio_value'] = backtest_df['portfolio_value']
+                        
                         # 价格信息
                         if 'close' in backtest_df.columns:
                             price = backtest_df['close']
@@ -918,18 +922,18 @@ def generate_experiment_summary():
 
 
 def main():
-    """主函数 - 运行62支共用股票的7个非FinRL策略"""
+    """主函数 - 运行62支共用股票的4个FinRL策略，保存详细portfolio_value数据"""
     from pathlib import Path
     
     print("="*80)
-    print("运行7个非FinRL策略 - 62支共用股票")
+    print("运行4个FinRL策略 - 62支共用股票")
     print("="*80)
     
     # 获取项目根目录
     project_root = Path(__file__).parent.parent.parent.parent
     
     # 读取62支共用股票列表
-    stocks_file = project_root / "common_stocks_for_finrl.txt"
+    stocks_file = project_root / "results" / "comparison_study" / "common_stocks_for_finrl.txt"
     
     if stocks_file.exists():
         with open(stocks_file, 'r', encoding='utf-8') as f:
@@ -939,36 +943,86 @@ def main():
         print("请先运行 find_common_stocks_for_finrl.py 生成共用股票列表")
         return
     
-    # 7个非FinRL策略
-    baseline_strategies = ['buy_and_hold', 'macd', 'arima', 'gp', 'gbdt', 'lstm', 'transformer']
+    # 4个FinRL策略
+    finrl_algorithms = ['ppo', 'a2c', 'td3', 'ddpg']
     
     print(f"\n总股票数: {len(tickers)}")
-    print(f"策略数: {len(baseline_strategies)}")
-    print(f"策略列表: {', '.join(baseline_strategies)}")
+    print(f"FinRL策略数: {len(finrl_algorithms)}")
+    print(f"策略列表: {', '.join([alg.upper() for alg in finrl_algorithms])}")
+    print(f"总实验数: {len(tickers)} × {len(finrl_algorithms)} = {len(tickers) * len(finrl_algorithms)}")
     print(f"\n开始运行实验...\n")
     
-    # 运行所有股票的所有策略
+    # 创建详细数据输出目录
+    detailed_output_dir = project_root / "results" / "comparison_study" / "baseline_100stocks" / "detailed_outputs"
+    detailed_output_dir.mkdir(parents=True, exist_ok=True)
+    
+    # 统计
+    total_success = 0
+    total_failed = 0
+    total_skipped = 0
+    
+    # 运行所有股票的所有FinRL策略
     for i, ticker in enumerate(tickers, 1):
         print(f"\n{'='*80}")
-        print(f"[{i}/{len(tickers)}] 运行股票: {ticker} ({i/len(tickers)*100:.1f}%)")
+        print(f"[{i}/{len(tickers)}] 股票: {ticker} ({i/len(tickers)*100:.1f}%)")
         print(f"{'='*80}")
         
-        try:
-            run_real_data_experiment(
-                ticker=ticker,
-                selected_strategies=baseline_strategies,
-                params={},
-                run_id=1
-            )
-            print(f"✅ {ticker} 完成")
-        except Exception as e:
-            print(f"❌ {ticker} 失败: {str(e)}")
-            continue
+        for alg in finrl_algorithms:
+            # 检查文件是否已存在（断点续传）
+            output_file = detailed_output_dir / f'{ticker}-finrl_{alg}-portfolio.csv'
+            if output_file.exists():
+                print(f"\n  ⏭️  {alg.upper()} 已存在，跳过")
+                total_skipped += 1
+                continue
+            try:
+                print(f"\n  运行 FinRL {alg.upper()}...")
+                
+                # 延迟导入，避免内存问题
+                from finrl_strategies import AuthenticFinRLRunner
+                from data_utils import load_csv_stock_data, add_technical_indicators
+                import gc
+                
+                # 加载数据
+                df = load_csv_stock_data(ticker)
+                train_ratio = 0.7
+                split_idx = int(len(df) * train_ratio)
+                train_df = add_technical_indicators(df.iloc[:split_idx].copy())
+                test_df = add_technical_indicators(df.iloc[split_idx:].copy())
+                
+                # 运行FinRL
+                runner = AuthenticFinRLRunner()
+                metrics, backtest_results = runner.run_finrl_strategy(alg.upper(), train_df, test_df, ticker)
+                
+                if backtest_results is not None and 'portfolio_value' in backtest_results.columns:
+                    # 保存详细portfolio_value数据
+                    output_file = detailed_output_dir / f'{ticker}-finrl_{alg}-portfolio.csv'
+                    backtest_results[['date', 'portfolio_value']].to_csv(output_file, index=False)
+                    print(f"  ✅ {alg.upper()} 完成，数据已保存: {output_file.name}")
+                    total_success += 1
+                else:
+                    print(f"  ⚠️  {alg.upper()} 完成但无portfolio_value数据")
+                    total_failed += 1
+                
+                # 释放内存
+                del strategy
+                del backtest_results
+                gc.collect()
+                
+            except Exception as e:
+                print(f"  ❌ {alg.upper()} 失败: {str(e)}")
+                total_failed += 1
+                import gc
+                gc.collect()
+                continue
     
     print(f"\n{'='*80}")
-    print(f"🎉 所有实验完成！")
+    print(f"🎉 所有FinRL实验完成！")
     print(f"{'='*80}")
-    print(f"\n结果保存在: results/comparison_study/baseline_100stocks/")
+    print(f"\n跳过（已存在）: {total_skipped}/{len(tickers) * len(finrl_algorithms)}")
+    print(f"成功: {total_success}/{len(tickers) * len(finrl_algorithms)}")
+    print(f"失败: {total_failed}/{len(tickers) * len(finrl_algorithms)}")
+    print(f"总计: {total_skipped + total_success + total_failed}/{len(tickers) * len(finrl_algorithms)}")
+    print(f"\n详细portfolio数据保存在: {detailed_output_dir}")
     print(f"{'='*80}")
 
 

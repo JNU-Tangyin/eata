@@ -84,6 +84,8 @@ class Agent:
         """准备单个滑动窗口的数据"""
         feature_cols = ['open', 'high', 'low', 'close', 'volume', 'amount']
         if not all(col in df.columns for col in feature_cols):
+            print(f"❌ [DEBUG] DataFrame列名: {df.columns.tolist()}")
+            print(f"❌ [DEBUG] 缺少的列: {[col for col in feature_cols if col not in df.columns]}")
             raise ValueError(f"输入数据缺少必要列: 需要 {feature_cols}")
         
         data = df[feature_cols].values

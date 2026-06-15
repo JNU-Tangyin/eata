@@ -13,20 +13,30 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 from pathlib import Path
 
-# 设置中文字体
-plt.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
-plt.rcParams['axes.unicode_minus'] = False
+# Nature期刊标准字体和样式设置
+plt.rcParams.update({
+    "font.family": "sans-serif",
+    "font.sans-serif": ["Arial", "Helvetica", "DejaVu Sans", "sans-serif"],
+    "axes.unicode_minus": False,
+    "svg.fonttype": "none",      # SVG可编辑文本
+    "pdf.fonttype": 42,          # TrueType文本
+    "font.size": 9,              # Nature标准字号（密集图表7-9pt）
+    "axes.spines.right": False,  # 只保留左下边框
+    "axes.spines.top": False,
+    "axes.linewidth": 0.8,
+    "legend.frameon": False,     # 无边框图例
+})
 
 def load_data():
     """加载所有需要的数据"""
     # 1. 12个策略的汇总数据
-    summary_df = pd.read_csv('results/comparison_study/all_12_strategies_62stocks_final.csv')
+    summary_df = pd.read_csv('../results/comparison_study/all_12_strategies_62stocks_final.csv')
     
     # 2. EATA的62支股票详细指标
-    eata_metrics = pd.read_csv('results/comparison_study/eata_62stocks_final_metrics.csv')
+    eata_metrics = pd.read_csv('../results/comparison_study/eata_62stocks_final_metrics.csv')
     
     # 3. 62支股票列表
-    with open('results/comparison_study/common_stocks_for_finrl.txt') as f:
+    with open('../results/comparison_study/common_stocks_for_finrl.txt') as f:
         stocks = [line.strip() for line in f if line.strip()]
     
     return summary_df, eata_metrics, stocks
@@ -71,7 +81,6 @@ def plot_cumulative_returns(summary_df, output_dir):
     ax.set_xticklabels(strategies, rotation=45, ha='right', fontsize=16, fontweight='bold')
     
     ax.set_ylabel('Sharpe Ratio', fontsize=18, fontweight='bold')
-    ax.set_title('Cumulative Performance Comparison (All 12 Methods)', fontsize=20, fontweight='bold', pad=20)
     ax.axhline(y=0, color='black', linestyle='-', linewidth=0.8, alpha=0.3)
     ax.grid(axis='y', alpha=0.3, linestyle='--', linewidth=0.5)
     
@@ -86,7 +95,7 @@ def plot_cumulative_returns(summary_df, output_dir):
         label.set_fontweight('bold')
     
     # 设置背景色
-    ax.set_facecolor('#F0F0F0')
+    ax.set_facecolor('white')
     fig.patch.set_facecolor('white')
     
     plt.tight_layout()
@@ -97,132 +106,138 @@ def plot_cumulative_returns(summary_df, output_dir):
 
 
 def plot_correlation_matrix(summary_df, output_dir):
-    """绘制策略相关性矩阵（基于每日收益率序列）"""
-    print("生成策略相关性矩阵（基于每日收益率）...")
+    """绘制策略相关性矩阵（Figure 3 - 基于年化收益率）"""
+    print("生成Figure 3: 策略相关性热力图...")
     
-    # 从详细数据中提取每个策略的每日收益率
-    detailed_dir = Path('results/comparison_study/baseline_100stocks/detailed_outputs')
+    # 1. 加载EATA portfolio数据
+    eata_full_dir = Path('../results/eata_full_62stocks')
+    eata_returns = {}
     
-    # 存储每个策略的平均每日收益率序列
-    strategy_returns = {}
+    for pf_file in sorted(eata_full_dir.glob('*_portfolio.csv')):
+        ticker = pf_file.stem.replace('_portfolio', '')
+        df = pd.read_csv(pf_file, index_col=0)
+        portfolio = df['value']
+        
+        if len(portfolio) > 1:
+            total_return = (portfolio.iloc[-1] - portfolio.iloc[0]) / portfolio.iloc[0]
+            years = 4
+            annual_return = (1 + total_return) ** (1/years) - 1
+            eata_returns[ticker] = annual_return
     
-    # 策略名称映射
-    strategy_mapping = {
-        'buy_and_hold': 'Buy & Hold',
-        'macd': 'MACD',
-        'arima': 'ARIMA',
-        'gp': 'GP (Operon)',
-        'gbdt': 'GBDT',
-        'lstm': 'LSTM',
-        'transformer': 'Transformer',
+    print(f"  ✅ EATA: {len(eata_returns)} 支股票")
+    
+    # 2. 加载传统策略数据
+    strategy_files = {
+        'Buy & Hold': 'buy_and_hold_62stocks_volatility.csv',
+        'MACD': 'macd_62stocks_volatility.csv',
+        'ARIMA': 'arima_62stocks_volatility.csv',
+        'GP': 'gp_62stocks_volatility.csv',
+        'GBDT': 'gbdt_62stocks_volatility.csv',
+        'LSTM': 'lstm_62stocks_volatility.csv',
+        'Transformer': 'transformer_62stocks_volatility.csv',
     }
     
-    # 1. 处理7个baseline策略
-    for strategy_key, strategy_name in strategy_mapping.items():
-        files = list(detailed_dir.glob(f'*-{strategy_key}-*.csv'))
+    strategy_returns = {}
+    comparison_dir = Path('../results/comparison_study')
+    
+    for strategy_name, filename in strategy_files.items():
+        file_path = comparison_dir / filename
+        if file_path.exists():
+            df = pd.read_csv(file_path)
+            returns_dict = {}
+            for _, row in df.iterrows():
+                ticker = row['ticker']
+                ar = row.get('annual_return', 0)
+                if abs(ar) > 1:
+                    ar = ar / 100
+                returns_dict[ticker] = ar
+            strategy_returns[strategy_name] = returns_dict
+            print(f"  ✅ {strategy_name}: {len(returns_dict)} 支股票")
+    
+    # 3. 加载FinRL策略数据（从detailed_outputs计算）
+    finrl_strategies = {
+        'PPO (FinRL)': 'finrl_ppo',
+        'A2C (FinRL)': 'finrl_a2c',
+        'TD3 (FinRL)': 'finrl_td3',
+        'DDPG (FinRL)': 'finrl_ddpg',
+    }
+    
+    detailed_dir = Path('../results/comparison_study/baseline_100stocks/detailed_outputs')
+    
+    for strategy_name, strategy_key in finrl_strategies.items():
+        returns_dict = {}
+        files = list(detailed_dir.glob(f'*-{strategy_key}-portfolio.csv'))
         
-        if not files:
-            print(f'⚠️  未找到 {strategy_name} 的详细数据')
-            continue
-        
-        # 收集所有股票的收益率序列
-        all_returns = []
         for file in files:
+            ticker = file.stem.split('-')[0]
             try:
                 df = pd.read_csv(file)
                 if 'portfolio_value' in df.columns and len(df) > 1:
                     pv = df['portfolio_value'].values
-                    returns = np.diff(pv) / pv[:-1]
-                    all_returns.append(returns)
+                    total_return = (pv[-1] - pv[0]) / pv[0]
+                    years = 4
+                    annual_return = (1 + total_return) ** (1/years) - 1
+                    returns_dict[ticker] = annual_return
             except:
                 continue
         
-        if all_returns:
-            # 计算平均收益率序列（对齐长度）
-            min_len = min(len(r) for r in all_returns)
-            aligned_returns = [r[:min_len] for r in all_returns]
-            avg_returns = np.mean(aligned_returns, axis=0)
-            strategy_returns[strategy_name] = avg_returns
+        if returns_dict:
+            strategy_returns[strategy_name] = returns_dict
+            print(f"  ✅ {strategy_name}: {len(returns_dict)} 支股票")
     
-    # 2. 处理EATA策略
-    eata_dir = Path('results/Batch4_SP500')
-    eata_files = list(eata_dir.glob('Batch4_SP500-*.csv'))
+    # 3. 找到共同股票
+    common_tickers = set(eata_returns.keys())
+    for strategy_data in strategy_returns.values():
+        common_tickers &= set(strategy_data.keys())
+    common_tickers = sorted(list(common_tickers))
+    print(f"  ✅ 共同股票: {len(common_tickers)} 支")
     
-    if eata_files:
-        eata_all_returns = []
-        for file in eata_files[:62]:  # 只取62支股票
-            try:
-                df = pd.read_csv(file)
-                if 'Action' in df.columns and len(df) > 1:
-                    # 从Action计算收益率（简化处理）
-                    # 这里需要价格数据，暂时跳过
-                    pass
-            except:
-                continue
+    # 4. 构建数据矩阵
+    all_strategies = ['EATA'] + list(strategy_returns.keys())
+    returns_matrix = []
     
-    # 如果EATA数据不够，从汇总数据估算
-    # 使用已有的策略收益率序列
-    if len(strategy_returns) > 0:
-        # 为EATA创建一个与其他策略低相关的收益率序列
-        # 基于其高收益率和低相关性的特点
-        sample_returns = list(strategy_returns.values())[0]
-        eata_returns = np.random.normal(0.0008, 0.02, len(sample_returns))  # 高收益，高波动
-        strategy_returns['EATA (Ours)'] = eata_returns
+    # EATA行
+    eata_row = [eata_returns.get(t, 0) for t in common_tickers]
+    returns_matrix.append(eata_row)
     
-    # 3. 添加FinRL策略（从汇总数据估算）
-    finrl_strategies = ['PPO (FinRL)', 'A2C (FinRL)', 'TD3 (FinRL)', 'DDPG (FinRL)']
-    if len(strategy_returns) > 0:
-        sample_len = len(list(strategy_returns.values())[0])
-        for finrl_name in finrl_strategies:
-            # 为每个FinRL策略生成相关但不同的收益率序列
-            base_returns = list(strategy_returns.values())[0]
-            noise = np.random.normal(0, 0.01, sample_len)
-            finrl_returns = base_returns * 0.5 + noise
-            strategy_returns[finrl_name] = finrl_returns
+    # FinRL策略行
+    for strategy in strategy_returns.keys():
+        strategy_row = [strategy_returns[strategy].get(t, 0) for t in common_tickers]
+        returns_matrix.append(strategy_row)
     
-    # 计算相关性矩阵
-    if len(strategy_returns) < 2:
-        print("❌ 数据不足，无法计算相关性矩阵")
-        return
+    # 转换为DataFrame并计算相关性
+    returns_df = pd.DataFrame(returns_matrix, 
+                             index=all_strategies,
+                             columns=common_tickers).T
     
-    # 对齐所有策略的收益率序列长度
-    min_length = min(len(returns) for returns in strategy_returns.values())
-    aligned_strategy_returns = {
-        strategy: returns[:min_length] 
-        for strategy, returns in strategy_returns.items()
-    }
-    
-    # 构建DataFrame
-    strategies_list = list(aligned_strategy_returns.keys())
-    returns_matrix = np.array([aligned_strategy_returns[s] for s in strategies_list])
-    
-    print(f"  收益率序列长度: {min_length}")
-    print(f"  策略数量: {len(strategies_list)}")
-    
-    # 计算Pearson相关系数
-    corr_matrix = np.corrcoef(returns_matrix)
-    corr_df = pd.DataFrame(corr_matrix, index=strategies_list, columns=strategies_list)
+    corr_df = returns_df.corr()
+    print(f"  ✅ 相关性矩阵: {corr_df.shape}")
     
     # 创建图表
     fig, ax = plt.subplots(figsize=(14, 12))
     
-    # 使用RdYlBu_r配色方案
-    sns.heatmap(corr_df, annot=True, fmt='.2f', cmap='RdYlBu_r', center=0,
-                square=True, linewidths=0.5, linecolor='white',
-                cbar_kws={"shrink": 0.8}, vmin=-1, vmax=1, ax=ax,
-                annot_kws={'fontsize': 14, 'fontweight': 'bold'})
+    # 使用RdYlBu_r配色方案 - 先不显示数字
+    sns.heatmap(corr_df, annot=False, cmap='RdYlBu_r', center=0,
+                square=True, linewidths=1.0, linecolor='white',
+                cbar_kws={"shrink": 0.8}, vmin=-1, vmax=1, ax=ax)
+    
+    # 手动添加文本标注 - 确保每个格子都有
+    for i in range(len(corr_df)):
+        for j in range(len(corr_df.columns)):
+            value = corr_df.iloc[i, j]
+            text = ax.text(j + 0.5, i + 0.5, f'{value:.2f}',
+                          ha='center', va='center',
+                          color='black', fontsize=12, fontweight='bold')
     
     # 设置坐标轴标签字体
     ax.set_xticklabels(ax.get_xticklabels(), fontsize=16, fontweight='bold', rotation=45, ha='right')
     ax.set_yticklabels(ax.get_yticklabels(), fontsize=16, fontweight='bold', rotation=0)
     
-    ax.set_title('Strategy Correlation Matrix (All 12 Methods)', fontsize=20, fontweight='bold', pad=20)
-    
     plt.tight_layout()
-    plt.savefig(output_dir / 'real_correlation.pdf', dpi=300, bbox_inches='tight')
-    plt.savefig(output_dir / 'real_correlation.png', dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / 'correlation_heatmap.pdf', dpi=300, bbox_inches='tight')
+    plt.savefig(output_dir / 'correlation_heatmap.png', dpi=300, bbox_inches='tight')
     plt.close()
-    print("✅ real_correlation.pdf (基于每日收益率序列)")
+    print("✅ correlation_heatmap.pdf")
 
 
 def plot_return_distribution(eata_metrics, output_dir):
@@ -255,8 +270,6 @@ def plot_return_distribution(eata_metrics, output_dir):
     
     ax.set_xlabel('Annual Return (%)', fontsize=16, fontweight='bold')
     ax.set_ylabel('Density', fontsize=16, fontweight='bold')
-    ax.set_title(f'Return Distribution (N=62 stocks)\nSkewness = {skewness:.2f}, Mean = {mean_return:.2f}%', 
-                 fontsize=18, fontweight='bold', pad=20)
     ax.legend(fontsize=13, frameon=True, fancybox=True)
     ax.grid(alpha=0.3)
     
@@ -286,10 +299,10 @@ def plot_risk_return_all_strategies(output_dir):
         'gbdt': {'color': '#8c564b', 'marker': 'p', 's': 100, 'label': 'GBDT'},
         'lstm': {'color': '#e377c2', 'marker': 'h', 's': 100, 'label': 'LSTM'},
         'transformer': {'color': '#7f7f7f', 'marker': '*', 's': 150, 'label': 'Transformer'},
-        'finrl_ppo': {'color': '#bcbd22', 'marker': 'X', 's': 100, 'label': 'FinRL-PPO'},
-        'finrl_a2c': {'color': '#17becf', 'marker': 'P', 's': 100, 'label': 'FinRL-A2C'},
-        'finrl_td3': {'color': '#ff9896', 'marker': '2', 's': 100, 'label': 'FinRL-TD3'},
-        'finrl_ddpg': {'color': '#98df8a', 'marker': '3', 's': 100, 'label': 'FinRL-DDPG'},
+        'finrl_ppo': {'color': '#bcbd22', 'marker': 'X', 's': 120, 'label': 'FinRL-PPO'},
+        'finrl_a2c': {'color': '#17becf', 'marker': 'P', 's': 120, 'label': 'FinRL-A2C'},
+        'finrl_td3': {'color': '#ff9896', 'marker': 'd', 's': 100, 'label': 'FinRL-TD3'},
+        'finrl_ddpg': {'color': '#98df8a', 'marker': '8', 's': 120, 'label': 'FinRL-DDPG'},
     }
     
     # 创建图表（与原图尺寸一致）
@@ -299,7 +312,7 @@ def plot_risk_return_all_strategies(output_dir):
     strategies_to_plot = []
     
     # 1. EATA数据
-    eata_df = pd.read_csv('results/comparison_study/eata_62stocks_final_metrics.csv')
+    eata_df = pd.read_csv('../results/comparison_study/eata_62stocks_final_metrics.csv')
     eata_returns = eata_df['Annual Return (AR)'].values * 100
     eata_volatility = eata_df['Volatility (Annual)'].values * 100
     strategies_to_plot.append(('eata', eata_volatility, eata_returns))
@@ -307,12 +320,51 @@ def plot_risk_return_all_strategies(output_dir):
     # 2. 其他7个策略的数据
     for strategy in ['buy_and_hold', 'macd', 'arima', 'gp', 'gbdt', 'lstm', 'transformer']:
         try:
-            df = pd.read_csv(f'results/comparison_study/{strategy}_62stocks_volatility.csv')
+            df = pd.read_csv(f'../results/comparison_study/{strategy}_62stocks_volatility.csv')
             vol = df['volatility'].values
             ret = df['annual_return'].values
             strategies_to_plot.append((strategy, vol, ret))
         except:
             print(f'⚠️  未找到 {strategy} 的数据')
+    
+    # 3. FinRL策略数据（从detailed_outputs计算）
+    finrl_strategies = {
+        'finrl_ppo': 'finrl_ppo',
+        'finrl_a2c': 'finrl_a2c',
+        'finrl_td3': 'finrl_td3',
+        'finrl_ddpg': 'finrl_ddpg',
+    }
+    
+    detailed_dir = Path('../results/comparison_study/baseline_100stocks/detailed_outputs')
+    
+    for strategy_key, strategy_name in finrl_strategies.items():
+        vol_list = []
+        ret_list = []
+        files = list(detailed_dir.glob(f'*-{strategy_name}-portfolio.csv'))
+        
+        for file in files:
+            try:
+                df = pd.read_csv(file)
+                if 'portfolio_value' in df.columns and len(df) > 1:
+                    pv = df['portfolio_value'].values
+                    
+                    # 计算年化收益率
+                    total_return = (pv[-1] - pv[0]) / pv[0]
+                    years = 4
+                    annual_return = ((1 + total_return) ** (1/years) - 1) * 100
+                    
+                    # 计算波动率
+                    daily_returns = np.diff(pv) / pv[:-1]
+                    volatility = np.std(daily_returns) * np.sqrt(252) * 100
+                    
+                    vol_list.append(volatility)
+                    ret_list.append(annual_return)
+            except:
+                continue
+        
+        if vol_list:
+            strategies_to_plot.append((strategy_key, np.array(vol_list), np.array(ret_list)))
+            print(f'  ✅ {strategy_key}: {len(vol_list)} 支股票')
     
     # 绘制所有策略
     for strategy, vol, ret in strategies_to_plot:
@@ -329,7 +381,6 @@ def plot_risk_return_all_strategies(output_dir):
     
     ax.set_xlabel('Volatility (%)', fontsize=16, fontweight='bold')
     ax.set_ylabel('Annualized Return (%)', fontsize=16, fontweight='bold')
-    ax.set_title('Risk-Return Trade-off', fontsize=18, fontweight='bold', pad=15)
     ax.legend(loc='upper left', fontsize=13, framealpha=0.9, ncol=2, frameon=True, fancybox=True)
     ax.grid(True, alpha=0.3, linestyle='--', linewidth=0.5)
     
@@ -362,13 +413,19 @@ def main():
     print(f"✅ 共用股票列表: {len(stocks)} 支")
     
     # 输出目录
-    output_dir = Path('paper/figures')
+    output_dir = Path('../paper/figures')
     output_dir.mkdir(parents=True, exist_ok=True)
     
     # 生成所有图表
     print("\n生成图表...")
+    
+    # 优先生成论文关键图表
+    print("\n【论文关键图表】")
+    plot_correlation_matrix(summary_df, output_dir)  # Figure 3
+    
+    # 其他辅助图表
+    print("\n【辅助图表】")
     plot_cumulative_returns(summary_df, output_dir)
-    plot_correlation_matrix(summary_df, output_dir)
     plot_return_distribution(eata_metrics, output_dir)
     plot_risk_return_all_strategies(output_dir)
     
@@ -376,11 +433,12 @@ def main():
     print("✅ 所有图表生成完成！")
     print("="*80)
     print(f"\n输出位置: {output_dir.absolute()}")
-    print("\n生成的文件:")
-    print("  1. real_cumulative_returns.pdf/png")
-    print("  2. real_correlation.pdf/png")
-    print("  3. real_return_distribution.pdf/png")
-    print("  4. real_risk_return.pdf/png")
+    print("\n论文关键图表:")
+    print("  ✅ correlation_heatmap.pdf/png")
+    print("\n辅助图表:")
+    print("  - real_cumulative_returns.pdf/png")
+    print("  - real_return_distribution.pdf/png")
+    print("  - real_risk_return.pdf/png")
 
 
 if __name__ == '__main__':

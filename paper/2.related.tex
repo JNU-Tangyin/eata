@@ -10,7 +10,7 @@ Empirical algorithmic trading research usually reports risk-adjusted performance
 
 A recurring trap in the trading literature is to equate the in-sample predictive performance with the out-of-sample trading profitability. This misalignment is further amplified because the evaluation target (returns) itself is noisy, heavy-tailed and regime-dependent~\cite{cont2001empirical}. Therefore, small modeling changes may also lead to unstable performance rankings of different assets and different periods.
 
-These problems prompt EATA to follow two design principles: (i) to reduce implicit multiple testing by grammatically constraining the hypothesis space, and (ii) aligning learning signals with economically significant results to avoid proxy-driven improvements. The complete effectiveness diagnosis method (block-bootstrap, Reality Check, SPA test, inflation-adjusted Sharpe ratio) is discussed in the appendix ~\ref{app:bootstrap}.
+These problems prompt EATA to follow two design principles: (i) to reduce implicit multiple testing by grammatically constraining the hypothesis space, and (ii) aligning learning signals with economically significant results to avoid proxy-driven improvements. 
 
 Finally, we point out that algorithmic trading is not only a modeling problem, but also a market structure problem: automated execution and algorithmic strategies may affect liquidity and price dynamics~\cite{hendershott2011does}. This further promotes our adoption of an assessment process that emphasizes robustness and auditability.
 
