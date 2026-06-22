@@ -84,7 +84,7 @@
 
 
 \begin{abstract}
-Profit-seeking yet interpretable trading remains elusive: deep neural predictors excel at accuracy but violate regulatory transparency, whereas symbolic regression yields readable formulas but optimizes proxy objectives misaligned with economic utility. We present \ours~(\ourslong), a neural-guided symbolic regression framework that aligns objective, hypothesis space, and training signal with trading profitability. \ours{} couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search so that accuracy rewards $r^{\text{acc}}$ stabilize search while a Wasserstein-derived profit reward $r^{\text{rl}}$ captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks (N=62 stocks) (2013--2018), \ours{} delivers annualized return 21.2\%, Sharpe ratio 0.76, and maximum drawdown 36.1\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can achieve interpretable trading strategies competitive with black-box counterparts.
+Profit-seeking yet interpretable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present \ours~(\ourslong), a neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. \ours{} couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards $r^{\text{acc}}$ stabilize search while a Wasserstein-derived profit reward $r^{\text{rl}}$ captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks (N=345) (2013--2018), \ours{} delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce interpretable trading strategies competitive with black-box counterparts.
 \end{abstract}
 
 \begin{keyword}
@@ -105,11 +105,11 @@ Algorithmic Trading, Symbolic Regression, Wasserstein Distance, Explainable AI, 
 This work was supported by the National Natural Science Foundation of China (No.62272198) and by the Research and Application of Expressway ``1+N'' Electromechanical O\&M Brain Based on Large Model Agents.
 
 \textbf{Author Contribution}
-Jingtong Zhang: Conceptualization, Methodology, and Writing Original draft preparation; 
-Xiaoang Yang: Software, Data curation, Visualization; 
-Yin Tang: Supervision, Writing- Reviewing and Editing, Management.
+Jingtong Zhang: Conceptualization, Methodology, and Writing -- Original Draft Preparation; 
+Xiaoang Yang: Software, Data Curation, Visualization; 
+Yin Tang: Supervision, Writing -- Reviewing and Editing, Project Management.
 
-\textbf{Declaration of generative AI}~During the preparation of this work the authors used AI for code implementation, polishing, proofreading, and Figure~\ref{fig:method_architecture} generation from method descriptions. After using this tool/service, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+\textbf{Declaration of generative AI}~During the preparation of this work, the authors used AI for code implementation, language polishing, proofreading, and generating Figure~\ref{fig:method_architecture} from method descriptions. After using this tool, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 % ============== Bibliography ==============
 \bibliography{references}
