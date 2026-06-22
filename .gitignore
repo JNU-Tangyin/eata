@@ -222,6 +222,11 @@ test_detailed_outputs/
 *.bbl
 *.fdb_latexmk
 *.aux
+*.fls
+*.synctex.gz
+*.blg
+*.out
+*.spl
 # 0.main.pdf  # 允许上传论文PDF
 
 # 大日志文件
