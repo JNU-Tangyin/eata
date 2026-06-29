@@ -112,7 +112,7 @@ Figure~\ref{fig:risk_return} visualizes the risk-return profile across all stock
 \input{tables/ablation_results.tex}
 \end{table}
 
-\textbf{Finding (RQ1: Component Importance).} The ablation study reveals a clear hierarchy of component importance. \textbf{MCTS is the most critical component}: removing it leads to a significant decrease in the Sharpe ratio (0.76 → 0.19, −75\%), indicating that MCTS lookahead is indispensable for finding profitable trading rules, and neural policy alone cannot cope with complex market dynamics. \textbf{Exploration is also crucial}: disabling exploration reduces the Sharpe ratio to 0.43 (−43\%), highlighting the importance of the search strategy. \textbf{Wasserstein distance is valuable}: replacing it with simple MAE (no Wasserstein) reduces the Sharpe ratio to 0.22 (−71\%), confirming that distributional alignment is superior to point-wise error minimization. Interestingly, \textbf{the influence of the memory module and neural network components is moderate} (memory module: Sharpe ratio 0.15; neural network: Sharpe ratio 0.45). The neural network variant performs better than expected, indicating that while MCTS provides the core search mechanism, the relative contribution of neural guidance may vary across different market regimes.
+\textbf{Finding (RQ1: Component Importance).} The ablation study reveals a clear hierarchy of component importance. \textbf{MCTS is the most critical component}: removing it leads to a significant decrease in the Sharpe ratio (0.76 → 0.19, -75\%), indicating that MCTS lookahead is indispensable for finding profitable trading rules, and neural policy alone cannot cope with complex market dynamics. \textbf{Exploration is also crucial}: disabling exploration reduces the Sharpe ratio to 0.43 (-43\%), highlighting the importance of the search strategy. \textbf{Wasserstein distance is valuable}: replacing it with simple MAE (no Wasserstein) reduces the Sharpe ratio to 0.22 (-71\%), confirming that distributional alignment is superior to point-wise error minimization. Interestingly, \textbf{the influence of the memory module and neural network components is moderate} (memory module: Sharpe ratio 0.15; neural network: Sharpe ratio 0.45). The neural network variant performs better than expected, indicating that while MCTS provides the core search mechanism, the relative contribution of neural guidance may vary across different market regimes.
 
 \subsubsection{Wasserstein vs. Alternative Distributional Objectives}
 
@@ -137,7 +137,7 @@ CVaR & 9.5 & 0.43 & 31.1 & 51.1\% \\
 }
 \end{table}
 
-\\textbf{Finding (RQ1).} Wasserstein consistently outperforms alternative objectives across all metrics, particularly in tail-risk control (VaR, CVaR) and distribution shape (skewness). This empirical verification supports the theoretical intuition that Wasserstein transport cost is aligned with economic utility in trading.
+\textbf{Finding (RQ1).} Wasserstein consistently outperforms alternative objectives across all metrics, particularly in tail-risk control (VaR, CVaR) and distribution shape (skewness). This empirical verification supports the theoretical intuition that Wasserstein transport cost is aligned with economic utility in trading.
 
 \subsubsection{Synthetic Validation}
 
