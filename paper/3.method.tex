@@ -6,7 +6,7 @@ This section presents the technical details of the Explainable Algorithmic Tradi
 
 \begin{figure*}[t]
 \centering
-\includegraphics[width=0.95\textwidth]{figures/method_architecture.png}
+\includegraphics[width=0.95\textwidth]{figures/architecture.png}
 \caption{EATA Integrated Neural Guidance and Symbolic Search Pipeline. The framework operates through four main components: (1) \textbf{Data Protocol}: Sliding window adaptation with decoupled grammar (MA, Momentum, RSI, Volatility, Conditional operators); (2) \textbf{Neural-Guided MCTS}: Episode-triggered derivation with selection, expansion, and adaptive weight $\alpha$ balancing neural policy $\pi_{nn}$ and UCB exploration $\pi_{ucb}$; (3) \textbf{Expression Refinement}: Grammar augmentation via bounded module library, expression scoring with derivative-free Powell optimization, and numerical constant fitting; (4) \textbf{Trading Signal Generation}: Three-headed PVPNet (Policy-Value-Profit) with dual LSTMs encoding symbolic states and market dynamics, profit-aware reward via 1-Wasserstein distance aligning predicted and actual return distributions, and quantile-based consensus signals (Q25/Q75 thresholds for Buy/Sell decisions).}
 \label{fig:method_architecture}
 \end{figure*}
