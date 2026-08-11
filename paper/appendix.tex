@@ -96,7 +96,7 @@ KL divergence violates symmetry and triangle inequality, making it unsuitable as
 
 \textit{Property 2 (Tail Sensitivity).} For empirical distributions with ordered samples, the Wasserstein distance is:
 \begin{equation}
-\mathcal{W}_1 = \frac{1}{N} \sum_{i=1}^{N} |x_{(i)} - y_{(i)}|
+\mathcal{W}_1 = \frac{1}{N} \sum_{i=1}^{N} |x_{(i)} - y_{(i)}|.
 \end{equation}
 This equally weights all quantiles, including extremes. MSE, by contrast, is dominated by the mean: $\text{MSE} = \frac{1}{N}\sum (x_i - y_i)^2$.
 
@@ -114,7 +114,7 @@ We analyze three theoretical properties of the 1-Wasserstein reward $r^{\text{rl
 For one-dimensional distributions, the 1-Wasserstein distance admits a closed-form representation via CDFs~\cite{villani2009optimal}:
 \begin{align}
 \mathcal{W}_1(P, Q) &= \int_{-\infty}^{\infty} |F_P(x) - F_Q(x)| \, dx \\
-&= \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du
+&= \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du.
 \end{align}
 where $F_P^{-1}, F_Q^{-1}$ are quantile functions. The functional derivative with respect to the predicted CDF $F_\theta$ is:
 \begin{equation}
@@ -122,7 +122,7 @@ where $F_P^{-1}, F_Q^{-1}$ are quantile functions. The functional derivative wit
 \end{equation}
 yielding a clear training signal: overestimating the true CDF at $x$ pushes $F_\theta(x)$ downward, and vice versa. For the reward $r^{\text{rl}} = 1/(1+\mathcal{W}_1)$, the gradient:
 \begin{equation}
-\frac{\partial r^{\text{rl}}}{\partial \theta} = -\frac{1}{(1+\mathcal{W}_1)^2} \cdot \frac{\partial \mathcal{W}_1}{\partial \theta}
+\frac{\partial r^{\text{rl}}}{\partial \theta} = -\frac{1}{(1+\mathcal{W}_1)^2} \cdot \frac{\partial \mathcal{W}_1}{\partial \theta},
 \end{equation}
 preserves direction with adaptive scaling.
 
@@ -201,13 +201,13 @@ Several observations emerge. \textbf{Accuracy--profit balance $\eta$.} Performan
 \paragraph{Volatility-Adjusted Momentum}
 \begin{multline}
 e = \frac{\text{mom}(x_{\text{close}}, 10)}{\text{vol}(x_{\text{close}}, 20)} \\
-\quad \times \text{ite}\big(\text{ma}(x_{\text{close}}, 5) > \text{ma}(x_{\text{close}}, 20),\, 1,\, 0\big)
+\quad \times \text{ite}\big(\text{ma}(x_{\text{close}}, 5) > \text{ma}(x_{\text{close}}, 20),\, 1,\, 0\big).
 \end{multline}
 \textit{Interpretation:} Momentum normalized by volatility, filtered by trend confirmation (golden cross).
 
 \paragraph{Mean Reversion with Volume}
 \begin{multline}
 e = \big(x_{\text{close}} - \text{ma}(x_{\text{close}}, 20)\big) \\
-\quad \times \frac{x_{\text{volume}}}{\text{ma}(x_{\text{volume}}, 20)}
+\quad \times \frac{x_{\text{volume}}}{\text{ma}(x_{\text{volume}}, 20)}.
 \end{multline}
 \textit{Interpretation:} Price deviation scaled by relative volume (higher conviction on high volume).

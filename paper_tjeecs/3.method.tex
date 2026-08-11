@@ -41,7 +41,7 @@ We employ a context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R
 &\quad \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}) \mid \text{rsi}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \nonumber \\
 \mathit{W} &\rightarrow 5 \mid 10 \mid 20 \mid 30 \mid 60, \quad \mathit{L} \rightarrow 1 \mid 5 \mid 10 \mid 20 \nonumber \\
 \mathit{A} &\rightarrow \text{ite}(\mathit{D}, \mathit{A}, \mathit{A}), \quad \mathit{D} \rightarrow \mathit{A} > \mathit{B} \mid \mathit{A} < \mathit{B} \nonumber \\
-\mathit{B} &\rightarrow |\mathit{A}| \mid \mathit{A}^{2} \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W})
+\mathit{B} &\rightarrow |\mathit{A}| \mid \mathit{A}^{2} \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}).
 \end{align}
 
 The decoupled grammar, inspired by AlphaCFG~\cite{yang2026alpha}, separates operators from parameters: window/lag non-terminals ($\mathit{W}, \mathit{L}$) resolve to discrete values, preventing invalid parameter combinations (e.g., negative windows) while preserving expressiveness; the conditional operator $\text{ite}$ enables piecewise regime-switching expressions. Fixed-window operators encode domain priors and limit degrees of freedom, reducing multiple-testing effects and data-snooping risk~\cite{bailey2014deflated_sharpe}.
@@ -102,12 +102,12 @@ Our key insight is that the Wasserstein distance (Earth Mover's Distance) provid
 
 Given predictions $\hat{\mathbf{y}}^{(1)}, \ldots, \hat{\mathbf{y}}^{(k)}$ from the top-$k$ discovered expressions, we construct a prediction distribution $\mathcal{D}^{\text{pred}}$. We compare this against the distribution of actual future returns $\mathcal{D}^{\text{actual}}$ using the 1-Wasserstein distance (Earth Mover's Distance)~\cite{villani2009optimal}:
 \begin{equation}
-\mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}}) = \int_{-\infty}^{\infty} |F^{\text{pred}}(x) - F^{\text{actual}}(x)| \, dx
+\mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}}) = \int_{-\infty}^{\infty} |F^{\text{pred}}(x) - F^{\text{actual}}(x)| \, dx.
 \label{eq:wasserstein}
 \end{equation}
 where $F^{\text{pred}}$ and $F^{\text{actual}}$ are the cumulative distribution functions (CDFs) of the predicted and actual returns, respectively. The RL reward is then defined as:
 \begin{equation}
-r^{\text{rl}} = \frac{1}{1 + \mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}})}
+r^{\text{rl}} = \frac{1}{1 + \mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}})}.
 \label{eq:rlreward}
 \end{equation}
 
@@ -145,14 +145,14 @@ The PVPNet processes both the derivation state and input time series: a state LS
 
 The network is trained via three-component loss:
 \begin{equation}
-\mathcal{L}(\theta) = \lambda^{\pi} \mathcal{L}^{\pi} + \lambda^{V} \mathcal{L}^{V} + \lambda^{P} \mathcal{L}^{P}
+\mathcal{L}(\theta) = \lambda^{\pi} \mathcal{L}^{\pi} + \lambda^{V} \mathcal{L}^{V} + \lambda^{P} \mathcal{L}^{P}.
 \label{eq:loss}
 \end{equation}
 where the components are:
 \begin{align}
 \mathcal{L}^{\pi} &= D_{\text{KL}}(\boldsymbol{\pi}^{\text{target}} \| \boldsymbol{\pi}_{\theta}) \label{eq:loss_policy}\\
 \mathcal{L}^{V} &= \left(V_{\theta} - r^{\text{acc}}\right)^{2} \label{eq:loss_value}\\
-\mathcal{L}^{P} &= \left(P_{\theta} - r^{\text{rl}}\right)^{2} \label{eq:loss_profit}
+\mathcal{L}^{P} &= \left(P_{\theta} - r^{\text{rl}}\right)^{2}. \label{eq:loss_profit}
 \end{align}
 
 The dual-LSTM encodes the derivation path and market dynamics separately; the value and profit heads fit $r^{\text{acc}}$ and $r^{\text{rl}}$ via MSE, making the guidance signal interpretable: improvement of the profit head corresponds to better distributional risk-return characteristics rather than lower MSE alone. The hidden dimension is deliberately small ($d_h=16$): grammar and module constraints limit the branching factor to $\approx |\mathcal{R}| \approx 30$ rules, and increasing $d_h$ to 32 yields negligible improvement.
@@ -174,7 +174,7 @@ Given top-$k$ expressions, trading signals are generated via quantile-based cons
 +1 \text{ (buy)} & \text{if } Q_{25}(\mathcal{D}^{\text{pred}}) > 0 \\
 -1 \text{ (sell)} & \text{if } Q_{75}(\mathcal{D}^{\text{pred}}) < 0 \\
 0 \text{ (hold)} & \text{otherwise}
-\end{cases}
+\end{cases}.
 \label{eq:signal}
 \end{equation}
 
