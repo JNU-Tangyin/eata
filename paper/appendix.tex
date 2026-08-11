@@ -114,7 +114,7 @@ We analyze three theoretical properties of the 1-Wasserstein reward $r^{\text{rl
 For one-dimensional distributions, the 1-Wasserstein distance admits a closed-form representation via CDFs~\cite{villani2009optimal}:
 \begin{align}
 \mathcal{W}_1(P, Q) &= \int_{-\infty}^{\infty} |F_P(x) - F_Q(x)| \, dx \\
-&= \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du.
+&= \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du,
 \end{align}
 where $F_P^{-1}, F_Q^{-1}$ are quantile functions. The functional derivative with respect to the predicted CDF $F_\theta$ is:
 \begin{equation}
