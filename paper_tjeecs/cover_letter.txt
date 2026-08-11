@@ -1,0 +1,47 @@
+Cover Letter
+
+Manuscript Title: EATA: Distribution-aware symbolic discovery for explainable trading
+Journal: Turkish Journal of Electrical Engineering and Computer Sciences (TJEECS)
+Manuscript Type: Research Article
+
+—
+
+Dear Editor-in-Chief,
+
+We are pleased to submit our manuscript entitled "EATA: Distribution-aware symbolic discovery for explainable trading" for consideration for publication in the Turkish Journal of Electrical Engineering and Computer Sciences.
+
+Contribution
+
+Algorithmic trading faces a fundamental tension between predictive performance and interpretability: deep neural predictors achieve strong accuracy but remain opaque, while symbolic regression produces readable formulas yet optimizes proxy objectives misaligned with economic utility. In this work, we present EATA, a neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability:
+
+1. Profit-aware objective. We formulate rule discovery as distribution matching via the 1-Wasserstein distance, which assigns uniform weight to all quantiles (including tails), provides adversarial robustness through its Kantorovich–Rubinstein dual, and provably bounds CVaR discrepancies (Proposition 2).
+2. Neural-guided grammar search. A three-headed Policy-Value-Profit network (PVPNet) coupled with Monte Carlo Tree Search explores a finance-grounded, decoupled grammar with bounded module libraries, keeping the search auditable under regime shifts.
+3. Comprehensive validation. On 345 S&P 500 constituents (2013–2018), EATA achieves an annualized return of 21.2%, a Sharpe ratio of 0.76, and a maximum drawdown of 17%, outperforming strong baselines (LSTM, Transformer, LightGBM, FinRL, GP) while retaining full interpretability; ablations confirm the necessity of each component.
+
+Fit with the Journal
+
+This work lies at the intersection of computer science, information technology, and intelligent decision systems — precisely the scope of TJEECS. The framework addresses a real-world intelligent-system design problem (automatic, interpretable decision rule discovery from financial time series) and demonstrates how machine learning and control-oriented search can be combined into a deployable, auditable decision agent.
+
+Originality & Ethics
+
+- This manuscript is original, has not been published previously, and is not under consideration elsewhere.
+- All authors have approved the manuscript and agree with its submission.
+- The authors declare no conflict of interest.
+- The research was supported by the National Natural Science Foundation of China (No. 62272198).
+- No experiments involving human subjects were conducted.
+
+Suggested Reviewers (optional)
+
+We respectfully suggest the following experts, should the handling editor find them suitable (may be omitted if not required by the journal):
+
+1. (Name, Affiliation, Email) — expert in symbolic regression
+2. (Name, Affiliation, Email) — expert in algorithmic trading and machine learning
+
+We thank you for your time and consideration. We look forward to your response.
+
+Sincerely,
+
+Jingtong Zhang (z5734563@ad.unsw.edu.au, The University of New South Wales, Australia)
+Xiaoang Yang (School of Cybersecurity, Jinan University, China)
+Yinqi Shi (Jinan University – University of Birmingham Joint Institute, China)
+Yin Tang (Corresponding author, ytang@jnu.edu.cn, School of Management, Jinan University, China)
