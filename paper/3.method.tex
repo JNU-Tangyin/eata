@@ -322,8 +322,8 @@ Given top-$k$ expressions, trading signals are generated via quantile-based cons
 \text{signal} = \begin{cases}
 +1 \text{ (buy)} & \text{if } Q_{25}(\mathcal{D}^{\text{pred}}) > 0 \\
 -1 \text{ (sell)} & \text{if } Q_{75}(\mathcal{D}^{\text{pred}}) < 0 \\
-0 \text{ (hold)} & \text{otherwise}
-\end{cases}.
+0 \text{ (hold)} & \text{otherwise}.
+\end{cases}
 \label{eq:signal}
 \end{equation}
 
