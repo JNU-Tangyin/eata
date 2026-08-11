@@ -1,0 +1,129 @@
+% 4.experiments.tex - Experiments
+\section{Experiments}
+\label{sec:experiments}
+
+This section evaluates EATA and addresses the research questions of Section~\ref{sec:intro}. We evaluate on representative constituent stocks (N=345) from the S\&P 500 index, covering Technology, Finance, and Healthcare. The evaluation period spans February 8, 2013 to February 7, 2018, encompassing post-crisis recovery, QE tapering, the oil-price collapse, Brexit, a strong bull market, and the early-2018 correction. Daily OHLCV data is split temporally into a training period (Feb 8, 2013 to Jun 30, 2016) and an out-of-sample testing period (Jul 1, 2016 to Feb 7, 2018).
+
+\subsection{Baselines}
+We compare EATA against 11 baselines across five categories:
+\begin{itemize}
+    \item \textbf{Traditional}: Buy \& Hold, MACD (tuned).
+    \item \textbf{Statistical}: ARIMA (5,1,0).
+    \item \textbf{Machine Learning}: LightGBM, GBDT, Genetic Programming (via Operon)~\cite{burlacu2020operon}.
+    \item \textbf{Deep Learning}: LSTM, Transformer.
+    \item \textbf{Reinforcement Learning}: PPO, A2C, TD3, DDPG (FinRL).
+\end{itemize}
+Hyperparameters follow standard settings from the cited implementations and the literature.
+
+\subsection{Main Results: Profitability vs.\ Black-Box (RQ3)}
+
+\subsubsection{Performance Comparison}
+\textbf{Hypothesis (RQ3).} Profit-aware symbolic strategies can match or exceed black-box baselines in risk-adjusted returns while remaining intrinsically interpretable.
+
+Table~\ref{tab:main_results} reports performance averaged across our universe. EATA achieves a \textbf{Sharpe ratio of 0.76} with an annualized return of 21.2\%, competitive with black-box baselines while maintaining full interpretability.
+
+\begin{table}[htbp]
+\centering
+\caption{Main Performance Comparison. EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
+\label{tab:main_results}
+\input{tables/sp500_full_table.tex}
+\end{table}
+
+The consistent advantage of EATA over symbolic baselines (GP) and black-box predictors (LightGBM, LSTM, Transformer) demonstrates the value of optimizing the discovery process toward \emph{trading utility}. We attribute this to two coupled design choices: the profit-aware objective that penalizes unfavorable distributional risk, and the domain grammar that constrains search to financially meaningful operators.
+
+\subsubsection{Cumulative Returns and Strategy Analysis}
+Figure~\ref{fig:cum_returns} compares cumulative returns against key baselines: EATA delivers a smoother growth trajectory than several baselines. Figure~\ref{fig:corr_risk} further shows that EATA's returns have low correlation with trend-following baselines and cluster in the high-return/moderate-risk region, indicating that it captures unique alpha sources rather than repackaging market beta.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.52\columnwidth]{figures/real_cumulative_returns.pdf}
+\caption{Cumulative Performance Comparison. EATA consistently achieves higher Sharpe Ratios across different stocks compared to Buy \& Hold and Baselines.}
+\label{fig:cum_returns}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/correlation_heatmap.pdf}
+\caption{Strategy correlation matrix. EATA exhibits low correlation with trend-following baselines, suggesting it captures unique alpha.}
+\label{fig:correlation}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/real_risk_return.pdf}
+\caption{Risk-return scatter plot. EATA (blue) clusters in the high-return/moderate-risk region.}
+\label{fig:risk_return}
+\end{subfigure}
+\caption{EATA's diversification and risk-return profile relative to baselines.}
+\label{fig:corr_risk}
+\end{figure}
+
+\subsection{Mechanism Analysis: Wasserstein vs.\ MSE (RQ1)}
+
+\subsubsection{Return Distribution and Risk-Return Trade-off}
+\textbf{Hypothesis (RQ1).} Optimizing distributional divergence (Wasserstein) rather than point-wise error (MSE) can improve tail-risk control and yield a more favorable return asymmetry.
+
+Figure~\ref{fig:dist} shows EATA's return distribution with positive skewness (skewness = 1.14) and a mean daily return of 0.076\% (annualized 21.2\%); a risk-return scatter (omitted for brevity) confirms that EATA clusters in the high-return/moderate-risk region. Distribution-aware objectives penalize mismatches across the entire return distribution, whereas MSE is dominated by small central errors; since the left tail dominates realized utility under drawdown constraints, the distribution-aware objective reduces catastrophic losses.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.52\columnwidth]{figures/real_return_distribution.pdf}
+\caption{Return Distribution. EATA's return distribution shows a positive skew (skewness = 1.14, mean = 0.076\%), indicating occasional high-return outliers while maintaining controlled downside risk, consistent with the Wasserstein-based profit objective.}
+\label{fig:dist}
+\end{figure}
+
+\subsubsection{Ablation Study: Component Analysis}
+
+\begin{table}[htbp]
+\centering
+\caption{Ablation Study Results: Performance Metrics by Variant }
+\label{tab:ablation_results}
+\input{tables/ablation_results.tex}
+\end{table}
+
+\textbf{Finding (RQ1: Component Importance).} The ablation reveals a clear hierarchy. \textbf{MCTS is the most critical component}: removing it collapses the Sharpe ratio from 0.76 to 0.19 ($-75\%$), indicating that lookahead search is indispensable and neural policy alone cannot handle complex market dynamics. \textbf{Exploration is also crucial} (Sharpe 0.43, $-43\%$). \textbf{Wasserstein distance is valuable}: replacing it with simple MAE reduces the Sharpe ratio to 0.22 ($-71\%$), confirming that distributional alignment beats point-wise error minimization. The memory module (0.15) and neural network (0.45) contribute moderately, with the neural variant's relative contribution varying across market regimes.
+
+\subsubsection{Wasserstein vs.\ Alternative Distributional Objectives}
+
+To validate Wasserstein, we compare it against KL divergence, Jensen-Shannon (JS) divergence, and CVaR. Table~\ref{tab:objectives} reports the results: Wasserstein consistently outperforms alternatives, particularly in tail-risk control and distribution shape, supporting the theoretical intuition that Wasserstein transport cost aligns with trading utility.
+
+\begin{table}[htbp]
+\centering
+\caption{Performance Comparison Across Distributional Objectives }
+\label{tab:objectives}
+\resizebox{0.7\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Objective} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} \\
+\midrule
+\textbf{Wasserstein (Full)} & \textbf{21.2} & \textbf{0.76} & \textbf{17.0} & \textbf{51.8\%} \\
+MSE & 4.1 & 0.22 & 37.3 & 48.5\% \\
+KL Divergence & 3.1 & 0.15 & 34.8 & 44.2\% \\
+JS Divergence & 4.3 & 0.19 & 30.9 & 50.4\% \\
+CVaR & 9.5 & 0.43 & 31.1 & 51.1\% \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Interpretability and Search Efficiency (RQ2)}
+
+\subsubsection{Search Efficiency and Pareto Frontier}
+Neural guidance accelerates symbolic search: the guided version reaches a high Sharpe ratio much faster than pure MCTS (Figure~\ref{fig:eff_pareto}a). A Pareto-frontier analysis (Figure~\ref{fig:eff_pareto}b) shows that EATA achieves superior performance with moderate complexity: 6 valid symbolic expressions with an average Sharpe ratio of 0.824 and 9--17 AST nodes, versus GP's average 0.487 with most expressions degenerating to trivial constants. This 1.69$\times$ advantage at moderate complexity is valuable in regulated environments where overly complex rules are hard to audit.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/convergence_curves.pdf}
+\caption{Convergence with vs.\ without neural guidance. The guided version (blue) reaches a high Sharpe ratio faster.}
+\label{fig:efficiency}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/pareto_frontier.pdf}
+\caption{Pareto frontier of interpretability vs.\ performance. EATA (blue circles) dominates GP (orange triangles) at moderate complexity.}
+\label{fig:pareto}
+\end{subfigure}
+\caption{Search efficiency and interpretability--performance trade-off of EATA.}
+\label{fig:eff_pareto}
+\end{figure}

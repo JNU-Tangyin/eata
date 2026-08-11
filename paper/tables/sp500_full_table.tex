@@ -1,22 +1,22 @@
 % Main results table — all baselines (N=345 representative S&P 500 stocks, 2013--2018)
-\resizebox{0.95\columnwidth}{!}{%
-\begin{tabular}{lccccc}
+\resizebox{0.6\columnwidth}{!}{%
+\begin{tabular}{lcccc}
 \toprule
-\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} & \textbf{Calmar} \\
+\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} \\
 \midrule
-Buy \& Hold & 12.7 & 0.57 & 12.0 & 55\% & 1.05 \\
-PPO (FinRL) & 7.5 & 0.56 & 8.4 & 58\% & 0.89 \\
-A2C (FinRL) & 7.1 & 0.47 & 8.6 & 52\% & 0.83 \\
-MACD & 6.0 & 0.40 & 9.3 & 50\% & 0.65 \\
-DDPG (FinRL) & 5.4 & 0.34 & 6.4 & 31\% & 0.85 \\
-TD3 (FinRL) & 3.9 & 0.27 & 7.1 & 32\% & 0.54 \\
-Transformer & 0.0 & -0.03 & 4.2 & 24\% & 0.01 \\
-ARIMA & -2.5 & -0.12 & 21.3 & 32\% & -0.12 \\
-GBDT & -4.5 & -0.22 & 19.7 & 21\% & -0.23 \\
-GP (Operon) & -4.7 & -0.22 & 19.3 & 23\% & -0.24 \\
-LSTM & -11.0 & -0.59 & 25.5 & 10\% & -0.43 \\
+Buy \& Hold & 12.7 & 0.57 & 12.0 & 55\% \\
+PPO (FinRL) & 7.5 & 0.56 & 8.4 & 58\% \\
+A2C (FinRL) & 7.1 & 0.47 & 8.6 & 52\% \\
+MACD & 6.0 & 0.40 & 9.3 & 50\% \\
+DDPG (FinRL) & 5.4 & 0.34 & 6.4 & 31\% \\
+TD3 (FinRL) & 3.9 & 0.27 & 7.1 & 32\% \\
+Transformer & 0.0 & -0.03 & 4.2 & 24\% \\
+ARIMA & -2.5 & -0.12 & 21.3 & 32\% \\
+GBDT & -4.5 & -0.22 & 19.7 & 21\% \\
+GP (Operon) & -4.7 & -0.22 & 19.3 & 23\% \\
+LSTM & -11.0 & -0.59 & 25.5 & 10\% \\
 \midrule
-\textbf{EATA (Ours)} & \textbf{21.2}$^{**}$ & \textbf{0.76}$^{**}$ & 17.0 & 51.8\% & 0.62 \\
+\textbf{EATA (Ours)} & \textbf{21.2}$^{**}$ & \textbf{0.76}$^{**}$ & 17.0 & 51.8\% \\
 \bottomrule
 \end{tabular}%
 }

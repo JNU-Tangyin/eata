@@ -1,0 +1,9 @@
+% 5.conclusion.tex - Conclusion
+\section{Conclusion}
+\label{sec:conclusion}
+
+We proposed EATA, a neural-guided symbolic regression framework that explicitly optimizes trading profitability through the Wasserstein distance, based on the insight that point-wise prediction accuracy (MSE) can be a poor proxy for economic utility. EATA formalizes symbolic regression as a distribution-matching problem, develops a three-headed Policy-Value-Profit network, and empirically validates on the S\&P 500 universe (N=345 stocks, 2013--2018): profit-aware learning yields significantly higher risk-adjusted returns than the accuracy-only variant (Table~\ref{tab:ablation_results}), and ablations confirm the necessity of the profit head and the domain grammar.
+
+Several limitations remain. \textit{Computational cost}: MCTS incurs considerable runtime per stock, limiting applicability to high-frequency or large-scale settings. \textit{Syntactic design}: fixed-window operators still rely on domain expertise for window selection. \textit{Single-asset focus}: each stock is modeled independently without portfolio-level or cross-asset interactions. \textit{Extreme regimes}: although the sliding window provides some robustness to moderate non-stationarity, sudden exogenous shocks may still invalidate learned patterns.
+
+Future work will focus on parallel MCTS implementations for \textit{scalability}, \textit{cross-market validation} (e.g., CSI 300, Hang Seng), a \textit{portfolio-level extension} with cross-asset operators, \textit{online and continual learning} to avoid full retraining, and \textit{causal discovery} to separate robust structural relationships from spurious correlations.

@@ -1,0 +1,30 @@
+% 2.related.tex - Related Work
+\section{Related Work}
+\label{sec:related}
+
+This section places EATA at the intersection of three areas: empirical trading evaluation, symbolic discovery with neural-guided search, and distributional/risk-sensitive objectives.
+
+%------------------------------------------------------------------------------
+\subsection{Evaluation Protocols and Statistical Validity in Trading}
+
+Empirical trading research typically reports risk-adjusted metrics from portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual}, yet Sharpe-ratio estimates carry considerable uncertainty in finite samples~\cite{lo2002sharpe_stats}, and naive benchmark selection invites data-snooping. Econometric tools such as the reality check provide principled corrections, while later work emphasizes selection bias and backtest overfitting~\cite{bailey2014deflated_sharpe} and the pervasiveness of multiple testing in large-scale factor mining. Transaction costs further degrade strategies once implementation frictions are introduced~\cite{keim1997transaction_costs}. A recurring pitfall is equating in-sample predictive performance with out-of-sample profitability, amplified by the noisy, heavy-tailed, and regime-dependent nature of returns~\cite{cont2001empirical}. These considerations motivate EATA's two design principles: (i) grammatically constraining the hypothesis space to reduce implicit multiple testing, and (ii) aligning learning signals with economically meaningful outcomes.
+
+%------------------------------------------------------------------------------
+\subsection{Interpretable Alpha Discovery and Formulaic Trading Signals}
+
+Recent alpha mining aims to discover formulaic factors at scale, spanning genetic programming, reinforcement learning~\cite{yu2023alphagen}, and language-model-assisted frameworks. AlphaStock further shows that interpretable deep RL can construct auditable portfolios. Such systems rely on the assumption that improving a proxy objective (e.g., prediction loss or IC) yields profitable trading rules; in practice this breaks down because weak signals trigger excessive turnover~\cite{keim1997transaction_costs}, occasional large losses violate drawdown constraints, and large factor libraries amplify false discoveries unless explicitly regularized. EATA is a "constrained alpha miner" that binds formulaic interpretability to a profit-aware, distribution-sensitive learning signal.
+
+%------------------------------------------------------------------------------
+\subsection{Neural-Guided Search and MCTS for Symbolic Discovery}
+
+Symbolic regression has evolved from Genetic Programming~\cite{koza1994genetic} toward neural guidance: DSR~\cite{petersen2021deep} generates expressions via policy gradients, and transformer-based models~\cite{biggio2021neural,kamienny2022end} learn end-to-end generation, though they require large synthetic corpora and may generalize poorly to unknown non-stationary forms~\cite{makke2024interpretable}. MCTS~\cite{coulom2006efficient} provides a principled exploration--exploitation trade-off with neural policy--value guidance. In trading, NEMoTS~\cite{xie2024nemots} pairs MCTS with policy--value networks for time-series symbolic regression; AlphaCFG~\cite{yang2026alpha} treats alpha discovery as grammar-guided generation; and RiskMiner~\cite{ren2024riskminer} formalizes risk-seeking MCTS over tokenized expressions. These methods still optimize prediction fit (e.g., IC), which can be economically weak as trading rules: MSE-calibrated expressions degrade precisely in the tails where trading risks concentrate. Two boundary conditions matter: expressions decay under regime shifts, and an explicit decision layer is needed to convert predictions into stable rules. EATA shares the neural-guided paradigm but steers the search toward profit-aware objectives via the Wasserstein distance and adds a temporal adaptation mechanism.
+
+%------------------------------------------------------------------------------
+\subsection{Distributional Metrics, Optimal Transport, and Risk-Sensitive Learning}
+
+Financial returns are heavy-tailed and asymmetric~\cite{cont2001empirical}, making point-wise losses a weak proxy for economic utility. Optimal transport provides a geometrically meaningful way to compare distributions~\cite{villani2009optimal}, and Wasserstein distributionally robust optimization improves out-of-sample stability in portfolio selection~\cite{pesenti2023pOrtfolio}. In reinforcement learning, distributional perspectives and risk-sensitive criteria such as CVaR~\cite{chow2015cvar} capture tail risk beyond mean outcomes. Although CVaR directly targets tail losses, it requires careful tail-parameter tuning and can be unstable when tail events are rare; the Wasserstein distance offers a complementary mechanism that compares the entire distribution, penalizes systematic quantile miscalibration, and remains meaningful even when supports differ.
+
+%------------------------------------------------------------------------------
+\subsection{Positioning of EATA}
+
+EATA differs from representative method families along five dimensions: interpretability, neural components, financial operators, profit-aware objective, and non-stationarity adaptation. Black-box models (LSTM/Transformer, FinRL) are profitable but opaque; GP and DSR are interpretable yet optimize point-wise objectives; Alpha-Mining~\cite{yu2023alphagen} and NEMoTS are neural-guided but lack profit-aware rewards. EATA uniquely integrates neural-guided search (MCTS + PVPNet), financial operators (domain grammar), and profit-aware learning (distributional reward) within a unified, interpretable framework.

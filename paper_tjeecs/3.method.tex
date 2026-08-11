@@ -1,0 +1,187 @@
+% 3.method.tex - EATA Methodology
+\section{Methodology}
+\label{sec:method}
+
+This section presents the technical details of the Explainable Algorithmic Trading Agent (EATA). We first establish a unified notation system and then describe the core algorithm and its design principles.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/method_architecture.pdf}
+\caption{EATA framework: sliding-window data protocol with decoupled grammar, neural-guided MCTS (policy $\pi_{\text{nn}}$ vs.\ UCB exploration $\pi_{\text{ucb}}$ balanced by $\alpha$), expression refinement via grammar augmentation and Powell coefficient fitting, and trading signals from a three-headed PVPNet with a 1-Wasserstein profit reward and quantile-based consensus.}
+\label{fig:method_architecture}
+\end{figure*}
+
+%==============================================================================
+\subsection{Problem Formulation}
+\label{subsec:problem}
+
+Given a multivariate financial time series $\mathbf{X} = \{\mathbf{x}_t\}_{t=1}^{T}$ where $\mathbf{x}_t \in \mathbb{R}^{d}$ represents $d$ market features at time $t$, we seek an interpretable expression $e^{*}$ that balances predictive accuracy with trading profitability:
+\begin{equation}
+e^{*} = \arg\max_{e \in \mathcal{E}} \left[ \eta \cdot \mathcal{A}(e, \mathbf{X}) + (1-\eta) \cdot \mathcal{P}(e, \mathbf{X}) \right],
+\label{eq:objective}
+\end{equation}
+where $\mathcal{E}$ denotes the valid expression space defined by grammar $\mathcal{G}$, $\mathcal{A}(\cdot)$ measures prediction accuracy, $\mathcal{P}(\cdot)$ measures trading profit, and $\eta \in [0,1]$ balances the two objectives.
+
+A pure accuracy objective is inconsistent with trading utility because it treats all errors symmetrically and ignores the asymmetry of risk. Conversely, a pure profit objective may overfit to specific return realizations and produce brittle expressions that exploit idiosyncratic fluctuations. The mixed objective in Eq.~\ref{eq:objective} acts as a regularizer: $\mathcal{A}$ stabilizes the search toward expressions that capture repeatable predictive structure, while $\mathcal{P}$ biases discovered expressions toward economically significant outcomes. The control parameter $\eta$ thus provides a transparent trade-off between statistical fit and economic utility, which can be adjusted according to risk preferences.
+
+%==============================================================================
+\subsection{Domain-Specific Grammar Design}
+\label{subsec:grammar}
+
+We employ a context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, \mathit{S})$ tailored for financial time series analysis. The grammar incorporates domain knowledge through fixed-window financial operators.
+
+\textbf{Non-terminals and Terminals.} The non-terminal set $\mathcal{V} = \{\mathit{S}, \mathit{A}, \mathit{B}, \mathit{D}\}$ includes the start symbol ($\mathit{S}$), primary expressions ($\mathit{A}$), helper expressions ($\mathit{B}$), and decision predicates ($\mathit{D}$). The terminal set $\Sigma$ comprises feature variables $\{x_0, x_1, \ldots, x_{d-1}\}$, constants, and operators.
+
+\textbf{Production Rules.} The rule set $\mathcal{R}$ comprises the start rule and four operator categories:
+\begin{align}
+\mathit{S} &\rightarrow \mathit{A} \nonumber \\
+\mathit{A} &\rightarrow \mathit{A} + \mathit{A} \mid \mathit{A} - \mathit{A} \mid \mathit{A} \times \mathit{A} \mid \mathit{A} \div \mathit{A} \mid \mathit{A} \times C \mid \mathit{A} + C \nonumber \\
+\mathit{A} &\rightarrow \cos(\mathit{A}) \mid \sin(\mathit{A}) \mid \exp(\mathit{A}) \mid \log(\mathit{B}) \mid \sqrt{\mathit{B}} \mid |\mathit{A}| \mid \mathit{A}^{2} \nonumber \\
+\mathit{A} &\rightarrow \text{delay}(\mathit{A}, \mathit{L}) \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{diff}(\mathit{A}, \mathit{L}) \mid \text{mom}(\mathit{A}, \mathit{L}) \nonumber \\
+&\quad \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}) \mid \text{rsi}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \nonumber \\
+\mathit{W} &\rightarrow 5 \mid 10 \mid 20 \mid 30 \mid 60, \quad \mathit{L} \rightarrow 1 \mid 5 \mid 10 \mid 20 \nonumber \\
+\mathit{A} &\rightarrow \text{ite}(\mathit{D}, \mathit{A}, \mathit{A}), \quad \mathit{D} \rightarrow \mathit{A} > \mathit{B} \mid \mathit{A} < \mathit{B} \nonumber \\
+\mathit{B} &\rightarrow |\mathit{A}| \mid \mathit{A}^{2} \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W})
+\end{align}
+
+The decoupled grammar, inspired by AlphaCFG~\cite{yang2026alpha}, separates operators from parameters: window/lag non-terminals ($\mathit{W}, \mathit{L}$) resolve to discrete values, preventing invalid parameter combinations (e.g., negative windows) while preserving expressiveness; the conditional operator $\text{ite}$ enables piecewise regime-switching expressions. Fixed-window operators encode domain priors and limit degrees of freedom, reducing multiple-testing effects and data-snooping risk~\cite{bailey2014deflated_sharpe}.
+
+%==============================================================================
+\subsection{Neural-Guided Monte Carlo Tree Search}
+\label{subsec:mcts}
+
+Algorithm~\ref{alg:mcts} presents the MCTS procedure with neural network guidance. Each episode traverses the search tree using a policy fusion mechanism.
+
+\begin{algorithm}[htbp]
+\caption{Neural-Guided MCTS for Symbolic Regression}
+\label{alg:mcts}
+\begin{algorithmic}[1]
+\Require Data $\mathbf{X}$, grammar $\mathcal{G}$, network $f_{\theta}$, episodes $K$, guidance weight $\alpha$, fusion weight $\omega$, prior tree $\tau^{\text{prev}}$
+\Ensure Best expression $e^{*}$, experience buffer $\mathcal{D}$
+\State Initialize $Q(\cdot) \leftarrow 0$, $N(\cdot) \leftarrow 1$, $\mathcal{D} \leftarrow \emptyset$; $\mathit{s} \leftarrow \textsc{InitializeState}(\tau^{\text{prev}})$
+\For{$k = 1$ \textbf{to} $K$}
+    \State $\mathit{states}, \mathit{actions} \leftarrow []$; $\mathcal{U} \leftarrow \textsc{GetUnvisited}(\mathit{s})$
+    \While{$\mathcal{U} = \emptyset$ \textbf{and} not $\textsc{IsTerminal}(\mathit{s})$} \Comment{Selection}
+        \State $\boldsymbol{\pi}^{\text{nn}}, V, P \leftarrow f_{\theta}(\mathit{s}, \mathbf{X})$
+        \State $\boldsymbol{\pi} \leftarrow \alpha \cdot \boldsymbol{\pi}^{\text{nn}} + (1-\alpha) \cdot \textsc{ComputeUCB}(\mathit{s}, C)$
+        \State $\mathit{a} \sim \text{Categorical}(\textsc{Normalize}(\boldsymbol{\pi}))$; $\text{append}(\mathit{states}, \mathit{s})$, $\text{append}(\mathit{actions}, \mathit{a})$
+        \State $\mathit{s} \leftarrow \textsc{Step}(\mathit{s}, \mathit{a})$; $\mathcal{U} \leftarrow \textsc{GetUnvisited}(\mathit{s})$
+        \If{$|\mathit{s}| \geq L^{\max}$} \State $\textsc{Backprop}(\mathit{states}, \mathit{actions}, 0)$; \textbf{break} \EndIf
+    \EndWhile
+    \State $r^{\text{acc}}, e \leftarrow \textsc{Evaluate}(\mathit{s}, \mathbf{X})$ \Comment{Scoring in Sec.~\ref{subsec:scoring}}
+    \State $r^{\text{rl}} \leftarrow \textsc{ComputeRLReward}(e, \mathbf{X})$ \Comment{Profit reward via Eq.~\ref{eq:rlreward}}
+    \State $r^{\text{final}} \leftarrow \alpha \cdot (\omega \cdot V + (1-\omega) \cdot P) + (1-\alpha) \cdot \textsc{Rollout}(\mathit{s}, n^{\text{play}})$
+    \State $\textsc{Backprop}(\mathit{states}, \mathit{actions}, r^{\text{final}})$; $\mathcal{D}.\text{append}((\mathit{states}, \mathbf{X}, \boldsymbol{\pi}, r^{\text{acc}}, r^{\text{rl}}))$
+\EndFor
+\State \Return $e^{*}, \mathcal{D}$
+\end{algorithmic}
+\end{algorithm}
+
+The dual fusion handles early-training uncertainty: before the buffer fills, rollout estimates are more reliable; as training progresses, $\alpha$ grows and neural guidance dominates, while the value--profit fusion via $\omega$ balances predictive fit and profit potential. GP suffers from bloat and expensive evaluation under backtesting-based objectives, and sequence generators require large training corpora yet may produce syntactically valid but semantically meaningless expressions. MCTS leverages neural priors while retaining explicit UCB exploration, which suits the low signal-to-noise regime of financial time series.
+
+%==============================================================================
+\subsection{Expression Scoring with Coefficient Optimization}
+\label{subsec:scoring}
+
+Each candidate expression $e$ is evaluated on the training data. Let $n_c$ denote the number of constants in $e$; if $n_c = 0$, the expression is evaluated directly; if $n_c \geq 10$, it is discarded (score $0$); otherwise the constants are optimized by a derivative-free Powell optimizer with timeout $t^{\max}=30$s, i.e., $\mathbf{c}^{*} = \arg\min_{\mathbf{c}} \| \textsc{Evaluate}(e, \mathbf{X}, \mathbf{c}) - \mathbf{y} \|_{2}$, and the accuracy reward is $\text{MSE} = \frac{1}{T}\|\hat{\mathbf{y}} - \mathbf{y}\|_{2}^{2}$, $r^{\text{acc}} = \frac{1}{1 + \text{MSE}}$.
+
+Coefficient optimization is indispensable: the grammar encodes functional form, while coefficients determine scale and sensitivity. We use a derivative-free optimizer (Powell) because expression evaluation may be non-smooth (e.g., conditional operators), and the constant cap prevents brittle overfit expressions.
+%==============================================================================
+\subsection{Grammar Augmentation via Module Extraction}
+\label{subsec:augmentation}
+
+High-quality sub-expressions from evaluated candidates are extracted into a bounded module library $\mathcal{M}$: sub-expressions of length $\leq L^{\text{mod}}$ are inserted if the library is not full ($|\mathcal{M}| < M^{\max}$), otherwise the lowest-reward entry is replaced if the new candidate's reward is higher. Module extraction trades off search efficiency and generalization: reusing high-quality sub-expressions shortens the effective search depth, while a bounded library prevents bloat and limits the risk of idiosyncratic patterns, maintaining a transparent search space.
+
+%==============================================================================
+\subsection{Profit-Aware RL Reward via Wasserstein Distance}
+\label{subsec:rlreward}
+
+To explicitly optimize trading profitability, we introduce a Reinforcement Learning (RL) reward signal $r^{\text{rl}}$. Unlike standard regression targets that penalize point-wise errors (e.g., MSE), financial trading must capture the distributional properties of returns, particularly the asymmetry between gains and losses and the presence of heavy tails. This is consistent with the broader trend in distributional and risk-sensitive reinforcement learning, where methods model return distributions or tail-risk objectives rather than expected value alone~\cite{chow2015cvar}.
+
+Our key insight is that the Wasserstein distance (Earth Mover's Distance) provides a principled way to measure the return distribution, accounting for both tail risk and directional asymmetry~\cite{villani2009optimal}. Unlike KL divergence or MSE, the Wasserstein distance measures the minimum "work" required to transform one distribution into another, making it sensitive to the magnitude and location of distributional differences.
+
+Given predictions $\hat{\mathbf{y}}^{(1)}, \ldots, \hat{\mathbf{y}}^{(k)}$ from the top-$k$ discovered expressions, we construct a prediction distribution $\mathcal{D}^{\text{pred}}$. We compare this against the distribution of actual future returns $\mathcal{D}^{\text{actual}}$ using the 1-Wasserstein distance (Earth Mover's Distance)~\cite{villani2009optimal}:
+\begin{equation}
+\mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}}) = \int_{-\infty}^{\infty} |F^{\text{pred}}(x) - F^{\text{actual}}(x)| \, dx
+\label{eq:wasserstein}
+\end{equation}
+where $F^{\text{pred}}$ and $F^{\text{actual}}$ are the cumulative distribution functions (CDFs) of the predicted and actual returns, respectively. The RL reward is then defined as:
+\begin{equation}
+r^{\text{rl}} = \frac{1}{1 + \mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}})}
+\label{eq:rlreward}
+\end{equation}
+
+Return distributions are non-Gaussian, typically exhibiting skewness and leptokurtosis. For such data, the Wasserstein distance offers three advantages over KL divergence or MSE: (1) it remains meaningful even when the supports do not overlap; (2) it respects the geometry of the underlying space (error magnitude matters); (3) by measuring transport cost, it effectively captures tail risks~\cite{villani2009optimal}. Recent Wasserstein DRO studies further support its out-of-sample stability~\cite{pesenti2023pOrtfolio}.~\ref{app:wasserstein_theory} formalizes the convergence and CVaR-control properties of this reward.
+
+We emphasize that the superiority of Wasserstein is rooted in three structural properties. \textbf{First, quantile uniform-weighting:} in one dimension, $\mathcal{W}_1 = \frac{1}{N}\sum_i |x_{(i)} - y_{(i)}|$ assigns equal weight to every quantile, including extreme tails, whereas MSE is dominated by central mass and is virtually insensitive to tail misspecification. \textbf{Second, the Kantorovich--Rubinstein dual} $\mathcal{W}_1(P,Q) = \sup_{\|f\|_{\text{Lip}} \leq 1} \mathbb{E}_{P}[f] - \mathbb{E}_{Q}[f]$ shows that minimizing Wasserstein distance is equivalent to minimizing distributional mismatch under all 1-Lipschitz test functions, providing adversarial distributional robustness against smooth payoff functions. \textbf{Third, the CVaR bound} (Proposition~2 in~\ref{app:wasserstein_theory}) gives $|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)| \leq \frac{1}{1-\alpha}\mathcal{W}_1(P,Q)$, directly controlling tail-risk discrepancies without explicit CVaR tuning; MSE and KL provide no such guarantees. Together these properties explain the superior tail-risk control and risk-adjusted returns observed in Section~\ref{sec:experiments}.
+
+\subsubsection{Reward Semantics, Training Targets, and Objective Variants}
+\label{subsec:reward_flow}
+
+EATA uses two conceptually distinct signals during search and training.
+\textbf{(i) Accuracy reward} evaluates point-wise prediction fit, consistent with conventional regression objectives:
+\begin{equation}
+r^{\text{acc}} = \frac{1}{1 + \text{MSE}}.
+\label{eq:racc}
+\end{equation}
+\textbf{(ii) Profit-aware reward} evaluates distributional alignment between predicted and realized return distributions via Wasserstein distance, as defined in Eq.~\ref{eq:rlreward}.
+
+\textbf{Data flow.} During MCTS, each terminal expression is evaluated to obtain $(r^{\text{acc}}, r^{\text{rl}})$; the search backup uses a scalar reward that prioritizes profit while retaining an optional accuracy component:
+\begin{equation}
+r^{\text{mix}} = \eta \cdot r^{\text{acc}} + (1-\eta) \cdot r^{\text{rl}}.
+\label{eq:rmix}
+\end{equation}
+This formulation avoids degenerate expressions that exploit noisy returns: $r^{\text{acc}}$ stabilizes the search toward repeatable predictive structure, while $r^{\text{rl}}$ biases discovery toward economically meaningful tail behavior.
+
+\textbf{PVPNet targets.} The value head $V_{\theta}$ is trained to predict $r^{\text{acc}}$, while the profit head $P_{\theta}$ is trained to predict $r^{\text{rl}}$. This separation makes the guidance signal interpretable: the improvement of $P_{\theta}$ corresponds to the discovery of expressions with better distributional risk-return characteristics, not just lower MSE.
+
+\textbf{RQ1 baseline (MSE-based objective).} To isolate the effect of the profit-aware objective, we define an accuracy-only variant, denoted \textbf{NoRL} (or \textbf{EATA-MSE}), which removes the profit head and replaces the profit-aware reward with the accuracy reward: $r^{\text{rl}} \leftarrow r^{\text{acc}}$ and $r^{\text{mix}} \leftarrow r^{\text{acc}}$. This variant retains the same grammar, search budget, and temporal protocol, providing a controlled comparison for RQ1.
+
+%==============================================================================
+\subsection{Three-Headed Policy-Value-Profit Network (PVPNet)}
+\label{subsec:pvnet}
+
+The PVPNet processes both the derivation state and input time series: a state LSTM encodes the symbolic derivation path, a sequence LSTM encodes market dynamics, and their concatenated hidden representation feeds three heads---a policy head producing $\boldsymbol{\pi}$ over production rules and two scalar heads $V$ and $P$.
+
+The network is trained via three-component loss:
+\begin{equation}
+\mathcal{L}(\theta) = \lambda^{\pi} \mathcal{L}^{\pi} + \lambda^{V} \mathcal{L}^{V} + \lambda^{P} \mathcal{L}^{P}
+\label{eq:loss}
+\end{equation}
+where the components are:
+\begin{align}
+\mathcal{L}^{\pi} &= D_{\text{KL}}(\boldsymbol{\pi}^{\text{target}} \| \boldsymbol{\pi}_{\theta}) \label{eq:loss_policy}\\
+\mathcal{L}^{V} &= \left(V_{\theta} - r^{\text{acc}}\right)^{2} \label{eq:loss_value}\\
+\mathcal{L}^{P} &= \left(P_{\theta} - r^{\text{rl}}\right)^{2} \label{eq:loss_profit}
+\end{align}
+
+The dual-LSTM encodes the derivation path and market dynamics separately; the value and profit heads fit $r^{\text{acc}}$ and $r^{\text{rl}}$ via MSE, making the guidance signal interpretable: improvement of the profit head corresponds to better distributional risk-return characteristics rather than lower MSE alone. The hidden dimension is deliberately small ($d_h=16$): grammar and module constraints limit the branching factor to $\approx |\mathcal{R}| \approx 30$ rules, and increasing $d_h$ to 32 yields negligible improvement.
+
+%==============================================================================
+\subsection{Overall Training Pipeline}
+\label{subsec:pipeline}
+
+The training procedure integrates all components: for each sliding window, $N^{\text{run}}$ independent runs of $M$ MCTS episodes (Algorithm~\ref{alg:mcts}) are executed with module-library grammar augmentation, after which the experience buffer is updated and the network parameters are updated by minimizing $\mathcal{L}$ (Eq.~\ref{eq:loss}); the best tree is then inherited as $\tau^{\text{prev}}$ for the next window.
+
+Sliding windows adapt to non-stationary markets, and expression inheritance (warm-starting MCTS with $\tau^{\text{prev}}$) accelerates search by reusing persistent substructures (e.g., moving-average filters) across adjacent windows; the adaptive $\alpha$ schedule transitions from exploration (rollout-heavy) to exploitation (NN-guided) as experience accumulates.
+%==============================================================================
+\subsection{Trading Signal Generation}
+\label{subsec:signal}
+
+Given top-$k$ expressions, trading signals are generated via quantile-based consensus. For prediction distribution $\mathcal{D}^{\text{pred}}$ aggregated from $k$ expressions:
+\begin{equation}
+\text{signal} = \begin{cases}
++1 \text{ (buy)} & \text{if } Q_{25}(\mathcal{D}^{\text{pred}}) > 0 \\
+-1 \text{ (sell)} & \text{if } Q_{75}(\mathcal{D}^{\text{pred}}) < 0 \\
+0 \text{ (hold)} & \text{otherwise}
+\end{cases}
+\label{eq:signal}
+\end{equation}
+
+The $Q_{25} > 0$ / $Q_{75} < 0$ rules require strong consensus (even the pessimistic quartile predicts positive returns, or the optimistic quartile predicts negative returns) before trading, reducing false signals; thresholds are set on the validation set to prioritize precision over recall. Quantile consensus thus provides an interpretable robustness mechanism against noisy near-zero signals, acting as a margin that reduces turnover and transaction costs.
+
+%==============================================================================
+\subsection{Complexity Analysis}
+\label{subsec:complexity}
+
+Each MCTS episode traverses $O(L^{\max})$ nodes; with $K$ episodes, $M$ augmentation iterations, and $N^{\text{run}}$ runs per window, the time complexity is $O(N^{\text{run}} \cdot M \cdot K \cdot L^{\max})$, plus $O(|\mathcal{R}|)$ per network inference. The tree stores $O(K \cdot L^{\max})$ nodes, while the experience buffer and module library are bounded by $B^{\max}$ and $M^{\max}$.

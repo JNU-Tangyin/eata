@@ -232,3 +232,10 @@ test_detailed_outputs/
 # 大日志文件
 results/logs/
 *.log
+
+# Reasonix 工具目录
+.playwright-mcp/
+.reasonix/
+
+# LaTeX eps 转换临时文件
+*eps-converted-to.pdf

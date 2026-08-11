@@ -27,7 +27,7 @@
 % \setcitestyle{authoryear,round} % switch to ``Ren et al. (2019)'' style
 
 % ============== Journal Options ==============
-\journal{Information Sciences}
+\journal{Turkish Journal of Electrical Engineering and Computer Sciences}
 
 % ============== Custom Commands ==============
 \newcommand{\ie}{\textit{i.e.}}
@@ -52,14 +52,15 @@
 \begin{frontmatter}
 
 % \title{\ours: \ourslong}
-\title{\ours: Bridging Tail-Risk Objectives and Symbolic Search for Transparent Trading}
+\title{\ours: Distribution-Aware Symbolic Discovery for Explainable Trading}
 
 % %%% Blinded: authors and affiliations commented out for double-anonymized review
 \author [a]{Jingtong Zhang}
+\ead{z5734563@ad.unsw.edu.au}
 \author [b]{Xiaoang Yang}
 \author [c]{Yinqi Shi}
-\author [d]{Yin Tang\corref{cor2}} %
-\ead{Corresponding author: Yin Tang (Email: ytang@jnu.edu.cn).}
+\author [d]{Yin Tang\corref{cor2}}
+\cortext[cor2]{Corresponding author: ytang@jnu.edu.cn}
 % \ead[url]{https://orcid.org/0000-0001-7693-7543}
 % Author affiliation
 \affiliation[a]{organization={University of New South Wales},
@@ -84,11 +85,11 @@
 
 
 \begin{abstract}
-Profit-seeking yet interpretable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present \ours~(\ourslong), a neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. \ours{} couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards stabilize search while a Wasserstein-derived profit reward captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks over 2013--2018, \ours{} delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce interpretable trading strategies competitive with black-box counterparts.
+Profit-seeking yet explainable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present \ours~\allowbreak(\ourslong), a distribution-aware, neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. \ours{} couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards stabilize search while a Wasserstein-derived profit reward captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks over 2013--2018, \ours{} delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce explainable trading strategies competitive with black-box counterparts.
 \end{abstract}
 
 \begin{keyword}
-Algorithmic Trading, Symbolic Regression, Wasserstein Distance, Explainable AI, Optimal Transport, Risk-Sensitive Learning
+Algorithmic Trading, Distribution-Aware Learning, Symbolic Regression, Wasserstein Distance, Explainable AI, Optimal Transport, Risk-Sensitive Learning
 \end{keyword}
 
 \end{frontmatter}
