@@ -46,11 +46,11 @@ EATA: Distribution-aware symbolic discovery for explainable trading
 	\begin{abstract}
 		Profit-seeking yet explainable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present EATA, a distribution-aware, neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. EATA couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards stabilize search while a Wasserstein-derived profit reward captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks over 2013--2018, EATA delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce explainable trading strategies competitive with black-box counterparts.
 
-		\keywords{Algorithmic trading, distribution-aware learning, symbolic regression, Wasserstein distance, explainable artificial intelligence, optimal transport, risk-sensitive learning}
+		\keywords{Algorithmic trading, distribution-aware learning, symbolic regression, Wasserstein distance, explainable artificial intelligence, optimal transport}
 	\end{abstract}
 
 \section*{Acknowledgment}
-This work was supported by the National Natural Science Foundation of China (No.~62272198) and by the Research and Application of Expressway ``1+N'' Electromechanical O\&M Brain Based on Large Model Agents.
+This work was supported by the National Natural Science Foundation of China (No.~62272198).
 
 \section*{Pre-print server/online repository}
 This manuscript has not been previously posted to any preprint server or online repository.

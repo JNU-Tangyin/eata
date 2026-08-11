@@ -34,19 +34,8 @@ citecolor=blue}
 EATA: Distribution-aware symbolic discovery for explainable trading
 }
 
-\author[Jingtong ZHANG and others]{
-	\textbf{Jingtong ZHANG$^{1}$, Xiaoang YANG$^{2}$, Yinqi SHI$^{3}$, Yin TANG$^{4,}$\thanks{ytang@jnu.edu.cn}}\\
-	$^{1}$School of Computer Science and Engineering, University of New South Wales, Sydney, Australia\\
-	$^{2}$School of Cybersecurity, Jinan University, Guangzhou, China\\
-	$^{3}$Jinan University -- University of Birmingham Joint Institute, Jinan University, Guangzhou, China\\
-	$^{4}$School of Management, Jinan University, Guangzhou, China\\
-	Yin Tang: \url{https://orcid.org/0000-0001-7693-7543} \\ [1.8em]
-	% TODO: provide ORCID iDs for the remaining authors before submission.
-
-\rec{...}
-\acc{...}
-\finv{...}
-}
+% ====== Anonymized for double-blind review (author info is on the Title Page) ======
+\author[]{}%
 
 % ====== Inlined from elksty.tex ======
 \def\E{\ifmmode{\mathbb E}\else{$\mathbb E$}\fi} %natural numbers
@@ -165,7 +154,7 @@ EATA: Distribution-aware symbolic discovery for explainable trading
 \begin{abstract}
 Profit-seeking yet explainable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present EATA, a distribution-aware, neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. EATA couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards stabilize search while a Wasserstein-derived profit reward captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks over 2013--2018, EATA delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce explainable trading strategies competitive with black-box counterparts.
 
-\keywords{Algorithmic trading, distribution-aware learning, symbolic regression, Wasserstein distance, explainable artificial intelligence, optimal transport, risk-sensitive learning}
+\keywords{Algorithmic trading, distribution-aware learning, symbolic regression, Wasserstein distance, explainable artificial intelligence, optimal transport}
 \end{abstract}
 
 % ============== Main Sections ==============
@@ -605,7 +594,7 @@ Future work will focus on parallel MCTS implementations for \textit{scalability}
 During the preparation of this work, the authors used AI for code implementation, language polishing, proofreading, and generating the architecture figure from method descriptions. After using this tool/service, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
 
 \section*{Data availability statement}
-The implementation, experimental configuration, and pre-trained checkpoints of EATA are publicly available at \url{https://github.com/JNU-Tangyin/eata}. All data used in this study come from a public financial database (Yahoo Finance); the processed dataset and reproduction scripts are included in the code repository.
+The implementation, experimental configuration, and reproduction scripts will be made publicly available upon publication of this work. All data used in this study come from a public financial database (Yahoo Finance); the processed dataset is available from the authors upon reasonable request.
 
 \section*{Funding}
 This work was supported by the National Natural Science Foundation of China (No.~62272198).
