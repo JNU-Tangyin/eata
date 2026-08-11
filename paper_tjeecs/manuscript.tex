@@ -1,0 +1,758 @@
+\documentclass{elektr}
+\usepackage{hyperref}
+\hypersetup{
+colorlinks=true,
+urlcolor=black,
+citecolor=blue}
+\let\proof\relax
+\let\endproof\relax
+\usepackage{amsfonts,amssymb,amsmath,amsthm}
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{graphicx}
+\usepackage{textcomp}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{multirow}
+\usepackage{subcaption}
+\usepackage{pifont}
+\usepackage{tikz}
+\usetikzlibrary{shapes,arrows,positioning,fit,backgrounds}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{cleveref}
+\usepackage[pagewise]{lineno}
+\linenumbers
+
+\yil{}
+\vol{}
+\fpage{}
+\lpage{}
+\doi{}
+
+\title{
+EATA: Distribution-aware symbolic discovery for explainable trading
+}
+
+\author[Jingtong ZHANG and others]{
+	\textbf{Jingtong ZHANG$^{1}$, Xiaoang YANG$^{2}$, Yinqi SHI$^{3}$, Yin TANG$^{4,}$\thanks{ytang@jnu.edu.cn}}\\
+	$^{1}$School of Computer Science and Engineering, University of New South Wales, Sydney, Australia\\
+	$^{2}$School of Cybersecurity, Jinan University, Guangzhou, China\\
+	$^{3}$Jinan University -- University of Birmingham Joint Institute, Jinan University, Guangzhou, China\\
+	$^{4}$School of Management, Jinan University, Guangzhou, China\\
+	Yin Tang: \url{https://orcid.org/0000-0001-7693-7543} \\ [1.8em]
+	% TODO: provide ORCID iDs for the remaining authors before submission.
+
+\rec{...}
+\acc{...}
+\finv{...}
+}
+
+% ====== Inlined from elksty.tex ======
+\def\E{\ifmmode{\mathbb E}\else{$\mathbb E$}\fi} %natural numbers
+\def\N{\ifmmode{\mathbb N}\else{$\mathbb N$}\fi} %natural numbers
+\def\R{\ifmmode{\mathbb R}\else{$\mathbb R$}\fi} %real numbers
+\def\Q{\ifmmode{\mathbb Q}\else{$\mathbb Q$}\fi} %rational numbers
+\def\C{\ifmmode{\mathbb C}\else{$\mathbb C$}\fi} %complex numbers
+\def\H{\ifmmode{\mathbb H}\else{$\mathbb H$}\fi} %complex numbers
+\def\Z{\ifmmode{\mathbb Z}\else{$\mathbb Z$}\fi} %integers
+\def\P{\ifmmode{\mathbb P}\else{$\mathbb P$}\fi} %real numbers
+\def\T{\ifmmode{\mathbb T}\else{$\mathbb T$}\fi} %real numbers
+\def\SS{\ifmmode{\mathbb S}\else{$\mathbb S$}\fi} %real numbers
+\def\DD{\ifmmode{\mathbb D}\else{$\mathbb D$}\fi} %real numbers
+
+\renewcommand{\a}{\alpha}
+\renewcommand{\b}{\beta}
+\renewcommand{\d}{\delta}
+\newcommand{\D}{\Delta}
+\newcommand{\e}{\epsilon}
+\newcommand{\var}{\varepsilon}
+\newcommand{\g}{\gamma}
+\newcommand{\la}{\lambda}
+\newcommand{\La}{\Lambda}
+\newcommand{\lan}{\langle}
+\newcommand{\ran}{\rangle}
+\newcommand{\n}{\nabla}
+\newcommand{\va}{\varphi}
+\newcommand{\s}{\sigma}
+\newcommand{\Sig}{\Sigma}
+\renewcommand{\t}{\tau}
+\renewcommand{\th}{\theta}
+\newcommand{\Om}{\Omega}
+\newcommand{\om}{\omega}
+\newcommand{\pa}{\partial}
+\newcommand{\up}{\upsilon}
+\newcommand{\vp}{\varphi}
+\newcommand{\z}{\zeta}
+
+
+
+
+
+\newcommand{\bse}{\begin{subequations}}
+\newcommand{\ese}{\end{subequations}}
+\newcommand{\ben}{\begin{enumerate}}
+\newcommand{\een}{\end{enumerate}}
+\newcommand{\bens}{\begin{enumerate*}}
+\newcommand{\eens}{\end{enumerate*}}
+\newcommand{\be}{\begin{equation}}
+\newcommand{\ee}{\end{equation}}
+\newcommand{\bea}{\begin{eqnarray}}
+\newcommand{\eea}{\end{eqnarray}}
+\newcommand{\baa}{\begin{eqnarray*}}
+\newcommand{\eaa}{\end{eqnarray*}}
+\newcommand{\bc}{\begin{center}}
+\newcommand{\ec}{\end{center}}
+\newcommand{\ol}{\overline}
+\newcommand{\ul}{\underline}
+\newcommand{\ov}{\overbrace}
+\newcommand{\uv}{\underbrace}
+\newcommand{\Ra}{\Rightarrow}
+\newcommand{\ra}{\rightarrow}
+\newcommand{\ds}{\displaystyle}
+\newcommand{\vs}{\vspace}
+
+
+\newcommand{\IR}{\mbox{I \hspace{-0.2cm}R}}
+\newcommand{\IN}{\mbox{I \hspace{-0.2cm}N}}
+
+
+
+%% \theoremstyle{plain} %% This is the default
+
+\newtheorem{theorem}{Theorem}%[section]
+
+\theoremstyle{corollary}
+\newtheorem{corollary}{Corollary}
+
+\theoremstyle{lemma}
+\newtheorem{lemma}{Lemma}
+
+\theoremstyle{proposition}
+\newtheorem{proposition}{Proposition}
+
+\theoremstyle{axiom}
+\newtheorem{axiom}{Axiom}
+
+\theoremstyle{conjecture}
+\newtheorem{conjecture}{Conjecture}
+
+\theoremstyle{example}
+\newtheorem{example}{Example}
+
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}%[section]
+
+\theoremstyle{remark}
+\newtheorem{remark}{Remark}%[section]
+\newtheorem{notation}{Notation}
+
+
+\newtheorem{question}{Question}%[section]
+\newtheorem{construction}{Construction}
+
+\newtheorem{athm}{Theorem}
+\renewcommand{\theathm}{\Alph{athm}}
+
+
+
+
+\setcounter{page}{1}
+\begin{document}
+
+\maketitle
+
+\begin{abstract}
+Profit-seeking yet explainable trading remains elusive: deep neural predictors excel at accuracy but lack regulatory transparency, whereas symbolic regression yields readable formulas that optimize proxy objectives misaligned with economic utility. We present EATA, a distribution-aware, neural-guided symbolic regression framework that aligns the objective, hypothesis space, and training signal with trading profitability. EATA couples a three-headed policy--value--profit network (PVPNet) with Monte Carlo Tree Search, where accuracy rewards stabilize search while a Wasserstein-derived profit reward captures asymmetric tail risk. A finance-grounded, decoupled grammar with bounded module libraries encodes moving-average, momentum, RSI, volatility, and conditional operators to curb hypothesis-space inflation, while sliding-window inheritance and quantile-consensus signals enable temporal adaptation. Across representative S\&P 500 constituent stocks over 2013--2018, EATA delivers an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\%, outperforming strong baselines while maintaining full interpretability; Pareto-frontier analyses confirm a favorable complexity--performance trade-off. Ablation and objective studies show that removing the Wasserstein rewards, neural guidance, or grammar augmentation severely degrades performance, demonstrating that profit-aware symbolic regression can produce explainable trading strategies competitive with black-box counterparts.
+
+\keywords{Algorithmic trading, distribution-aware learning, symbolic regression, Wasserstein distance, explainable artificial intelligence, optimal transport, risk-sensitive learning}
+\end{abstract}
+
+% ============== Main Sections ==============
+% ====== Inlined from 1.intro.tex ======
+% 1.intro.tex - Introduction
+\section{Introduction}
+\label{sec:intro}
+
+Algorithmic trading operates at the tense intersection of two competing requirements: although modern deep learning and reinforcement learning systems have achieved state-of-the-art prediction accuracy~\cite{fischer2018deep}, they lack transparent inductive biases. This opacity conflicts with emerging regulatory and governance requirements such as MiFID II~\cite{eu2014mifid}, and complicates risk supervision~\cite{rudin2019stop}. Practitioners therefore require not only explainable trading strategies, but also methods that can adapt to shifting market regimes, especially because financial return series are heavy-tailed and non-stationary~\cite{cont2001empirical}. The core scientific problem is not merely "how to explain a black box", but \textit{how to discover profit-aligned trading rules whose structure itself constitutes the explanation}.
+
+Existing research offers three incomplete solutions. Black-box DL/RL models achieve strong raw performance but provide almost no transparency or safety guarantees. Classic symbolic regression and alpha-mining pipelines can return readable formulas~\cite{koza1994genetic}, but they typically optimize proxy objectives disconnected from economic returns (MSE, IC), which amplifies multiple-testing bias and turnover costs. Hybrid grammar-guided systems (e.g., AlphaCFG~\cite{yang2026alpha}, NEMoTS~\cite{xie2024nemots}) constrain the search space, yet still inherit point-wise loss objectives and lack mechanisms for temporal adaptation. These limitations motivate our design of a profit-aware, grammar-disciplined discovery agent.
+
+We therefore raise the core research question: \textit{Can we design a symbolic regression agent whose goals, hypothesis space, and training signals are aligned with trading profitability under regulatory and regime constraints?} This decomposes into three sub-problems: \textbf{RQ1 (objective alignment)}---which distributional divergence better captures asymmetric tail risk than point-wise losses; \textbf{RQ2 (search discipline)}---how neural priors, grammar constraints, and inheritance mechanisms can be integrated to maintain auditability under market shifts; and \textbf{RQ3 (empirical closure)}---whether such an agent obtains risk-adjusted returns comparable to black-box baselines under transaction costs on the S\&P 500 universe.
+
+
+To answer these questions, we introduce three interrelated innovations: (i) a Wasserstein-guided policy-value-profit network (PVPNet), which decouples the accuracy reward $r^{\text{acc}}$ from the profit-aware reward $r^{\text{rl}}$ and injects the latter into MCTS backpropagation; (ii) a finance-grounded decoupled grammar, including discrete window/lag non-terminals, conditional logic, and a bounded module library to curb hypothesis-space inflation; (iii) a sliding-window pipeline with expression inheritance, module extraction, and quantile-consensus signals to achieve temporal adaptation.
+
+% Section~\ref{sec:experiments} ties each RQ to targeted evidence: comparison studies on the S\&P~500 universe (N=345 stocks, 2013--2018) show \ours{} achieving an annualized return of 21.2\%, a Sharpe ratio of 0.76, and a maximum drawdown of 17\% (Table~\ref{tab:main_results}), outperforming strong baselines including buy-and-hold, LightGBM, and neural-guided symbolic regression (NEMoTS). Pareto-frontier analyses demonstrate a favorable complexity--performance trade-off, while ablation and objective studies (Tables~\ref{tab:ablation_results}--\ref{tab:objectives}) confirm that removing the Wasserstein rewards, neural guidance, or grammar augmentation collapses performance, thereby addressing RQ1 and RQ2.
+
+Our contributions are as follows:
+\begin{enumerate}
+    \item \textbf{Profit-aware symbolic regression.} We formulate the discovery of trading rules as a distribution-matching problem via the 1-Wasserstein distance, and couple profit rewards with accuracy stabilizers to control tail risk under heavy-tailed returns.
+    \item \textbf{Neural-guided grammar search with temporal adaptation.} We integrate a three-headed PVPNet with grammar constraints, module libraries, and sliding-window inheritance mechanisms to explore hypothesis spaces that are both expressive and auditable under regime shifts.
+    \item \textbf{Comprehensive empirical validation.} We provide multi-year, multi-asset experiments, transaction-cost robustness analysis, and ablations that directly address RQ1--RQ3 and demonstrate competitiveness with black-box baselines.
+\end{enumerate}
+
+
+Section~\ref{sec:related} situates EATA within the literature on evaluation protocols, symbolic discovery, and risk-sensitive learning; Section~\ref{sec:method} elaborates the framework; Section~\ref{sec:experiments} presents empirical evidence; Section~\ref{sec:conclusion} discusses limitations and future work.
+
+% ====== Inlined from 2.related.tex ======
+% 2.related.tex - Related Work
+\section{Related Work}
+\label{sec:related}
+
+This section places EATA at the intersection of three areas: empirical trading evaluation, symbolic discovery with neural-guided search, and distributional/risk-sensitive objectives.
+
+%------------------------------------------------------------------------------
+\subsection{Evaluation Protocols and Statistical Validity in Trading}
+
+Empirical trading research typically reports risk-adjusted metrics from portfolio theory~\cite{markowitz1952portfolio,sharpe1966mutual}, yet Sharpe-ratio estimates carry considerable uncertainty in finite samples~\cite{lo2002sharpe_stats}, and naive benchmark selection invites data-snooping. Econometric tools such as the reality check provide principled corrections, while later work emphasizes selection bias and backtest overfitting~\cite{bailey2014deflated_sharpe} and the pervasiveness of multiple testing in large-scale factor mining. Transaction costs further degrade strategies once implementation frictions are introduced~\cite{keim1997transaction_costs}. A recurring pitfall is equating in-sample predictive performance with out-of-sample profitability, amplified by the noisy, heavy-tailed, and regime-dependent nature of returns~\cite{cont2001empirical}. These considerations motivate EATA's two design principles: (i) grammatically constraining the hypothesis space to reduce implicit multiple testing, and (ii) aligning learning signals with economically meaningful outcomes.
+
+%------------------------------------------------------------------------------
+\subsection{Interpretable Alpha Discovery and Formulaic Trading Signals}
+
+Recent alpha mining aims to discover formulaic factors at scale, spanning genetic programming, reinforcement learning~\cite{yu2023alphagen}, and language-model-assisted frameworks. AlphaStock further shows that interpretable deep RL can construct auditable portfolios. Such systems rely on the assumption that improving a proxy objective (e.g., prediction loss or IC) yields profitable trading rules; in practice this breaks down because weak signals trigger excessive turnover~\cite{keim1997transaction_costs}, occasional large losses violate drawdown constraints, and large factor libraries amplify false discoveries unless explicitly regularized. EATA is a "constrained alpha miner" that binds formulaic interpretability to a profit-aware, distribution-sensitive learning signal.
+
+%------------------------------------------------------------------------------
+\subsection{Neural-Guided Search and MCTS for Symbolic Discovery}
+
+Symbolic regression has evolved from Genetic Programming~\cite{koza1994genetic} toward neural guidance: DSR~\cite{petersen2021deep} generates expressions via policy gradients, and transformer-based models~\cite{biggio2021neural,kamienny2022end} learn end-to-end generation, though they require large synthetic corpora and may generalize poorly to unknown non-stationary forms~\cite{makke2024interpretable}. MCTS~\cite{coulom2006efficient} provides a principled exploration--exploitation trade-off with neural policy--value guidance. In trading, NEMoTS~\cite{xie2024nemots} pairs MCTS with policy--value networks for time-series symbolic regression; AlphaCFG~\cite{yang2026alpha} treats alpha discovery as grammar-guided generation; and RiskMiner~\cite{ren2024riskminer} formalizes risk-seeking MCTS over tokenized expressions. These methods still optimize prediction fit (e.g., IC), which can be economically weak as trading rules: MSE-calibrated expressions degrade precisely in the tails where trading risks concentrate. Two boundary conditions matter: expressions decay under regime shifts, and an explicit decision layer is needed to convert predictions into stable rules. EATA shares the neural-guided paradigm but steers the search toward profit-aware objectives via the Wasserstein distance and adds a temporal adaptation mechanism.
+
+%------------------------------------------------------------------------------
+\subsection{Distributional Metrics, Optimal Transport, and Risk-Sensitive Learning}
+
+Financial returns are heavy-tailed and asymmetric~\cite{cont2001empirical}, making point-wise losses a weak proxy for economic utility. Optimal transport provides a geometrically meaningful way to compare distributions~\cite{villani2009optimal}, and Wasserstein distributionally robust optimization improves out-of-sample stability in portfolio selection~\cite{pesenti2023pOrtfolio}. In reinforcement learning, distributional perspectives and risk-sensitive criteria such as CVaR~\cite{chow2015cvar} capture tail risk beyond mean outcomes. Although CVaR directly targets tail losses, it requires careful tail-parameter tuning and can be unstable when tail events are rare; the Wasserstein distance offers a complementary mechanism that compares the entire distribution, penalizes systematic quantile miscalibration, and remains meaningful even when supports differ.
+
+%------------------------------------------------------------------------------
+\subsection{Positioning of EATA}
+
+EATA differs from representative method families along five dimensions: interpretability, neural components, financial operators, profit-aware objective, and non-stationarity adaptation. Black-box models (LSTM/Transformer, FinRL) are profitable but opaque; GP and DSR are interpretable yet optimize point-wise objectives; Alpha-Mining~\cite{yu2023alphagen} and NEMoTS are neural-guided but lack profit-aware rewards. EATA uniquely integrates neural-guided search (MCTS + PVPNet), financial operators (domain grammar), and profit-aware learning (distributional reward) within a unified, interpretable framework.
+
+% ====== Inlined from 3.method.tex ======
+% 3.method.tex - EATA Methodology
+\section{Methodology}
+\label{sec:method}
+
+This section presents the technical details of the Explainable Algorithmic Trading Agent (EATA). We first establish a unified notation system and then describe the core algorithm and its design principles.
+
+\begin{figure*}[t]
+\centering
+\includegraphics[width=0.55\textwidth]{figures/method_architecture.pdf}
+\caption{EATA framework: sliding-window data protocol with decoupled grammar, neural-guided MCTS (policy $\pi_{\text{nn}}$ vs.\ UCB exploration $\pi_{\text{ucb}}$ balanced by $\alpha$), expression refinement via grammar augmentation and Powell coefficient fitting, and trading signals from a three-headed PVPNet with a 1-Wasserstein profit reward and quantile-based consensus.}
+\label{fig:method_architecture}
+\end{figure*}
+
+%==============================================================================
+\subsection{Problem Formulation}
+\label{subsec:problem}
+
+Given a multivariate financial time series $\mathbf{X} = \{\mathbf{x}_t\}_{t=1}^{T}$ where $\mathbf{x}_t \in \mathbb{R}^{d}$ represents $d$ market features at time $t$, we seek an interpretable expression $e^{*}$ that balances predictive accuracy with trading profitability:
+\begin{equation}
+e^{*} = \arg\max_{e \in \mathcal{E}} \left[ \eta \cdot \mathcal{A}(e, \mathbf{X}) + (1-\eta) \cdot \mathcal{P}(e, \mathbf{X}) \right],
+\label{eq:objective}
+\end{equation}
+where $\mathcal{E}$ denotes the valid expression space defined by grammar $\mathcal{G}$, $\mathcal{A}(\cdot)$ measures prediction accuracy, $\mathcal{P}(\cdot)$ measures trading profit, and $\eta \in [0,1]$ balances the two objectives.
+
+A pure accuracy objective is inconsistent with trading utility because it treats all errors symmetrically and ignores the asymmetry of risk. Conversely, a pure profit objective may overfit to specific return realizations and produce brittle expressions that exploit idiosyncratic fluctuations. The mixed objective in Eq.~\ref{eq:objective} acts as a regularizer: $\mathcal{A}$ stabilizes the search toward expressions that capture repeatable predictive structure, while $\mathcal{P}$ biases discovered expressions toward economically significant outcomes. The control parameter $\eta$ thus provides a transparent trade-off between statistical fit and economic utility, which can be adjusted according to risk preferences.
+
+%==============================================================================
+\subsection{Domain-Specific Grammar Design}
+\label{subsec:grammar}
+
+We employ a context-free grammar $\mathcal{G} = (\mathcal{V}, \Sigma, \mathcal{R}, \mathit{S})$ tailored for financial time series analysis. The grammar incorporates domain knowledge through fixed-window financial operators.
+
+\textbf{Non-terminals and Terminals.} The non-terminal set $\mathcal{V} = \{\mathit{S}, \mathit{A}, \mathit{B}, \mathit{D}\}$ includes the start symbol ($\mathit{S}$), primary expressions ($\mathit{A}$), helper expressions ($\mathit{B}$), and decision predicates ($\mathit{D}$). The terminal set $\Sigma$ comprises feature variables $\{x_0, x_1, \ldots, x_{d-1}\}$, constants, and operators.
+
+\textbf{Production Rules.} The rule set $\mathcal{R}$ comprises the start rule and four operator categories:
+\begin{align}
+\mathit{S} &\rightarrow \mathit{A} \nonumber \\
+\mathit{A} &\rightarrow \mathit{A} + \mathit{A} \mid \mathit{A} - \mathit{A} \mid \mathit{A} \times \mathit{A} \mid \mathit{A} \div \mathit{A} \mid \mathit{A} \times C \mid \mathit{A} + C \nonumber \\
+\mathit{A} &\rightarrow \cos(\mathit{A}) \mid \sin(\mathit{A}) \mid \exp(\mathit{A}) \mid \log(\mathit{B}) \mid \sqrt{\mathit{B}} \mid |\mathit{A}| \mid \mathit{A}^{2} \nonumber \\
+\mathit{A} &\rightarrow \text{delay}(\mathit{A}, \mathit{L}) \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{diff}(\mathit{A}, \mathit{L}) \mid \text{mom}(\mathit{A}, \mathit{L}) \nonumber \\
+&\quad \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}) \mid \text{rsi}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \nonumber \\
+\mathit{W} &\rightarrow 5 \mid 10 \mid 20 \mid 30 \mid 60, \quad \mathit{L} \rightarrow 1 \mid 5 \mid 10 \mid 20 \nonumber \\
+\mathit{A} &\rightarrow \text{ite}(\mathit{D}, \mathit{A}, \mathit{A}), \quad \mathit{D} \rightarrow \mathit{A} > \mathit{B} \mid \mathit{A} < \mathit{B} \nonumber \\
+\mathit{B} &\rightarrow |\mathit{A}| \mid \mathit{A}^{2} \mid \text{ma}(\mathit{A}, \mathit{W}) \mid \text{vol}(\mathit{A}, \mathit{W}) \mid \text{max\_n}(\mathit{A}, \mathit{W}) \mid \text{min\_n}(\mathit{A}, \mathit{W}).
+\end{align}
+
+The decoupled grammar, inspired by AlphaCFG~\cite{yang2026alpha}, separates operators from parameters: window/lag non-terminals ($\mathit{W}, \mathit{L}$) resolve to discrete values, preventing invalid parameter combinations (e.g., negative windows) while preserving expressiveness; the conditional operator $\text{ite}$ enables piecewise regime-switching expressions. Fixed-window operators encode domain priors and limit degrees of freedom, reducing multiple-testing effects and data-snooping risk~\cite{bailey2014deflated_sharpe}.
+
+%==============================================================================
+\subsection{Neural-Guided Monte Carlo Tree Search}
+\label{subsec:mcts}
+
+Algorithm~\ref{alg:mcts} presents the MCTS procedure with neural network guidance. Each episode traverses the search tree using a policy fusion mechanism.
+
+\begin{algorithm}[htbp]
+\caption{Neural-Guided MCTS for Symbolic Regression}
+\label{alg:mcts}
+\begin{algorithmic}[1]
+\Require Data $\mathbf{X}$, grammar $\mathcal{G}$, network $f_{\theta}$, episodes $K$, guidance weight $\alpha$, fusion weight $\omega$, prior tree $\tau^{\text{prev}}$
+\Ensure Best expression $e^{*}$, experience buffer $\mathcal{D}$
+\State Initialize $Q(\cdot) \leftarrow 0$, $N(\cdot) \leftarrow 1$, $\mathcal{D} \leftarrow \emptyset$; $\mathit{s} \leftarrow \textsc{InitializeState}(\tau^{\text{prev}})$
+\For{$k = 1$ \textbf{to} $K$}
+    \State $\mathit{states}, \mathit{actions} \leftarrow []$; $\mathcal{U} \leftarrow \textsc{GetUnvisited}(\mathit{s})$
+    \While{$\mathcal{U} = \emptyset$ \textbf{and} not $\textsc{IsTerminal}(\mathit{s})$} \Comment{Selection}
+        \State $\boldsymbol{\pi}^{\text{nn}}, V, P \leftarrow f_{\theta}(\mathit{s}, \mathbf{X})$
+        \State $\boldsymbol{\pi} \leftarrow \alpha \cdot \boldsymbol{\pi}^{\text{nn}} + (1-\alpha) \cdot \textsc{ComputeUCB}(\mathit{s}, C)$
+        \State $\mathit{a} \sim \text{Categorical}(\textsc{Normalize}(\boldsymbol{\pi}))$; $\text{append}(\mathit{states}, \mathit{s})$, $\text{append}(\mathit{actions}, \mathit{a})$
+        \State $\mathit{s} \leftarrow \textsc{Step}(\mathit{s}, \mathit{a})$; $\mathcal{U} \leftarrow \textsc{GetUnvisited}(\mathit{s})$
+        \If{$|\mathit{s}| \geq L^{\max}$} \State $\textsc{Backprop}(\mathit{states}, \mathit{actions}, 0)$; \textbf{break} \EndIf
+    \EndWhile
+    \State $r^{\text{acc}}, e \leftarrow \textsc{Evaluate}(\mathit{s}, \mathbf{X})$ \Comment{Scoring in Sec.~\ref{subsec:scoring}}
+    \State $r^{\text{rl}} \leftarrow \textsc{ComputeRLReward}(e, \mathbf{X})$ \Comment{Profit reward via Eq.~\ref{eq:rlreward}}
+    \State $r^{\text{final}} \leftarrow \alpha \cdot (\omega \cdot V + (1-\omega) \cdot P) + (1-\alpha) \cdot \textsc{Rollout}(\mathit{s}, n^{\text{play}})$
+    \State $\textsc{Backprop}(\mathit{states}, \mathit{actions}, r^{\text{final}})$; $\mathcal{D}.\text{append}((\mathit{states}, \mathbf{X}, \boldsymbol{\pi}, r^{\text{acc}}, r^{\text{rl}}))$
+\EndFor
+\State \Return $e^{*}, \mathcal{D}$
+\end{algorithmic}
+\end{algorithm}
+
+The dual fusion handles early-training uncertainty: before the buffer fills, rollout estimates are more reliable; as training progresses, $\alpha$ grows and neural guidance dominates, while the value--profit fusion via $\omega$ balances predictive fit and profit potential. GP suffers from bloat and expensive evaluation under backtesting-based objectives, and sequence generators require large training corpora yet may produce syntactically valid but semantically meaningless expressions. MCTS leverages neural priors while retaining explicit UCB exploration, which suits the low signal-to-noise regime of financial time series.
+
+%==============================================================================
+\subsection{Expression Scoring with Coefficient Optimization}
+\label{subsec:scoring}
+
+Each candidate expression $e$ is evaluated on the training data. Let $n_c$ denote the number of constants in $e$; if $n_c = 0$, the expression is evaluated directly; if $n_c \geq 10$, it is discarded (score $0$); otherwise the constants are optimized by a derivative-free Powell optimizer with timeout $t^{\max}=30$s, i.e., $\mathbf{c}^{*} = \arg\min_{\mathbf{c}} \| \textsc{Evaluate}(e, \mathbf{X}, \mathbf{c}) - \mathbf{y} \|_{2}$, and the accuracy reward is $\text{MSE} = \frac{1}{T}\|\hat{\mathbf{y}} - \mathbf{y}\|_{2}^{2}$, $r^{\text{acc}} = \frac{1}{1 + \text{MSE}}$.
+
+Coefficient optimization is indispensable: the grammar encodes functional form, while coefficients determine scale and sensitivity. We use a derivative-free optimizer (Powell) because expression evaluation may be non-smooth (e.g., conditional operators), and the constant cap prevents brittle overfit expressions.
+%==============================================================================
+\subsection{Grammar Augmentation via Module Extraction}
+\label{subsec:augmentation}
+
+High-quality sub-expressions from evaluated candidates are extracted into a bounded module library $\mathcal{M}$: sub-expressions of length $\leq L^{\text{mod}}$ are inserted if the library is not full ($|\mathcal{M}| < M^{\max}$), otherwise the lowest-reward entry is replaced if the new candidate's reward is higher. Module extraction trades off search efficiency and generalization: reusing high-quality sub-expressions shortens the effective search depth, while a bounded library prevents bloat and limits the risk of idiosyncratic patterns, maintaining a transparent search space.
+
+%==============================================================================
+\subsection{Profit-Aware RL Reward via Wasserstein Distance}
+\label{subsec:rlreward}
+
+To explicitly optimize trading profitability, we introduce a Reinforcement Learning (RL) reward signal $r^{\text{rl}}$. Unlike standard regression targets that penalize point-wise errors (e.g., MSE), financial trading must capture the distributional properties of returns, particularly the asymmetry between gains and losses and the presence of heavy tails. This is consistent with the broader trend in distributional and risk-sensitive reinforcement learning, where methods model return distributions or tail-risk objectives rather than expected value alone~\cite{chow2015cvar}.
+
+Our key insight is that the Wasserstein distance (Earth Mover's Distance) provides a principled way to measure the return distribution, accounting for both tail risk and directional asymmetry~\cite{villani2009optimal}. Unlike KL divergence or MSE, the Wasserstein distance measures the minimum "work" required to transform one distribution into another, making it sensitive to the magnitude and location of distributional differences.
+
+Given predictions $\hat{\mathbf{y}}^{(1)}, \ldots, \hat{\mathbf{y}}^{(k)}$ from the top-$k$ discovered expressions, we construct a prediction distribution $\mathcal{D}^{\text{pred}}$. We compare this against the distribution of actual future returns $\mathcal{D}^{\text{actual}}$ using the 1-Wasserstein distance (Earth Mover's Distance)~\cite{villani2009optimal}:
+\begin{equation}
+\mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}}) = \int_{-\infty}^{\infty} |F^{\text{pred}}(x) - F^{\text{actual}}(x)| \, dx,
+\label{eq:wasserstein}
+\end{equation}
+where $F^{\text{pred}}$ and $F^{\text{actual}}$ are the cumulative distribution functions (CDFs) of the predicted and actual returns, respectively. The RL reward is then defined as:
+\begin{equation}
+r^{\text{rl}} = \frac{1}{1 + \mathcal{W}_{1}(\mathcal{D}^{\text{pred}}, \mathcal{D}^{\text{actual}})}.
+\label{eq:rlreward}
+\end{equation}
+
+Return distributions are non-Gaussian, typically exhibiting skewness and leptokurtosis. For such data, the Wasserstein distance offers three advantages over KL divergence or MSE: (1) it remains meaningful even when the supports do not overlap; (2) it respects the geometry of the underlying space (error magnitude matters); (3) by measuring transport cost, it effectively captures tail risks~\cite{villani2009optimal}. Recent Wasserstein DRO studies further support its out-of-sample stability~\cite{pesenti2023pOrtfolio}.~\ref{app:wasserstein_theory} formalizes the convergence and CVaR-control properties of this reward.
+
+We emphasize that the superiority of Wasserstein is rooted in three structural properties. \textbf{First, quantile uniform-weighting:} in one dimension, $\mathcal{W}_1 = \frac{1}{N}\sum_i |x_{(i)} - y_{(i)}|$ assigns equal weight to every quantile, including extreme tails, whereas MSE is dominated by central mass and is virtually insensitive to tail misspecification. \textbf{Second, the Kantorovich--Rubinstein dual} $\mathcal{W}_1(P,Q) = \sup_{\|f\|_{\text{Lip}} \leq 1} \mathbb{E}_{P}[f] - \mathbb{E}_{Q}[f]$ shows that minimizing Wasserstein distance is equivalent to minimizing distributional mismatch under all 1-Lipschitz test functions, providing adversarial distributional robustness against smooth payoff functions. \textbf{Third, the CVaR bound} (Proposition~2 in~\ref{app:wasserstein_theory}) gives $|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)| \leq \frac{1}{1-\alpha}\mathcal{W}_1(P,Q)$, directly controlling tail-risk discrepancies without explicit CVaR tuning; MSE and KL provide no such guarantees. Together these properties explain the superior tail-risk control and risk-adjusted returns observed in Section~\ref{sec:experiments}.
+
+\subsubsection{Reward Semantics, Training Targets, and Objective Variants}
+\label{subsec:reward_flow}
+
+EATA uses two conceptually distinct signals during search and training.
+\textbf{(i) Accuracy reward} evaluates point-wise prediction fit, consistent with conventional regression objectives:
+\begin{equation}
+r^{\text{acc}} = \frac{1}{1 + \text{MSE}}.
+\label{eq:racc}
+\end{equation}
+\textbf{(ii) Profit-aware reward} evaluates distributional alignment between predicted and realized return distributions via Wasserstein distance, as defined in Eq.~\ref{eq:rlreward}.
+
+\textbf{Data flow.} During MCTS, each terminal expression is evaluated to obtain $(r^{\text{acc}}, r^{\text{rl}})$; the search backup uses a scalar reward that prioritizes profit while retaining an optional accuracy component:
+\begin{equation}
+r^{\text{mix}} = \eta \cdot r^{\text{acc}} + (1-\eta) \cdot r^{\text{rl}}.
+\label{eq:rmix}
+\end{equation}
+This formulation avoids degenerate expressions that exploit noisy returns: $r^{\text{acc}}$ stabilizes the search toward repeatable predictive structure, while $r^{\text{rl}}$ biases discovery toward economically meaningful tail behavior.
+
+\textbf{PVPNet targets.} The value head $V_{\theta}$ is trained to predict $r^{\text{acc}}$, while the profit head $P_{\theta}$ is trained to predict $r^{\text{rl}}$. This separation makes the guidance signal interpretable: the improvement of $P_{\theta}$ corresponds to the discovery of expressions with better distributional risk-return characteristics, not just lower MSE.
+
+\textbf{RQ1 baseline (MSE-based objective).} To isolate the effect of the profit-aware objective, we define an accuracy-only variant, denoted \textbf{NoRL} (or \textbf{EATA-MSE}), which removes the profit head and replaces the profit-aware reward with the accuracy reward: $r^{\text{rl}} \leftarrow r^{\text{acc}}$ and $r^{\text{mix}} \leftarrow r^{\text{acc}}$. This variant retains the same grammar, search budget, and temporal protocol, providing a controlled comparison for RQ1.
+
+%==============================================================================
+\subsection{Three-Headed Policy-Value-Profit Network (PVPNet)}
+\label{subsec:pvnet}
+
+The PVPNet processes both the derivation state and input time series: a state LSTM encodes the symbolic derivation path, a sequence LSTM encodes market dynamics, and their concatenated hidden representation feeds three heads---a policy head producing $\boldsymbol{\pi}$ over production rules and two scalar heads $V$ and $P$.
+
+The network is trained via three-component loss:
+\begin{equation}
+\mathcal{L}(\theta) = \lambda^{\pi} \mathcal{L}^{\pi} + \lambda^{V} \mathcal{L}^{V} + \lambda^{P} \mathcal{L}^{P},
+\label{eq:loss}
+\end{equation}
+where the components are:
+\begin{align}
+\mathcal{L}^{\pi} &= D_{\text{KL}}(\boldsymbol{\pi}^{\text{target}} \| \boldsymbol{\pi}_{\theta}) \label{eq:loss_policy}\\
+\mathcal{L}^{V} &= \left(V_{\theta} - r^{\text{acc}}\right)^{2} \label{eq:loss_value}\\
+\mathcal{L}^{P} &= \left(P_{\theta} - r^{\text{rl}}\right)^{2}. \label{eq:loss_profit}
+\end{align}
+
+The dual-LSTM encodes the derivation path and market dynamics separately; the value and profit heads fit $r^{\text{acc}}$ and $r^{\text{rl}}$ via MSE, making the guidance signal interpretable: improvement of the profit head corresponds to better distributional risk-return characteristics rather than lower MSE alone. The hidden dimension is deliberately small ($d_h=16$): grammar and module constraints limit the branching factor to $\approx |\mathcal{R}| \approx 30$ rules, and increasing $d_h$ to 32 yields negligible improvement.
+
+%==============================================================================
+\subsection{Overall Training Pipeline}
+\label{subsec:pipeline}
+
+The training procedure integrates all components: for each sliding window, $N^{\text{run}}$ independent runs of $M$ MCTS episodes (Algorithm~\ref{alg:mcts}) are executed with module-library grammar augmentation, after which the experience buffer is updated and the network parameters are updated by minimizing $\mathcal{L}$ (Eq.~\ref{eq:loss}); the best tree is then inherited as $\tau^{\text{prev}}$ for the next window.
+
+Sliding windows adapt to non-stationary markets, and expression inheritance (warm-starting MCTS with $\tau^{\text{prev}}$) accelerates search by reusing persistent substructures (e.g., moving-average filters) across adjacent windows; the adaptive $\alpha$ schedule transitions from exploration (rollout-heavy) to exploitation (NN-guided) as experience accumulates.
+%==============================================================================
+\subsection{Trading Signal Generation}
+\label{subsec:signal}
+
+Given top-$k$ expressions, trading signals are generated via quantile-based consensus. For prediction distribution $\mathcal{D}^{\text{pred}}$ aggregated from $k$ expressions:
+\begin{equation}
+\text{signal} = \begin{cases}
++1 \text{ (buy)} & \text{if } Q_{25}(\mathcal{D}^{\text{pred}}) > 0 \\
+-1 \text{ (sell)} & \text{if } Q_{75}(\mathcal{D}^{\text{pred}}) < 0 \\
+0 \text{ (hold)} & \text{otherwise}.
+\end{cases}
+\label{eq:signal}
+\end{equation}
+
+The $Q_{25} > 0$ / $Q_{75} < 0$ rules require strong consensus (even the pessimistic quartile predicts positive returns, or the optimistic quartile predicts negative returns) before trading, reducing false signals; thresholds are set on the validation set to prioritize precision over recall. Quantile consensus thus provides an interpretable robustness mechanism against noisy near-zero signals, acting as a margin that reduces turnover and transaction costs.
+
+%==============================================================================
+\subsection{Complexity Analysis}
+\label{subsec:complexity}
+
+Each MCTS episode traverses $O(L^{\max})$ nodes; with $K$ episodes, $M$ augmentation iterations, and $N^{\text{run}}$ runs per window, the time complexity is $O(N^{\text{run}} \cdot M \cdot K \cdot L^{\max})$, plus $O(|\mathcal{R}|)$ per network inference. The tree stores $O(K \cdot L^{\max})$ nodes, while the experience buffer and module library are bounded by $B^{\max}$ and $M^{\max}$.
+
+% ====== Inlined from 4.experiments.tex ======
+% 4.experiments.tex - Experiments
+\section{Experiments}
+\label{sec:experiments}
+
+This section evaluates EATA and addresses the research questions of Section~\ref{sec:intro}. We evaluate on representative constituent stocks (N=345) from the S\&P 500 index, covering Technology, Finance, and Healthcare. The evaluation period spans February 8, 2013 to February 7, 2018, encompassing post-crisis recovery, QE tapering, the oil-price collapse, Brexit, a strong bull market, and the early-2018 correction. Daily OHLCV data is split temporally into a training period (Feb 8, 2013 to Jun 30, 2016) and an out-of-sample testing period (Jul 1, 2016 to Feb 7, 2018).
+
+\subsection{Baselines}
+We compare EATA against 11 baselines across five categories:
+\begin{itemize}
+    \item \textbf{Traditional}: Buy \& Hold, MACD (tuned).
+    \item \textbf{Statistical}: ARIMA (5,1,0).
+    \item \textbf{Machine Learning}: LightGBM, GBDT, Genetic Programming (via Operon)~\cite{burlacu2020operon}.
+    \item \textbf{Deep Learning}: LSTM, Transformer.
+    \item \textbf{Reinforcement Learning}: PPO, A2C, TD3, DDPG (FinRL).
+\end{itemize}
+Hyperparameters follow standard settings from the cited implementations and the literature.
+
+\subsection{Main Results: Profitability vs.\ Black-Box (RQ3)}
+
+\subsubsection{Performance Comparison}
+\textbf{Hypothesis (RQ3).} Profit-aware symbolic strategies can match or exceed black-box baselines in risk-adjusted returns while remaining intrinsically interpretable.
+
+Table~\ref{tab:main_results} reports performance averaged across our universe. EATA achieves a \textbf{Sharpe ratio of 0.76} with an annualized return of 21.2\%, competitive with black-box baselines while maintaining full interpretability.
+
+\begin{table}[htbp]
+\centering
+\caption{Main Performance Comparison. EATA achieves competitive Sharpe Ratio while maintaining interpretability.}
+\label{tab:main_results}
+% ====== Inlined from tables/sp500_full_table.tex ======
+% Main results table — all baselines (N=345 representative S&P 500 stocks, 2013--2018)
+\resizebox{0.6\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Method} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} \\
+\midrule
+Buy \& Hold & 12.7 & 0.57 & 12.0 & 55\% \\
+PPO (FinRL) & 7.5 & 0.56 & 8.4 & 58\% \\
+A2C (FinRL) & 7.1 & 0.47 & 8.6 & 52\% \\
+MACD & 6.0 & 0.40 & 9.3 & 50\% \\
+DDPG (FinRL) & 5.4 & 0.34 & 6.4 & 31\% \\
+TD3 (FinRL) & 3.9 & 0.27 & 7.1 & 32\% \\
+Transformer & 0.0 & -0.03 & 4.2 & 24\% \\
+ARIMA & -2.5 & -0.12 & 21.3 & 32\% \\
+GBDT & -4.5 & -0.22 & 19.7 & 21\% \\
+GP (Operon) & -4.7 & -0.22 & 19.3 & 23\% \\
+LSTM & -11.0 & -0.59 & 25.5 & 10\% \\
+\midrule
+\textbf{EATA (Ours)} & \textbf{21.2}$^{**}$ & \textbf{0.76}$^{**}$ & 17.0 & 51.8\% \\
+\bottomrule
+\end{tabular}%
+}
+
+\end{table}
+
+The consistent advantage of EATA over symbolic baselines (GP) and black-box predictors (LightGBM, LSTM, Transformer) demonstrates the value of optimizing the discovery process toward \emph{trading utility}. We attribute this to two coupled design choices: the profit-aware objective that penalizes unfavorable distributional risk, and the domain grammar that constrains search to financially meaningful operators.
+
+\subsubsection{Cumulative Returns and Strategy Analysis}
+Figure~\ref{fig:cum_returns} compares cumulative returns against key baselines: EATA delivers a smoother growth trajectory than several baselines. Figure~\ref{fig:corr_risk} further shows that EATA's returns have low correlation with trend-following baselines and cluster in the high-return/moderate-risk region, indicating that it captures unique alpha sources rather than repackaging market beta.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.52\columnwidth]{figures/real_cumulative_returns.pdf}
+\caption{Cumulative Performance Comparison. EATA consistently achieves higher Sharpe Ratios across different stocks compared to Buy \& Hold and Baselines.}
+\label{fig:cum_returns}
+\end{figure}
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/correlation_heatmap.pdf}
+\caption{Strategy correlation matrix. EATA exhibits low correlation with trend-following baselines, suggesting it captures unique alpha.}
+\label{fig:correlation}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/real_risk_return.pdf}
+\caption{Risk-return scatter plot. EATA (blue) clusters in the high-return/moderate-risk region.}
+\label{fig:risk_return}
+\end{subfigure}
+\caption{EATA's diversification and risk-return profile relative to baselines.}
+\label{fig:corr_risk}
+\end{figure}
+
+\subsection{Mechanism Analysis: Wasserstein vs.\ MSE (RQ1)}
+
+\subsubsection{Return Distribution and Risk-Return Trade-off}
+\textbf{Hypothesis (RQ1).} Optimizing distributional divergence (Wasserstein) rather than point-wise error (MSE) can improve tail-risk control and yield a more favorable return asymmetry.
+
+Figure~\ref{fig:dist} shows EATA's return distribution with positive skewness (skewness = 1.14) and a mean daily return of 0.076\% (annualized 21.2\%); a risk-return scatter (omitted for brevity) confirms that EATA clusters in the high-return/moderate-risk region. Distribution-aware objectives penalize mismatches across the entire return distribution, whereas MSE is dominated by small central errors; since the left tail dominates realized utility under drawdown constraints, the distribution-aware objective reduces catastrophic losses.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.52\columnwidth]{figures/real_return_distribution.pdf}
+\caption{Return Distribution. EATA's return distribution shows a positive skew (skewness = 1.14, mean = 0.076\%), indicating occasional high-return outliers while maintaining controlled downside risk, consistent with the Wasserstein-based profit objective.}
+\label{fig:dist}
+\end{figure}
+
+\subsubsection{Ablation Study: Component Analysis}
+
+\begin{table}[htbp]
+\centering
+\caption{Ablation Study Results: Performance Metrics by Variant }
+\label{tab:ablation_results}
+% ====== Inlined from tables/ablation_results.tex ======
+\resizebox{0.9\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Configuration} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} \\
+\midrule
+\textbf{EATA (Full)} & \textbf{21.2} & \textbf{0.76} & \textbf{17.0} & \textbf{51.8\%} \\
+w/o MCTS & 4.3 & 0.19 & 30.9 & 50.4\% \\
+w/o Exploration & 9.5 & 0.43 & 31.1 & 51.1\% \\
+w/o Memory & 3.1 & 0.15 & 34.8 & 44.2\% \\
+w/o Neural Network & 10.6 & 0.45 & 31.4 & 51.1\% \\
+w/o Wasserstein & 4.1 & 0.22 & 37.3 & 48.5\% \\
+\bottomrule
+\end{tabular}%
+}
+
+\end{table}
+
+\textbf{Finding (RQ1: Component Importance).} The ablation reveals a clear hierarchy. \textbf{MCTS is the most critical component}: removing it collapses the Sharpe ratio from 0.76 to 0.19 ($-75\%$), indicating that lookahead search is indispensable and neural policy alone cannot handle complex market dynamics. \textbf{Exploration is also crucial} (Sharpe 0.43, $-43\%$). \textbf{Wasserstein distance is valuable}: replacing it with simple MAE reduces the Sharpe ratio to 0.22 ($-71\%$), confirming that distributional alignment beats point-wise error minimization. The memory module (0.15) and neural network (0.45) contribute moderately, with the neural variant's relative contribution varying across market regimes.
+
+\subsubsection{Wasserstein vs.\ Alternative Distributional Objectives}
+
+To validate Wasserstein, we compare it against KL divergence, Jensen-Shannon (JS) divergence, and CVaR. Table~\ref{tab:objectives} reports the results: Wasserstein consistently outperforms alternatives, particularly in tail-risk control and distribution shape, supporting the theoretical intuition that Wasserstein transport cost aligns with trading utility.
+
+\begin{table}[htbp]
+\centering
+\caption{Performance Comparison Across Distributional Objectives }
+\label{tab:objectives}
+\resizebox{0.7\columnwidth}{!}{%
+\begin{tabular}{lcccc}
+\toprule
+\textbf{Objective} & \textbf{AR (\%)} & \textbf{SR} & \textbf{MDD (\%)} & \textbf{Win Rate} \\
+\midrule
+\textbf{Wasserstein (Full)} & \textbf{21.2} & \textbf{0.76} & \textbf{17.0} & \textbf{51.8\%} \\
+MSE & 4.1 & 0.22 & 37.3 & 48.5\% \\
+KL Divergence & 3.1 & 0.15 & 34.8 & 44.2\% \\
+JS Divergence & 4.3 & 0.19 & 30.9 & 50.4\% \\
+CVaR & 9.5 & 0.43 & 31.1 & 51.1\% \\
+\bottomrule
+\end{tabular}%
+}
+\end{table}
+
+\subsection{Interpretability and Search Efficiency (RQ2)}
+
+\subsubsection{Search Efficiency and Pareto Frontier}
+Neural guidance accelerates symbolic search: the guided version reaches a high Sharpe ratio much faster than pure MCTS (Figure~\ref{fig:eff_pareto}a). A Pareto-frontier analysis (Figure~\ref{fig:eff_pareto}b) shows that EATA achieves superior performance with moderate complexity: 6 valid symbolic expressions with an average Sharpe ratio of 0.824 and 9--17 AST nodes, versus GP's average 0.487 with most expressions degenerating to trivial constants. This 1.69$\times$ advantage at moderate complexity is valuable in regulated environments where overly complex rules are hard to audit.
+
+\begin{figure}[htbp]
+\centering
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/convergence_curves.pdf}
+\caption{Convergence with vs.\ without neural guidance. The guided version (blue) reaches a high Sharpe ratio faster.}
+\label{fig:efficiency}
+\end{subfigure}
+\hfill
+\begin{subfigure}[b]{0.44\textwidth}
+\includegraphics[width=\textwidth]{figures/pareto_frontier.pdf}
+\caption{Pareto frontier of interpretability vs.\ performance. EATA (blue circles) dominates GP (orange triangles) at moderate complexity.}
+\label{fig:pareto}
+\end{subfigure}
+\caption{Search efficiency and interpretability--performance trade-off of EATA.}
+\label{fig:eff_pareto}
+\end{figure}
+
+% ====== Inlined from 5.conclusion.tex ======
+% 5.conclusion.tex - Conclusion
+\section{Conclusion}
+\label{sec:conclusion}
+
+We proposed EATA, a neural-guided symbolic regression framework that explicitly optimizes trading profitability through the Wasserstein distance, based on the insight that point-wise prediction accuracy (MSE) can be a poor proxy for economic utility. EATA formalizes symbolic regression as a distribution-matching problem, develops a three-headed Policy-Value-Profit network, and empirically validates on the S\&P 500 universe (N=345 stocks, 2013--2018): profit-aware learning yields significantly higher risk-adjusted returns than the accuracy-only variant (Table~\ref{tab:ablation_results}), and ablations confirm the necessity of the profit head and the domain grammar.
+
+Several limitations remain. \textit{Computational cost}: MCTS incurs considerable runtime per stock, limiting applicability to high-frequency or large-scale settings. \textit{Syntactic design}: fixed-window operators still rely on domain expertise for window selection. \textit{Single-asset focus}: each stock is modeled independently without portfolio-level or cross-asset interactions. \textit{Extreme regimes}: although the sliding window provides some robustness to moderate non-stationarity, sudden exogenous shocks may still invalidate learned patterns.
+
+Future work will focus on parallel MCTS implementations for \textit{scalability}, \textit{cross-market validation} (e.g., CSI 300, Hang Seng), a \textit{portfolio-level extension} with cross-asset operators, \textit{online and continual learning} to avoid full retraining, and \textit{causal discovery} to separate robust structural relationships from spurious correlations.
+
+
+% ============== Back Matter ==============
+% \section*{Acknowledgment}
+% This work was supported by the National Natural Science Foundation of China (No.~62272198).
+
+\section*{Declaration of Generative AI and AI-assisted technologies}
+During the preparation of this work, the authors used AI for code implementation, language polishing, proofreading, and generating the architecture figure from method descriptions. After using this tool/service, the authors reviewed and edited the content as needed and take full responsibility for the content of the publication.
+
+\section*{Data availability statement}
+The implementation, experimental configuration, and pre-trained checkpoints of EATA are publicly available at \url{https://github.com/JNU-Tangyin/eata}. All data used in this study come from a public financial database (Yahoo Finance); the processed dataset and reproduction scripts are included in the code repository.
+
+\section*{Funding}
+This work was supported by the National Natural Science Foundation of China (No.~62272198).
+
+\section*{Conflict of interest}
+The authors declare that they have no conflict of interest.
+
+% ============== References ==============
+\begin{thebibliography}{10}
+
+\bibitem{fischer2018deep}
+Thomas Fischer and Christopher Krauss.
+\newblock Deep learning with long short-term memory networks for financial market predictions.
+\newblock {\em European Journal of Operational Research}, 270(2):654--669, 2018.
+
+\bibitem{eu2014mifid}
+{European Union}.
+\newblock Markets in financial instruments directive ii (mifid ii).
+\newblock Directive 2014/65/EU, 2014.
+
+\bibitem{rudin2019stop}
+Cynthia Rudin.
+\newblock Stop explaining black box machine learning models for high stakes decisions and use interpretable models instead.
+\newblock {\em Nature Machine Intelligence}, 1(5):206--215, 2019.
+
+\bibitem{cont2001empirical}
+Rama Cont.
+\newblock Empirical properties of asset returns: stylized facts and statistical issues.
+\newblock {\em Quantitative Finance}, 1(2):223--236, 2001.
+
+\bibitem{koza1994genetic}
+John~R Koza.
+\newblock {\em Genetic programming II: Automatic discovery of reusable programs}.
+\newblock MIT Press, 1994.
+
+\bibitem{yang2026alpha}
+Han Yang, Dong Hao, Zhuohan Wang, Qi~Shi, and Xingtong Li.
+\newblock Alpha discovery via grammar-guided learning and search.
+\newblock {\em arXiv preprint arXiv:2601.22119}, 2026.
+
+\bibitem{xie2024nemots}
+Yi~Xie, Tianyu Qiu, Yun Xiong, Xiuqi Huang, Xiaofeng Gao, and Chao Chen.
+\newblock An efficient and generalizable symbolic regression method for time series analysis.
+\newblock {\em arXiv preprint arXiv:2409.03986}, 2024.
+
+\bibitem{markowitz1952portfolio}
+Harry Markowitz.
+\newblock Portfolio selection.
+\newblock {\em The Journal of Finance}, 7(1):77--91, 1952.
+
+\bibitem{sharpe1966mutual}
+William~F. Sharpe.
+\newblock Mutual fund performance.
+\newblock {\em The Journal of Business}, 39(S1):119, 1966.
+
+\bibitem{lo2002sharpe_stats}
+Andrew~W. Lo.
+\newblock The statistics of sharpe ratios.
+\newblock {\em Financial Analysts Journal}, 58(4):36--52, 2002.
+
+\bibitem{bailey2014deflated_sharpe}
+David~H. Bailey and Marcos Lopez~de Prado.
+\newblock The deflated sharpe ratio: Correcting for selection bias, backtest overfitting and non-normality.
+\newblock {\em SSRN Electronic Journal}, 2014.
+
+\bibitem{keim1997transaction_costs}
+Donald~B. Keim and Ananth Madhavan.
+\newblock Transactions costs and investment style: an inter-exchange analysis of institutional equity trades.
+\newblock {\em Journal of Financial Economics}, 46(3):265--292, 1997.
+
+\bibitem{yu2023alphagen}
+Shuo Yu, Hongyan Xue, Xiang Ao, Feiyang Pan, Jia He, Dandan Tu, and Shuang Min.
+\newblock Generating synergistic formulaic alpha collections via reinforcement learning.
+\newblock {\em arXiv preprint arXiv:2306.12964}, 2023.
+\newblock Proceedings of the 29th ACM SIGKDD Conference on Knowledge Discovery and Data Mining.
+
+\bibitem{petersen2021deep}
+Brenden~K Petersen, Mikel~Landajuela Larma, T~Nathan Mundhenk, Claudio~P Santiago, Soo~K Kim, and Joanne~T Kim.
+\newblock Deep symbolic regression: Recovering mathematical expressions from data via risk-seeking policy gradients.
+\newblock In {\em International Conference on Learning Representations (ICLR)}, pages 1--12, 2021.
+
+\bibitem{biggio2021neural}
+Luca Biggio, Tommaso Bendinelli, Alexander Neitz, Aurelien Lucchi, and Giambattista Parascandolo.
+\newblock Neural symbolic regression that scales.
+\newblock In {\em ICML}, pages 936--945, 2021.
+
+\bibitem{kamienny2022end}
+Pierre-Alexandre Kamienny, St{\'e}phane d'Ascoli, Guillaume Lample, and Fran{\c{c}}ois Charton.
+\newblock End-to-end symbolic regression with transformers.
+\newblock In {\em NeurIPS}, pages 10269--10281, 2022.
+
+\bibitem{makke2024interpretable}
+Nour Makke and Sanjay Chawla.
+\newblock Interpretable scientific discovery with symbolic regression: a review.
+\newblock {\em Artificial Intelligence Review}, 57(2):1--50, 2024.
+
+\bibitem{coulom2006efficient}
+R{\'e}mi Coulom.
+\newblock Efficient selectivity and backup operators in monte-carlo tree search.
+\newblock In {\em International Conference on Computers and Games}, pages 72--83. Springer, 2006.
+
+\bibitem{ren2024riskminer}
+Tao Ren, Ruihan Zhou, Jinyang Jiang, Jiafeng Liang, Qinghao Wang, and Yijie Peng.
+\newblock Riskminer: Discovering formulaic alphas via risk seeking monte carlo tree search.
+\newblock In {\em ACM International Conference on AI in Finance (ICAIF)}, 2024.
+
+\bibitem{villani2009optimal}
+C{\'e}dric Villani.
+\newblock {\em Optimal Transport: Old and New}, volume 338 of {\em Grundlehren der mathematischen Wissenschaften}.
+\newblock Springer, 2009.
+
+\bibitem{pesenti2023pOrtfolio}
+Silvana~M Pesenti and Sebastian Jaimungal.
+\newblock Portfolio optimization within a {W}asserstein ball.
+\newblock {\em SIAM Journal on Financial Mathematics}, 14(4):1175--1214, 2023.
+
+\bibitem{chow2015cvar}
+Yinlam Chow, Aviv Tamar, Shie Mannor, and Marco Pavone.
+\newblock Risk-sensitive and robust decision-making: a cvar optimization approach.
+\newblock {\em arXiv preprint arXiv:1506.02188}, 2015.
+
+\bibitem{burlacu2020operon}
+Bogdan Burlacu, Gabriel Kronberger, and Michael Kommenda.
+\newblock Operon c++: An efficient genetic programming framework for symbolic regression.
+\newblock In {\em GECCO Companion}, pages 1562--1570, 2020.
+
+\end{thebibliography}
+
+
+% ============== Appendix ==============
+% ====== Inlined from appendix.tex ======
+% appendix.tex - Appendix (condensed)
+\appendix
+\section{Wasserstein Training Objective: Theory}
+\label{app:wasserstein_theory}
+
+For the 1-Wasserstein reward $r^{\text{rl}} = 1/(1 + \mathcal{W}_1)$, $\mathcal{W}_1$ metrizes weak convergence on bounded-first-moment spaces~\cite{villani2009optimal}, with empirical estimation error $O(n^{-1/2} + m^{-1/2})$ under a finite second moment---contrasting with KL divergence (unbounded) and MSE (degraded under heavy tails~\cite{cont2001empirical}).
+
+\begin{proposition}[CVaR Bound via Wasserstein Distance]
+Let $P$ and $Q$ be probability distributions on $\mathbb{R}$ with finite first moments. Then for any $\alpha \in (0,1)$: $|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)| \leq \frac{1}{1-\alpha} \cdot \mathcal{W}_1(P, Q)$.
+\end{proposition}
+
+\begin{proof}
+From the quantile representation $\text{CVaR}_\alpha(P) = \frac{1}{1-\alpha} \int_{\alpha}^{1} F_P^{-1}(u) \, du$, we have $|\text{CVaR}_\alpha(P) - \text{CVaR}_\alpha(Q)| \leq \frac{1}{1-\alpha} \int_{\alpha}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du \leq \frac{1}{1-\alpha} \int_{0}^{1} |F_P^{-1}(u) - F_Q^{-1}(u)| \, du = \frac{1}{1-\alpha} \cdot \mathcal{W}_1(P, Q)$. \quad $\square$
+\end{proof}
+
+For $\alpha = 0.95$, this bound is $20 \cdot \mathcal{W}_1$, providing $\alpha$-agnostic tail regularization without explicit CVaR tuning~\cite{chow2015cvar}.
+
+
+\end{document}
